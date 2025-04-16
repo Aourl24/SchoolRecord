@@ -1,0 +1,10 @@
+<html>
+ <body>
+   <br/>
+   {%for rec in record%}
+    <h2><button hx-get="{% url 'get-record' rec.id %}" hx-target="#load-area" hx-swap="innerHTML">  {{rec.title}}</button> </h2>
+    
+   {%endfor%}
+ </body> 
+  
+</html>

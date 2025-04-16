@@ -1,0 +1,7 @@
+<!-- class.html -->
+<h2>All Classes</h2>
+<ul>
+  {% for c in school_class %}
+    <li> <button hx-get="{% url 'get-class' c.id %}" hx-target="#load-area" hx-swap="innerHTML">{{ c.name }} {{c.batch}}</button></li>
+  {% endfor %}
+</ul>

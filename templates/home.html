@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>This is the home page</h2>
+
+<div style="margin-bottom: 1rem;">
+    <button hx-get="{% url 'record-list' %}" hx-target="#load-area" hx-swap="innerHTML">Load Records</button>
+    <button hx-get="{% url 'student-list' %}" hx-target="#load-area" hx-swap="innerHTML">Load Students</button>
+    <button hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">Load Classes</button>
+</div>
+
+<div id="load-area">
+    <!-- HTMX will replace this area with content -->
+    <p>Click a button to load data here...</p>
+</div>
+{% endblock %}
