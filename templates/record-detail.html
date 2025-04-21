@@ -1,4 +1,11 @@
 <div>
-  <h2>{{record.title}}</h2>
-  <h3>{{record.date_created}}</h3>
+  <div class="sz-20 bold color-p">{{record.title}} {{record.subject}} {{record.record_type}} {{record.class_name}}</div>
+  <div class="sz-12 color-grey">{{record.date_created}}</div>
+  <div> Student with record : {{students.count}} </div>
+  <hr/>
+  <ol>
+    {%for student in students %}
+    <li>{{student.student.name}} : {{student.score}}</li>
+    {%endfor%}    
+  </ol>
 </div>

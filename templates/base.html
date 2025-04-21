@@ -5,23 +5,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Student Record System{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-5/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
 </head>
-<body>
+<body class="font-montserrat">
 
-    <header>
-        <h1>Student Record System</h1>
-    </header>
+    
 
+    <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p">
+        <div class="row sz-16 bold">
+            <div class="col"> <i class="fas fa-school p-2"></i> School Record </div>
+            <div class="col right"><a class="color-hover no-decoration pointer-cursor" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" class="no-decoration">Home</a></div>
+        </div>
+    </nav>
+<div class="container">
+    <div class="p-1 color-bg-p rounded my-3">
+        <input class="form-control sz-14" placeholder="Search" />
+    </div>
     <main>
+        <div id="load-area" class="container-fluid">
         {% block content %}
+        
+        
         {% endblock %}
+        </div>
     </main>
 
-    <footer>
+    <footer class="hide d-none">
         <p>&copy; {{ now|date:"Y" }} Student Records</p>
     </footer>
-
+</div>
     <script src="{% static 'js/htmx.min.js' %}"></script>
 </body>
 </html>

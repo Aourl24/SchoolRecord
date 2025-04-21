@@ -1,7 +1,7 @@
 <!-- class.html -->
-<h2>All Classes</h2>
+<h2 class="py-3 color-p">All Classes</h2>
 <ul>
   {% for c in school_class %}
-    <li> <button hx-get="{% url 'get-class' c.id %}" hx-target="#load-area" hx-swap="innerHTML">{{ c.name }} {{c.batch}}</button></li>
+    <li> <div  class="sz-18 py-2 my-2 pointer-cursor color-hover" hx-get="{% url 'get-class' c.id %}" hx-target="#load-area" hx-swap="innerHTML">{{ c.name }} {{c.batch}}</div></li>
   {% endfor %}
 </ul>

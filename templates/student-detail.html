@@ -1,4 +1,14 @@
 <div>
-  <h2>{{student.name}}</h2>
-  <h3>{{student.class_name}}</h3>
+  <h4> {{student.name}}</h4>
+  <div class="sz-16">{{student.class_name}} </div>
+  <br />
+  <div class="my-2 color-p bold"> Records </div>
+    <ol>
+      {% for record in records%}
+      <li> {{record.record.subject}} {{record.record.title}} {{record.record.record_type}}
+          Score : {{record.score}}
+      </li>
+
+      {%endfor%}
+    </ol>
 </div>

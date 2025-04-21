@@ -1,10 +1,7 @@
-<html>
- <body>
-   <br/>
+
+   <ol>
    {%for rec in record%}
-    <h2><button hx-get="{% url 'get-record' rec.id %}" hx-target="#load-area" hx-swap="innerHTML">  {{rec.title}}</button> </h2>
+    <li><div class="p-2 pointer-cursor color-hover sz-14" hx-get="{% url 'get-record' rec.id %}" hx-target="#load-area" hx-swap="innerHTML"> {{rec.class_name}} {{rec.subject}} {{rec.title}}</div> </li>
     
    {%endfor%}
- </body> 
-  
-</html>
+ </ol>

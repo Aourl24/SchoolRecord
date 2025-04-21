@@ -31,22 +31,33 @@ class Student(models.Model):
   
   def __str__(self):
     return self.name
-  
-    
+
+class Subject(models.Model):
+  name = models.CharField(max_length=1000000)
+
+  def __str__(self):
+    return self.name
+
 class Record(models.Model):
   title = models.CharField(max_length=10000,choices=TERM_CHOICES)
+  subject = models.ForeignKey(Subject,related_name='record',on_delete=models.CASCADE)
   date_created = models.DateTimeField(auto_now_add=True)
+  record_type = models.CharField(choices=[('Test','Test'),('Exam','Exam')],max_length=1000000)
+  total_score = models.IntegerField()
+  class_name = models.ForeignKey(Class,on_delete=models.CASCADE,related_name="record",null=True,blank=True)
+
+  class Meta:
+    unique_together = ("title","subject","class_name","record_type")
+
+  def __str__(self):
+    return f"{self.title} {self.subject} {self.record_type} {self.class_name}"
+
+   
+class StudentRecord(models.Model):
   student = models.ForeignKey(Student,related_name="record",on_delete=models.CASCADE)
+  record =  models.ForeignKey(Record,related_name='evaluation',on_delete=models.CASCADE)
   score = models.IntegerField()
-  type_name = models.CharField(max_length=100000,choices=[("Test","Test"),("Exam","Exam")])
-  total = models.IntegerField()
   
   def __str__(self):
-    return f"{self.student.name} {self.title} {self.type_name}"
+    return f"{self.student.name} {self.record.title} {self.record.subject}"
   
-
-#class Evaluation(models.Model):
- # name = models.CharField(max_length=100000)
-  
-  #def __str__(self):
-   # return self.name

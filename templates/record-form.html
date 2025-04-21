@@ -1,0 +1,10 @@
+<div>
+	<h3 class="mb-2 color-p"> Create {{form_type}} </h3>
+	<div>{{saved}}</div>
+	<form method='post' hx-post="{% url 'form' form_type%}" hx-target="#load-area" hx-swap="innerHTML">
+		{%csrf_token%}
+		{{form.as_p}}
+
+		<button class="btn btn-success w-100 p-3">Save </button>
+	</form>
+</div>
