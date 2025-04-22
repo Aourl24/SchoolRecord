@@ -91,3 +91,11 @@ def save_form(form):
         form.save()
         return "Record is created successfully"
     return "Error saving form"
+
+def searchView(request):
+  data = request.GET.get('search')
+  record = Record.objects.filter(title__icontains=data)
+  student = Student.objects.filter(name__icontains=data)
+  school_class = Class.objects.filter(name__icontains=data)
+  context=dict(record=record,student=student,school_class=school_class)
+  return render(request,'search.html',context)

@@ -58,6 +58,11 @@ class StudentRecord(models.Model):
   record =  models.ForeignKey(Record,related_name='evaluation',on_delete=models.CASCADE)
   score = models.IntegerField()
   
+  class Meta:
+    unique_together = ("student","record")
+  
   def __str__(self):
     return f"{self.student.name} {self.record.title} {self.record.subject}"
+    
+  
   

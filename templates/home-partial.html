@@ -1,18 +1,18 @@
 <div class="row justify-content-center sz-14">
-    <div class="col-5 center rounded-3 p-5 color-bg-p color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'record-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+    <div class="col-5 center rounded-3 p-5 color-bg-p color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'record-list' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
       <i class="fas fa-file-alt sz-24"></i>
       <br />
       Record <br />  {{records.count}}
     </div>
 
-    <div class="col-5 center rounded-3 p-5 color-bg-s color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'student-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+    <div class="col-5 center rounded-3 p-5 color-bg-s color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'student-list' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
           <i class="fas fa-user-graduate sz-24"></i>
           <br />
 
          Student <br /> {{students.count}}
     </div>
 
-    <div class="col-5 center rounded-3 p-5 color-bg-p bg-danger color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+    <div class="col-5 center rounded-3 p-5 color-bg-p bg-danger color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true" >
      <i class="fas fa-chalkboard-teacher sz-24"></i>
       <br />
 
@@ -32,23 +32,23 @@
 <hr />
 
 <div class="row justify-content-center">
-     <div class="col-5 pointer-cursor border rounded p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor border rounded p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
           Add Record
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#load-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
           Add Subject
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#load-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
           Add Class
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#load-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
           Add Student
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#load-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
           Add Student Record
      </div>
 

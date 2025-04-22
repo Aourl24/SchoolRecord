@@ -1,7 +1,7 @@
 
    <ol>
    {%for rec in record%}
-    <li><div class="p-2 pointer-cursor color-hover sz-14" hx-get="{% url 'get-record' rec.id %}" hx-target="#load-area" hx-swap="innerHTML"> {{rec.class_name}} {{rec.subject}} {{rec.title}}</div> </li>
+    <li><div class="p-2 pointer-cursor color-hover sz-14" hx-get="{% url 'get-record' rec.id %}" hx-target="#load-area" hx-swap="innerHTML"> {{rec.class_name}} {{rec.subject}} {{rec.title}} {{rec.record_type}}</div> </li>
     
    {%endfor%}
  </ol>
