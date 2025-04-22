@@ -1,10 +1,13 @@
-<div>
-	<h3 class="mb-2 color-p"> Create {{form_type}} </h3>
-	<div>{{saved}}</div>
+<div class="mt-3">
+	<h3 class="my-2 color-p sz-20"> Create {{form_type}} </h3>
+	<div id="saved">{{saved}}</div>
 	<form method='post' hx-post="{% url 'form' form_type%}" hx-target="#load-area" hx-swap="innerHTML">
 		{%csrf_token%}
-		{{form.as_p}}
-
+		{% for field in form%}
+			<div class="my-2 py-2"> {{field.label}} </div>
+			<div> {{field}} 
+		{%endfor%}
+		<br />
 		<button class="btn btn-success w-100 p-3">Save </button>
 	</form>
 </div>

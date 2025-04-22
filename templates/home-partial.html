@@ -32,8 +32,7 @@
 <hr />
 
 <div class="row justify-content-center">
-     <div class="col-5 pointer-cursor border rounded p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
-          Add Record
+      <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">          Add Record
      </div>
 
      <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">

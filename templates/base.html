@@ -13,12 +13,18 @@
 
     
 
-    <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p">
-        <div class="row sz-16 bold">
+    <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p py-3">
+        <div class="row sz-14 bold">
             <div class="col"> <i class="fas fa-school p-2"></i> School Record </div>
-            <div class="col right"><a class="color-hover no-decoration pointer-cursor" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" class="no-decoration" hx-push-url="true">Home</a></div>
+            <div class="col right"><a class="color-hover no-decoration pointer-cursor color-white" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true"><i class="fas fa-home"></i></a></div>
         </div>
     </nav>
+
+    <dropdown>
+        <div>
+
+        </div>
+    </dropdown>
 <div class="container">
     <div class="p-1 color-bg-p rounded my-3">
       <form hx-get="{% url 'search' %}" hx-target="#load-area" hx-trigger="input changed delay:300ms" hx-swap="innerHTML">

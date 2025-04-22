@@ -1,6 +1,11 @@
 <div>
-  <h4> {{student.name}}</h4>
+  <div class="sz-16 my-2 color-s">
+    student profile >
+  </div>
+
+  <div class="sz-20"> {{student.name}}</div>
   <div class="sz-16">{{student.class_name}} </div>
+    <div class="color-s"><a href="/admin/record/student/{{student.id}}/change/" target="_blank"> edit student </a> </div>
   <br />
   <div class="my-2 color-p bold"> Records </div>
     <ol>

@@ -2,6 +2,8 @@
   <br />
   <h2 class="sz-24">{{class_name.name}} {{class_name.batch}}</h2>
   <div class="sz-16">number of students : {{class_name.student.count}}</div>
+
+    <div class="color-s"><a href="/admin/record/class/{{class_name.id}}/change/" target="_blank"> edit record </a> </div>
   <div class="row my-3 sz-14">
       <div class="col-md-2 col">
           <button class="color-bg-p color-white p-2 no-border" hx-get="{% url 'get-class-record' class_name.id %}" hx-target="#mini-load-area" hx-swap="innerHTML">Load Records</button>

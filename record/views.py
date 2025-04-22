@@ -80,16 +80,20 @@ def formView(request,get_form):
     else:
         form = form_class()
         saved = ""
+    
     for field in form.fields.values():
-        field.widget.attrs.update({'class':'form-control'})
+        field.widget.attrs.update({'class':'form-control p-3'})
     context = dict(form=form,saved=saved ,form_type=get_form)
     return render(request,'record-form.html',context)
 
 
 def save_form(form):
     if form.is_valid():
+        name = form.data.get('name')
+        title = form.data.get('title')
+        respond = (" ").join([v for v in list(form.data.values())[1:3]])
         form.save()
-        return "Record is created successfully"
+        return f"{respond} Record is created successfully"
     return "Error saving form"
 
 def searchView(request):

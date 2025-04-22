@@ -1,11 +1,19 @@
-<div>
-  <div class="sz-20 bold color-p">{{record.title}} {{record.subject}} {{record.record_type}} {{record.class_name}}</div>
-  <div class="sz-12 color-grey">{{record.date_created}}</div>
-  <div> Student with record : {{students.count}} </div>
+<div class="mt-2">
+  <div class="sz-18"> Term : <span class="color-p">{{record.title}}</div></span>
+  <div class="sz-18"> Class : <span class="color-p">{{record.class_name}}</span></div>
+  <div class="sz-18"> Subject : <span class="color-p">{{record.subject}} </span></div>
+  <div class="sz-18"> Type : <span class="color-p">{{record.record_type}}</span></div>
+
+  <div class="sz-12 color-grey mt-3">{{record.date_created}}</div>
+  <div> Total Number of Student {{students.count}} </div>
+  <div> Mark : {{record.total_score}}</div>
+  <div class="color-s"><a href="/admin/record/record/{{record.id}}/change/" target="_blank"> edit record </a> </div>
+
   <hr/>
-  <ol>
+  <table class="container">
+    <tr class="p-2"><th>Student</th><th class="right">Score</th></tr>
     {%for student in students %}
-    <li>{{student.student.name}} : {{student.score}}</li>
+    <tr class="p-2"><td class="border-end">{{student.student.name|title}} </td> <td class="right"> {{student.score}}</td></tr>
     {%endfor%}    
-  </ol>
+  </table>
 </div>

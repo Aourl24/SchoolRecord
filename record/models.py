@@ -28,12 +28,15 @@ class Class(models.Model):
 class Student(models.Model):
   name = models.CharField(max_length=100000)
   class_name = models.ForeignKey(Class, related_name="student",on_delete=models.CASCADE)
+
+  class Meta:
+    unique_together = ("name","class_name")
   
   def __str__(self):
     return self.name
 
 class Subject(models.Model):
-  name = models.CharField(max_length=1000000)
+  name = models.CharField(max_length=1000000,unique=True)
 
   def __str__(self):
     return self.name
@@ -45,12 +48,13 @@ class Record(models.Model):
   record_type = models.CharField(choices=[('Test','Test'),('Exam','Exam')],max_length=1000000)
   total_score = models.IntegerField()
   class_name = models.ForeignKey(Class,on_delete=models.CASCADE,related_name="record",null=True,blank=True)
+  record_number = models.IntegerField()
 
   class Meta:
-    unique_together = ("title","subject","class_name","record_type")
+    unique_together = ("title","subject","class_name","record_type","record_number")
 
   def __str__(self):
-    return f"{self.title} {self.subject} {self.record_type} {self.class_name}"
+    return f"{self.title} {self.subject} {self.record_type} {self.class_name} ({self.record_number})"
 
    
 class StudentRecord(models.Model):
