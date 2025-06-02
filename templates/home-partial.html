@@ -1,11 +1,11 @@
-<div class="row justify-content-center sz-14">
-    <div class="col-5 center rounded-3 p-5 color-bg-p color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'record-list' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
+<div class="row justify-content-center sz-16">
+    <div class="col-5 center rounded-3 p-5 color-bg-p color-white m-2 pointer-cursor color-black-hover color-bg-hover no-decoration shadow-sm" hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
       <i class="fas fa-file-alt sz-24"></i>
       <br />
       Record <br />  {{records.count}}
     </div>
 
-    <div class="col-5 center rounded-3 p-5 color-bg-s color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'student-list' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
+    <div class="col-5 center rounded-3 p-5 color-bg-s color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
           <i class="fas fa-user-graduate sz-24"></i>
           <br />
 
@@ -29,9 +29,8 @@
     
 </div>
 <br />
-<hr />
 
-<div class="row justify-content-center">
+<div class="row justify-content-center d-none">
       <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">          Add Record
      </div>
 

@@ -1,0 +1,5 @@
+  <ol>
+  {% for s in student %}
+    <li class="p-2"><div class="col pointer-cursor" hx-get="{% url 'get-student-detail' s.id %}" hx-target="#load-area" hx-swap="innerHTML"> {{ s.name }}</div> </li>
+  {% endfor %}
+  </ol>

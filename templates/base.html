@@ -9,34 +9,62 @@
     <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
 </head>
-<body class="font-montserrat">
+<body class="font-montserrat bg-light">
 
     
 
     <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p py-3">
-        <div class="row sz-14 bold">
-            <div class="col"> <i class="fas fa-school p-2"></i> School Record </div>
-            <div class="col right"><a class="color-hover no-decoration pointer-cursor color-white" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true"><i class="fas fa-home"></i></a></div>
+        <div class="row sz-16 bold align-items-center p-2">
+            <div class="col"> <i class="fas fa-school p-2 d-none"></i> Dashboard </div>
+            
+            <div class="col-2">
+              <i class="fas fa-plus" onClick="document.getElementById('drop-area').classList.toggle('d-none')"></i>
+            </div>
+            
+            <div class="col-2 right"><a class="color-hover no-decoration pointer-cursor color-white" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true"><i class="fas fa-user rounded-circle color-bg-s p-2"></i></a></div>
         </div>
     </nav>
 
-    <dropdown>
-        <div>
-
-        </div>
-    </dropdown>
+    
+    
 <div class="container">
-    <div class="p-1 color-bg-p rounded my-3">
+    <div class="p-1 rounded my-3">
       <form hx-get="{% url 'search' %}" hx-target="#load-area" hx-trigger="input changed delay:300ms" hx-swap="innerHTML">
     <input 
-        class="form-control sz-14" 
-        placeholder="Search"
+        class="form-control sz-14 input rounded-2" 
         name="search"
+        placeholder="Search students, records,classes..." style="padding:10px"
         
         />
 </form>
+</div>
+
+<dropdown>
+         <div class="position-fixed overflow-auto vh-100 w-100 d-none container-fluid color-bg-white" style="background-clor:rgba(250,250,250,0.95); to:10%;left:0%;overflow:scroll"  id="drop-area">
+<div class="row justify-content-center">
+      <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">          Add Record
+     </div>
+
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
+          Add Subject
+     </div>
+
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
+          Add Class
+     </div>
+
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
+          Add Student
+     </div>
+
+     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
+          Add Student Record
+     </div>
+      </div>
       
-    </div>
+        </div>
+    </dropdown>
+      
     <main>
         <div id="load-area" class="container-fluid">
         {% block content %}

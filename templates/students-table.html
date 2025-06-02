@@ -1,0 +1,6 @@
+ <table class="container color-bg-white">
+    <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white"><th class="border-end center">S/N</th><th class="p-2">Student</th><th class="center border-start">Score</th></tr>
+    {%for student in students %}
+    <tr class="border-bottom"><td class="border-end center color-silver">{{forloop.counter}}</td><td class="border-end p-2"><span hx-get="{% url 'get-student-detail' student.student.id %}" hx-target="#load-area" hx-swap="innerHTML">{{student.student.name|title}}</span> {%if not edit%} <i class="color-grey sz-xm" style="font-size:10px">{{student.student.class_name}}</i> {%endif%} </td> <td class="center bold"> {{student.score}}</td></tr>
+    {%endfor%}    
+  </table>

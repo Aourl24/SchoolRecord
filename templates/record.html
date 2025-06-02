@@ -1,10 +1,60 @@
+{%extends 'base.html'%}
 
-<div class="my-2 sz-20 color-p">
-  Record(s)
+{%block content%}
+<div class="my-3 sz-18">
+  Records list 
 </div>
-   <ol>
+     <div class="row d-none border-bottom p-2 sz-14 bold">
+       <div class="col">
+         Class
+       </div>
+        <div class="col">
+         Subject
+       </div>
+ <div class="col">
+         Term
+       </div>
+ <div class="col">
+         Type
+       </div>
+     </div>
    {%for rec in record%}
-    <li><div class="p-2 pointer-cursor color-hover sz-14" hx-get="{% url 'get-record' rec.id %}" hx-target="#load-area" hx-swap="innerHTML"> {{rec.class_name}} {{rec.subject}} {{rec.title}} {{rec.record_type}}</div> </li>
+   
+   <div class="row p-2 color-bg-white rounded-3 my-2 mb-4 pointer-cursor color-hover sz-12 shadow-sm" hx-get="{% url 'get-record' rec.id %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" >
+     
+       <div class="col-12 my-2"> 
+       Class
+       <br />
+         <div class="color-bg-p inline-block mt-1  color-white p-2 rounded-5">
+         {{rec.class_name}} 
+         </div>
+       </div>
+       
+        <div class="col-12 my-2">
+          Subject
+            <br />
+         <div class="inline-block mt-1 p-2 rounded-5 color-bg-s">
+           {{rec.subject}}
+           </div>
+       </div>
+       
+ <div class="col-12 my-2">
+   Term
+       <br />
+         <div class="bg-danger inline-block mt-1 color-white p-2 rounded-5">
+          {{rec.title}}
+       </div>
+       </div>
+       
+ <div class="col-12 my-2">
+   Type
+       <br />
+         <div class="bg-success inline-block mt-1 color-white rounded-5 p-2" style="">
+          {{rec.record_type}} {{rec.record_number}}
+       </div>
+       </div>
+     </div>
     
    {%endfor%}
- </ol>
+
+ {%endblock%}

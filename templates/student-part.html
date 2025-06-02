@@ -1,0 +1,57 @@
+<div class="my-3 sz-12 borer rounded p-2 color-bg-white shadow-sm" >
+<form class="" hx-get="{%url 'filterStudent' %}"
+        hx-swap="innerHTML"
+        hx-target="#studentTable" >
+  <div class="row m-1 border-bottm p-2 align-items-center my-2">
+    <div class="col">
+      Score
+    </div>
+    <div class="col">
+      <select name="sign" class="sz-12 form-control p-1 center">
+        <option value="">...</option>
+        <option>
+          =
+        </option>
+        <option>
+          >
+        </option>
+        <option>
+          <
+        </option>
+      </select>
+    </div>
+    <div class="col">
+      <select name="score" class="form-control p-1 center sz-12">
+        <option value="">...</option>
+        {% with "1234567890203766"|slice:":10" as dummy_str %}
+  {% for i in dummy_str %}
+     <option>{{forloop.counter0}}</option>
+  {% endfor %}
+{% endwith %}
+         
+        
+      </select>
+    </div>
+  </div>
+  <div class="row m-1 align-items-center">
+ <select class="col sz-12 form-control no-order bg-lght"
+        name="filter" style="background-color:white" >
+  <option> sort </option>
+  <option value="alpha"> Arrange Alphabetically </option>
+  <option value="score"> Arrange by Score </option>
+</select>
+{%for s in students %}
+<input type="hidden" name="students" value={{s.student.id}} />
+{%endfor%}
+<input name="edit" value={{edit}} type="hidden" />
+<div class="w-100"></div>
+<div class="my-2 right col">
+ <button class="button rounded-4 w-100 sz-12 p-2 color-bg-s"> Apply </button>
+ </div>
+ </div>
+</form>
+  </div>
+  
+  <div id="studentTable">
+     {%include "students-table.html"%}
+ </div>
