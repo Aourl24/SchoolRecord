@@ -1,0 +1,15 @@
+ <div class="color-bg-white p-2 rounded">
+  {%if topics%}
+  <ol>
+  {%for topic in topics%}
+    <li class="p-2"> <a href="{{topic.get_absolute_url}}" class="no-decoration color-black">{{topic}}</a> </li>
+  {%endfor%}
+  </ol>
+    {%else%}
+    <div class="row my-2 sz-18">
+      <div class='col text-danger center'>
+        No Topic available
+      </div>
+    </div>
+    {%endif%} 
+</div>

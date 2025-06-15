@@ -1,19 +1,36 @@
 <div>
-  <div class="sz-16 my-2 color-s">
-    student profile >
+  <div class="row my-2">
+    <div class="col-3">
+    <i class="fas fa-user-graduate sz-24 sz-24 rounded-4 p-3 color-bg-white color-s"></i>
+  </div>
+  <div class="col">
+    <div class="sz-20"> {{student.name}}</div>
+    <div class="sz-16">{{student.class_name}} </div>
+  </div>
   </div>
 
-  <div class="sz-20"> {{student.name}}</div>
-  <div class="sz-16">{{student.class_name}} </div>
-    <div class="color-s"><a href="/admin/record/student/{{student.id}}/change/" target="_blank"> edit student </a> </div>
-  <br />
-  <div class="my-2 color-p bold"> Records </div>
-    <ol>
-      {% for record in records%}
-      <li> {{record.record.subject}} {{record.record.title}} {{record.record.record_type}}
-          Score : {{record.score}}
-      </li>
+  <div class="row">
+    <div class="col">
+      
+    </div>    
+  </div>
 
-      {%endfor%}
-    </ol>
+    <div class="row">
+    <div class="col right">
+      <div class="color-s"><a href="/admin/record/student/{{student.id}}/change/" class="no-decoration bg-danger color-white rounded p-2" target="_blank"> edit student </a> </div>  
+    </div>    
+  </div>
+  
+  
+    
+  <hr />
+  <div class="my-2 color-p bold"> Records </div>
+    <table class="container color-bg-white">
+    <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white"><th class="border-end center">S/N</th><th class="p-2">Subject</th><th class="center border-start">Term</th><th class="center border-start p-2">Type</th><th class="center border-start p-2">Score</th></tr>
+    {% for record in records%}
+    <tr class="border-bottom"><td class="border-end center color-silver">{{forloop.counter}}</td><td class="border-end p-2"><span>{{record.record.subject}}</span> </td> <td class="center border-end p-2"> {{record.record.title}}</td> </td> <td class="center border-end p-2"> {{record.record.record_type}}</td> </td> <td class="center border-end p-2"> {{record.score}}</td> </tr>
+    {%endfor%}    
+  </table>
 </div>
+
+

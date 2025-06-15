@@ -1,0 +1,29 @@
+<div class="row my-3">
+    <div class="col sz-20 color-p"> Get REPORT </div>
+</div>
+
+<form class="container" method="POST">
+    {%csrf_token%}
+
+    <div class="row my-3">
+    <div class="col"> Choose Subject </div>
+</div>
+<select name="subject" class="form-control">
+    {%for sub in subjects%}
+        <option value="{{sub.id}}">{{sub.name}}</option>
+    {%endfor%}
+</select>
+<div class="row my-3">
+    <div class="col"> Choose Class</div>
+</div>
+
+<select name="class" class="form-control">
+    {%for cl in classes%}
+        <option value="{{cl.id}}">{{cl.name}} {{cl.batch}}</option>
+    {%endfor%}
+</select>
+
+<div class="my-3">
+    <button class="button bg-success color-white rounded-4 p-2 color-p w-100">Generate Report </button>
+  </div>
+</form>

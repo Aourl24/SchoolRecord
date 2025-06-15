@@ -13,12 +13,12 @@
 
     
 
-    <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p py-3">
+    <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p py-3 sticky-top">
         <div class="row sz-16 bold align-items-center p-2">
-            <div class="col"> <i class="fas fa-school p-2 d-none"></i> Dashboard </div>
+            <div class="col border-end color-t"> <i class="fas fa-bars p-2 color-white" onClick="menuDrop()" id="icon-menu"></i> <span class="color-white"> Dash</span>Bord </div>
             
             <div class="col-2">
-              <i class="fas fa-plus" onClick="document.getElementById('drop-area').classList.toggle('d-none')"></i>
+              <i class="fas fa-plus-circle sz-20" id="icon" onClick="showDrop()"></i>
             </div>
             
             <div class="col-2 right"><a class="color-hover no-decoration pointer-cursor color-white" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true"><i class="fas fa-user rounded-circle color-bg-s p-2"></i></a></div>
@@ -42,28 +42,44 @@
 <dropdown>
          <div class="position-fixed overflow-auto vh-100 w-100 d-none container-fluid color-bg-white" style="background-clor:rgba(250,250,250,0.95); to:10%;left:0%;overflow:scroll"  id="drop-area">
 <div class="row justify-content-center">
-      <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">          Add Record
+      <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2  bg-light" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">          Add Record
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
           Add Subject
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
           Add Class
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
+     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
           Add Student
      </div>
 
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
+     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
           Add Student Record
      </div>
       </div>
       
         </div>
     </dropdown>
+
+    <div id="menu-drop" class="container-fluid position-fixed bg-light d-none vh-100" style="top:10%;left:0">
+        <div class="row my-3 mt-4">
+            <div class="col"><a href="" class="no-decoration bg-warning p-2 rounded-3 color-white sz-16"> Lesson Notes</a></div>
+        </div>
+
+        <div class='row my-2 mt-4'>
+            <div class="col sz-18 color-p">
+                Recent Activities
+            </div>
+        </div>
+        <div hx-get="{%url 'historyView'%}" hx-swap="innerHTML" hx-trigger="load">
+
+        </div>
+
+    </div>
       
     <main>
         <div id="load-area" class="container-fluid">
@@ -79,8 +95,23 @@
     </footer>
 </div>
     <script src="{% static 'js/htmx.min.js' %}"></script>
-    <!-- <script>
+    <!-- 
       htmx.config.pushUrl = true;  // replaces current history entry instead of pushing
     </script> -->
+    <script>
+    function showDrop(){
+        document.getElementById('drop-area').classList.toggle('d-none')
+        let icon = document.getElementById('icon')
+        icon.classList.toggle("fa-times-circle")
+        icon.classList.toggle("text-danger")
+        }
+
+    function menuDrop(){
+        document.getElementById('menu-drop').classList.toggle('d-none')
+        let icon = document.getElementById('icon-menu')
+        icon.classList.toggle("fa-times-circle")
+        icon.classList.toggle("text-danger")
+    }
+    </script>
 </body>
 </html>

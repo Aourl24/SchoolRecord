@@ -1,4 +1,5 @@
 from django.db import models
+from django.shortcuts import reverse
 
 CLASSES = [
     ("JSS1", "JSS1"),
@@ -41,6 +42,9 @@ class Subject(models.Model):
   def __str__(self):
     return self.name
 
+  def get_absolute_url(self):
+    return reverse('subject-detail',args=[self.id])
+
 class Record(models.Model):
   title = models.CharField(max_length=10000,choices=TERM_CHOICES)
   subject = models.ForeignKey(Subject,related_name='record',on_delete=models.CASCADE)
@@ -50,7 +54,7 @@ class Record(models.Model):
   class_name = models.ForeignKey(Class,on_delete=models.CASCADE,related_name="record",null=True,blank=True)
   record_number = models.IntegerField()
 
-  class Meta:
+  class Meta: 
     unique_together = ("title","subject","class_name","record_type","record_number")
 
   def __str__(self):
@@ -69,4 +73,26 @@ class StudentRecord(models.Model):
     return f"{self.student.name} {self.record.title} {self.record.subject}"
     
   
-  
+class History(models.Model):
+  title = models.CharField(max_length=1000000,null=True,blank=True)
+  url = models.URLField(null=True,blank=True)
+  time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+
+  def __str__(self):
+    return self.title
+
+
+class Topic(models.Model):
+  subject = models.ForeignKey(Subject,related_name='topic',on_delete=models.CASCADE)
+  class_name = models.ForeignKey(Class,related_name="topic",on_delete=models.CASCADE,null=True,blank=True)
+  title = models.CharField(max_length=10000)
+  content = models.TextField(null=True,blank=True)
+  order = models.IntegerField(null=True,blank=True)
+  done = models.BooleanField(default=False)
+
+  def __str__(self):
+    return self.title
+
+
+  def get_absolute_url(self):
+    return reverse('topic-detail',args=[self.id])    

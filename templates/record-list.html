@@ -1,0 +1,44 @@
+<div class="row">
+{%for rec in record%}
+<div class="col-md-6 p-md-3 px-md-4">  
+   <div class="row p-2 color-bg-white rounded-3 my-2 mb-4 pointer-cursor sz-12 shadow-sm" hx-get="{% url 'get-record' rec.id %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" >
+
+      <div class="mb-2 color-white color-bg-s p-2 row rounded">
+        <div class="col sz-16 color-white hide "> Record {{forloop.counter}} </div> <div class=" sz-14 col-12"> created {{rec.date_created}} </div>
+     </div>
+
+       <div class="col-12 my-2 color-black"> 
+       Class
+       <br />
+         <div class=" mt-1  color-p bold">
+         {{rec.class_name}} 
+         </div>
+       </div>
+       
+        <div class="col-12 my-2">
+          Subject
+            <br />
+         <div class="mt-1  color-p bold">
+           {{rec.subject}}
+           </div>
+       </div>
+       
+ <div class="col-12 my-2">
+   Term
+       <br />
+         <div class="mt-1  color-p bold">
+          {{rec.title}}
+       </div>
+       </div>
+       
+ <div class="col-12 my-2">
+   Type
+       <br />
+         <div class="mt-1  color-p bold" style="">
+          {{rec.record_type}} {{rec.record_number}}
+       </div>
+       </div>
+     </div>
+    </div>
+   {%endfor%}
+ </div>

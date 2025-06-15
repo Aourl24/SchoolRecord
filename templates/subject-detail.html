@@ -1,0 +1,52 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<div>
+  <div class="row mb-2">
+    <div class="col-3 d-none">
+    <i class="fas fa-user-graduate sz-24 sz-24  rounded-4 p-3 color-bg-white color-s"></i>
+  </div>
+  <div class="col">
+    <div class="sz-24 color-p"> {{subject.name}}</div>
+  </div>
+</div>
+
+      <div class="row my-2 p-2">
+      {%for class in classes%}
+     <div class="col-6 col-md p-1">
+     <span class="p-2 color-bg-grey color-white col-10 rounded-2 inline-block pointer-cursor className" hx-get="{%url 'class-topic' class.id%}" onClick="hightlight()" hx-target="#topic" hx-swap="innerHTML">{{class}}</span>
+     </div>
+      {%endfor%}
+  </div>
+
+  <div class="row">
+    <div class="col">
+      
+    </div>    
+  </div>
+
+    <div class="row">
+    <div class="col">
+      <div class="color-s"><a href="/admin/record/subject/{{subject.id}}/change/" class="no-decoration bg-danger color-white rounded p-2" target="_blank"> edit subject </a> </div>  
+    </div>    
+  </div>
+  <hr />
+  <div class="row my-2">
+    <div class="col sz-20">
+      Topics
+    </div>
+  </div>
+
+  <div id="topic" class="">
+
+  </div>
+
+
+</div>
+<script type="text/javascript">
+  function hightlight(){
+    var all_class = document.getQuerySelector('.className')
+    all_class.forEach((x)=>x.classList.add('color-p'))
+  }
+</script>
+{%endblock%}

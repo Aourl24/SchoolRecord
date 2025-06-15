@@ -1,0 +1,148 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<div class="mt-2 rounded-3 p-2 color-bg-white shadow-sm">
+    <div class="row align-items-center">
+        <div class="col sz-24 bold my-1">
+            <span class="color-p">
+                {{topic.title}}
+            </span>
+        </div>
+    </div>
+  </div>
+
+    <div class="mt-2 rounded-3 p-2 color-bg-white shadow-sm">
+    	<div class="row my-2">
+    		<div class="col sz-18 bold">
+    			Lesson Notes
+    		</div>
+    	</div>
+    	<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Period : 
+    </span>
+    1
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Duration : 
+    </span>
+    40 mins
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Topic : 
+    </span>
+    {{topic.title}}
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Sub-Topic : 
+    </span>
+    
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Ref : 
+    </span>
+    
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Entry Behaviour : 
+    </span>
+    Students has little idea about the topic before
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Instructional Materials :
+    </span>
+    Textbook
+</div>
+</div>
+
+</div>
+
+<div class="mt-2 rounded-3 p-2 color-bg-white shadow-sm">
+    <div class="row">
+        <div class="col sz-18 bold my-1">
+            <span class="color-p">
+                Period
+            </span>
+        </div>
+    </div>
+
+    <div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Sub-Topic :
+    </span>
+    
+</div>
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Instructional Objectives :
+    </span>
+    By the end of the lesson, students should be able to ...
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Introduction :
+    </span>
+    He ask Question about the previous lesson
+</div>
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Presentation :
+    </span>
+    <ul>
+    	<li> Step I : He revise the previous lesson </li>
+    	<li> Step II: He explain the content of the new lesson </li>
+   	</ul> 
+</div>
+</div>
+
+<div class='row my-1'>
+<div class="col  px-3">
+    <span class="color-grey">
+        Content :
+    </span>
+    <br />
+    <p>{{topic.content}}</p>
+</div>
+</div>
+</div>
+
+  </div>
+
+
+</div>
+
+{%endblock%}

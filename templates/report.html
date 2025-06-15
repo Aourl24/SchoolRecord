@@ -1,0 +1,48 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<div class="sz-18 my-2">Report for {{class}}
+Subject {{subject.name}}
+<br/>
+<span class="sz-12 color-grey">View on desktop to view more clearly </span>
+</div>
+
+<table class="container color-bg-white">
+   {%for student in total_report %}
+   {%if student.header%}
+    <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white">
+        <th class="border-end center">
+            S/N
+        </th>
+        <th class="p-2">
+            Student
+        </th>
+        {%for rec in student.record%}
+        <th class="p-2 border-start">
+        	{{rec.title}} {{rec.type}}
+        </th>
+        {%endfor%}
+    </tr>
+    {%else%}
+    
+    <tr class="border-bottom">
+        <td class="border-end center color-silver">
+            {{forloop.counter0}}
+        </td>
+        <td class="border-end p-2">
+           
+                {{student.name|title}}
+            
+        </td>
+
+        {%for rec in student.record%}
+        <td class="p-2 border-start border-end">
+        	{{rec.score}}
+        </td>
+        {%endfor%}
+
+    </tr>
+    {%endif%}
+    {%endfor%}
+</table>
+{%endblock%}

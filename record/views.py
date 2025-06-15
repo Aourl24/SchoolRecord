@@ -1,9 +1,9 @@
-from django.shortcuts import render
-from .models import Student, Record, Class , Subject , StudentRecord
+from django.shortcuts import render,reverse
+from .models import Student, Record, Class , Subject , StudentRecord,History , Topic
 from django.db.models import Q
 from .form import RecordForm , StudentForm , ClassForm , SubjectForm , StudentRecordForm
 from django.http import HttpResponse
-
+import datetime
 
 def homeView(request,part=None):
     records = Record.objects.all()
@@ -16,6 +16,9 @@ def homeView(request,part=None):
 
 def recordView(request):
     record = Record.objects.all()
+    history = History.objects.get_or_create(title="Record List",url=reverse('record-list'))
+    history[0].time=datetime.datetime.now()
+    history[0].save()
     context = dict(record=record)
     return render(request, "record.html", context)
 
@@ -23,29 +26,44 @@ def studentView(request):
     student = Student.objects.all()
     subjects = Subject.objects.all()
     classes = Class.objects.values('name').distinct()
+    history = History.objects.get_or_create(title="Student List",url=reverse('student-list'))
+    history[0].time=datetime.datetime.now()
+    history[0].save()
     context = dict(student=student,subjects=subjects,classes=classes)
     return render(request, "student.html", context)
 
 def classView(request):
     school_class = Class.objects.all()
+    history = History.objects.get_or_create(title="Class List",url=reverse('class-list'))
+    history[0].time=datetime.datetime.now()
+    history[0].save()
     context = dict(school_class=school_class)
     return render(request, "class.html", context)
     
 def getRecord(request,id):
   record = Record.objects.get(id=id)
   students = StudentRecord.objects.filter(record=record)
+  history = History.objects.get_or_create(title=f"{record}",url=reverse('get-record',args=[id]))
+  history[0].time=datetime.datetime.now()
+  history[0].save()
   context = dict(record = record,students = students,edit=True)
   return render(request,'record-detail.html',context)
   
 def getStudent(request,id):
   student = Student.objects.get(id=id)
   records = StudentRecord.objects.filter(student=student)
+  history = History.objects.get_or_create(title=f"{student}",url=reverse('get-student-detail',args=[id]))
+  history[0].time=datetime.datetime.now()
+  history[0].save()
   context = dict(student = student,records=records)
   return render(request,'student-detail.html',context)
   
 def getClass(request,id):
   class_name = Class.objects.get(id=id)
   student = Student.objects.filter(class_name=class_name)
+  history = History.objects.get_or_create(title=f"{class_name}",url=reverse('get-class',args=[id]))
+  history[0].time=datetime.datetime.now()
+  history[0].save()
   context = dict(class_name = class_name , student = student)
   return render(request,'class-detail.html',context)
 
@@ -53,13 +71,13 @@ def getClassRecord(request,id):
     class_name = Class.objects.get(id=id)
     record = Record.objects.filter(class_name=class_name)
     context = dict(class_name=class_name,record=record)
-    return render(request,'record.html',context)
+    return render(request,'record-list.html',context)
 
 def getClassStudent(request,id):
     class_name = Class.objects.get(id=id)
     student = Student.objects.filter(class_name=class_name)
     context = dict(student=student)
-    return render(request,'student.html',context)
+    return render(request,'student-list.html',context)
 
 def formView(request,get_form):
     match get_form:
@@ -80,6 +98,9 @@ def formView(request,get_form):
     if request.method == 'POST':
         form = form_class(request.POST)
         saved=save_form(form)
+        history = History.objects.get_or_create(title=f"Create new {get_form}")
+        history[0].time=datetime.datetime.now()
+        history[0].save()
         return HttpResponse(saved)
     else:
         form = form_class()
@@ -181,3 +202,81 @@ def filterStudent(request):
 def closeReq(request):
   return HttpResponse("")
   
+
+def generateReport(request):
+    classes = Class.objects.all()
+    subjects = Subject.objects.all()
+    context = dict(subjects=subjects,classes=classes)
+
+
+    if request.method == "POST":
+        subject = request.POST.get('subject')
+        class_name = request.POST.get('class')
+        class_model = Class.objects.get(id=int(class_name))
+        subject_model = Subject.objects.get(id=int(subject))
+        record = Record.objects.filter(class_name=class_model,subject=subject_model)
+        students = StudentRecord.objects.filter(record__class_name=class_model,record__subject=subject_model)
+        context['subject'] = subject_model
+        context['class'] = class_model
+        context['record'] = record
+        context['students'] = students
+        print(record)
+        total_report = [{'header':3,'count':'S/N','name':'Student','record':[{'title':rec.title,'type':rec.record_type} for rec in record ]}]
+        track_names = dict()
+        for std in students.order_by('student__name'):
+            
+            if std.student.name  in track_names.keys():
+                rec_list = total_report[track_names[std.student.name]]['record']
+                dict_st = total_report[track_names[std.student.name]]
+            else:
+                rec_list = []
+                dict_st = dict(name=std.student.name)
+                
+
+            dict_rec_list = dict(title=std.record.title,score=std.score)
+            rec_list.append(dict_rec_list)
+            dict_st['record'] = rec_list 
+            if std.student.name not in track_names.keys():
+                total_report.append(dict_st)
+                track_names[std.student.name] = total_report.index(dict_st)
+
+            else:
+                total_report[track_names[std.student.name]] = dict_st
+
+
+        context['total_report'] = total_report
+        return render(request,'report.html',context)
+    return render(request,'get_report.html',context) 
+
+
+def historyView(request):
+    history = History.objects.all().order_by('-time')
+    return render(request,'history.html',dict(history=history))
+
+
+def subjectView(request):
+    subjects = Subject.objects.all()
+    return render(request,'subject.html',dict(subjects=subjects))
+
+
+def topicView(request):
+    topics = Topic.objects.all()
+    return render(request,'topic.html',dict(topics=topics))
+
+
+def subjectDetail(request,id):
+    subject = Subject.objects.get(id=id)
+    classes = Class.objects.all()
+    context = dict(subject=subject,classes=classes)
+    return render(request,'subject-detail.html',context)
+
+def topicDetail(request,id):
+    topic = Topic.objects.get(id=id)
+    return render(request,'topic-detail.html',dict(topic=topic))
+
+def classTopic(request,id):
+    subject = Subject.objects.get(id=id)
+    class_name = Class.objects.get(id=id)
+    topics = subject.topic.filter(class_name=class_name)
+    context = dict(topics=topics)
+    return render(request,'topic-list.html',context)
