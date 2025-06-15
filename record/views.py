@@ -1,9 +1,30 @@
 from django.shortcuts import render,reverse
 from .models import Student, Record, Class , Subject , StudentRecord,History , Topic
 from django.db.models import Q
-from .form import RecordForm , StudentForm , ClassForm , SubjectForm , StudentRecordForm
+from .form import RecordForm , StudentForm , ClassForm , SubjectForm , StudentRecordForm , TopicForm
 from django.http import HttpResponse
 import datetime
+
+def save_form(form):
+    if form.is_valid():
+        instance = form.save()
+
+        # Dynamically fetch all cleaned data except hidden fields
+        fields = [f.name for f in instance._meta.fields if f.name in form.cleaned_data]
+        field_values = [f"{f.capitalize()}: {form.cleaned_data.get(f)}" for f in fields]
+        display_data = "<br>".join(field_values)
+
+        return f"<div class='alert alert-primary'>{display_data}<br>Record was created successfully.</div>"
+
+    # Return detailed form errors
+    error_messages = []
+    for field, errors in form.errors.items():
+        label = form.fields.get(field).label if field in form.fields else field
+        for error in errors:
+            error_messages.append(f"<li><strong>{label}:</strong> {error}</li>")
+    error_html = "<ul>" + "".join(error_messages) + "</ul>"
+
+    return f"<div class='alert alert-danger'><strong>Error saving form:</strong>{error_html}</div>"
 
 def homeView(request,part=None):
     records = Record.objects.all()
@@ -91,6 +112,8 @@ def formView(request,get_form):
             form_class = StudentForm
         case 'student-record':
             form_class = StudentRecordForm
+        case 'topic':
+            form_class = TopicForm
         case _:
             form = RecordForm
     
@@ -112,27 +135,6 @@ def formView(request,get_form):
     return render(request,'record-form.html',context)
 
 
-def save_form(form):
-    if form.is_valid():
-        instance = form.save()
-
-        # Dynamically fetch all cleaned data except hidden fields
-        fields = [f.name for f in instance._meta.fields if f.name in form.cleaned_data]
-        field_values = [f"{f.capitalize()}: {form.cleaned_data.get(f)}" for f in fields]
-        display_data = "<br>".join(field_values)
-
-        return f"<div class='alert alert-primary'>{display_data}<br>Record was created successfully.</div>"
-
-    # Return detailed form errors
-    error_messages = []
-    for field, errors in form.errors.items():
-        label = form.fields.get(field).label if field in form.fields else field
-        for error in errors:
-            error_messages.append(f"<li><strong>{label}:</strong> {error}</li>")
-    error_html = "<ul>" + "".join(error_messages) + "</ul>"
-
-    return f"<div class='alert alert-danger'><strong>Error saving form:</strong>{error_html}</div>"
-
 def searchView(request):
   data = request.GET.get('search')
   record = Record.objects.filter(title__icontains=data)
@@ -144,11 +146,7 @@ def searchView(request):
 def addToRecord(request, id):
     record = Record.objects.get(id=id)
     form = StudentRecordForm(initial={'record': record})
-    form.fields['student'].queryset = Student.objects.filter(class_name=record.class_name) 
-    for field in form.fields.values():
-        field.widget.attrs.update({'class':'form-control p-3'})
     #form.fields['record'].widget = forms.HiddenInput()
-
     return render(request, 'record-form.html', {'form': form,'saved':'','form_type':'student-record','target':'addHere','recordForm':True})
 
 def filterRecord(request):
@@ -266,7 +264,7 @@ def topicView(request):
 
 def subjectDetail(request,id):
     subject = Subject.objects.get(id=id)
-    classes = Class.objects.all()
+    classes = Class.objects.values('name').distinct()
     context = dict(subject=subject,classes=classes)
     return render(request,'subject-detail.html',context)
 
@@ -274,9 +272,19 @@ def topicDetail(request,id):
     topic = Topic.objects.get(id=id)
     return render(request,'topic-detail.html',dict(topic=topic))
 
-def classTopic(request,id):
+def classTopic(request,id,name):
     subject = Subject.objects.get(id=id)
-    class_name = Class.objects.get(id=id)
+    class_name = Class.objects.filter(name=name).first()
     topics = subject.topic.filter(class_name=class_name)
     context = dict(topics=topics)
     return render(request,'topic-list.html',context)
+
+def addTopic(request,id):
+    subject = Subject.objects.get(id=id)
+    form = TopicForm(initial=dict(subject=subject))
+    form.fields['class_name'].queryset = Class.objects.values('name').distinct() 
+    for field in form.fields.values():
+        field.widget.attrs.update({'class':'form-control p-3'})
+
+    context = dict(form=form,form_type="topic",target="topic",recordForm=True)
+    return render(request,'record-form.html',context)

@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import recordView, studentView,classView , homeView , getClass, getRecord , getStudent , getClassRecord , getClassStudent,formView, searchView, addToRecord ,filterRecord,filterStudent,closeReq,generateReport,historyView,topicView,topicDetail,subjectView,subjectDetail,classTopic
+from .views import recordView, studentView,classView , homeView , getClass, getRecord , getStudent , getClassRecord , getClassStudent,formView, searchView, addToRecord ,filterRecord,filterStudent,closeReq,generateReport,historyView,topicView,topicDetail,subjectView,subjectDetail,classTopic , addTopic
 
 urlpatterns = [
     path("record", recordView,name="record-list"),
@@ -24,5 +24,6 @@ urlpatterns = [
     path('topics',topicView,name="topic-list"),
     path('subject/<int:id>',subjectDetail,name="subject-detail"),
     path('topic/<int:id>',topicDetail,name="topic-detail"),
-    path('classTopic/<int:id>',classTopic,name="class-topic")
+    path('classTopic/<int:id>/<str:name>',classTopic,name="class-topic"),
+    path('addTopic/<int:id>',addTopic,name="add-topic")
   ]

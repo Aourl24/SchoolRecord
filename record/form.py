@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import Student, Record, Class , Subject , StudentRecord
+from .models import Student, Record, Class , Subject , StudentRecord , Topic 
 
 class RecordForm(ModelForm):
 	class Meta:
@@ -27,4 +27,10 @@ class StudentForm(ModelForm):
 class StudentRecordForm(ModelForm):
 	class Meta:
 		model = StudentRecord
+		fields = "__all__"
+
+
+class TopicForm(ModelForm):
+	class Meta:
+		model = Topic
 		fields = "__all__"
