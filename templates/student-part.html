@@ -44,14 +44,12 @@
 <input type="hidden" name="students" value={{s.student.id}} />
 {%endfor%}
 <input name="edit" value={{edit}} type="hidden" />
-<div class="w-100"></div>
+<input name="record" value={{record.id}} type="hidden" />
+<div class="w-100"></div> 
 <div class="my-2 right col">
  <button class="button rounded-4 w-100 sz-12 p-2 color-bg-s"> Apply </button>
  </div>
- </div>
-</form>
-  </div>
-  
-  <div id="studentTable">
-     {%include "students-table.html"%}
+ </div> 
+ <div id="studentTable">
+ {%include 'students-table.html'%}
  </div>

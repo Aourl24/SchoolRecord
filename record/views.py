@@ -146,6 +146,9 @@ def searchView(request):
 def addToRecord(request, id):
     record = Record.objects.get(id=id)
     form = StudentRecordForm(initial={'record': record})
+    form.fields['student'].queryset = Student.objects.filter(class_name=record.class_name).order_by('name')
+    for field in form.fields.values():
+        field.widget.attrs.update({'class':'form-control p-3'})
     #form.fields['record'].widget = forms.HiddenInput()
     return render(request, 'record-form.html', {'form': form,'saved':'','form_type':'student-record','target':'addHere','recordForm':True})
 
@@ -169,9 +172,12 @@ def filterStudent(request):
   sign = request.GET.get("sign")
   score = request.GET.get("score")
   students_list = request.GET.getlist("students")
+  record_get = request.GET.get('record')
   edit = request.GET.get("edit")
   #students_list = [int(std) for std in students_list]
-  students = StudentRecord.objects.filter(student__id__in=students_list)
+  record = Record.objects.get(id=record_get)
+  print("record",record)
+  students = StudentRecord.objects.filter(student__id__in=students_list,record=record)
   
   if edit == "None":
     edit = False
@@ -194,57 +200,93 @@ def filterStudent(request):
     case _:
       pass
       
-  return render(request,'students-table.html',dict(students=students,edit=edit))
+  return render(request,'students-table.html',dict(students=students,edit=edit,record=record))
   
 
 def closeReq(request):
   return HttpResponse("")
   
-
 def generateReport(request):
     classes = Class.objects.all()
     subjects = Subject.objects.all()
-    context = dict(subjects=subjects,classes=classes)
-
+    context = dict(subjects=subjects, classes=classes)
 
     if request.method == "POST":
-        subject = request.POST.get('subject')
-        class_name = request.POST.get('class')
-        class_model = Class.objects.get(id=int(class_name))
-        subject_model = Subject.objects.get(id=int(subject))
-        record = Record.objects.filter(class_name=class_model,subject=subject_model)
-        students = StudentRecord.objects.filter(record__class_name=class_model,record__subject=subject_model)
+        subject_id = request.POST.get('subject')
+        class_id = request.POST.get('class')
+        sort_order = request.POST.get('sort', 'asc')  # Default sort ascending
+
+        try:
+            class_model = Class.objects.get(id=int(class_id))
+            subject_model = Subject.objects.get(id=int(subject_id))
+        except (Class.DoesNotExist, Subject.DoesNotExist):
+            context['error'] = "Invalid class or subject selected."
+            return render(request, 'get_report.html', context)
+
+        record = Record.objects.filter(class_name=class_model, subject=subject_model)
+        students = StudentRecord.objects.filter(record__class_name=class_model, record__subject=subject_model)
+
         context['subject'] = subject_model
         context['class'] = class_model
         context['record'] = record
         context['students'] = students
-        print(record)
-        total_report = [{'header':3,'count':'S/N','name':'Student','record':[{'title':rec.title,'type':rec.record_type} for rec in record ]}]
-        track_names = dict()
-        for std in students.order_by('student__name'):
-            
-            if std.student.name  in track_names.keys():
-                rec_list = total_report[track_names[std.student.name]]['record']
-                dict_st = total_report[track_names[std.student.name]]
-            else:
-                rec_list = []
-                dict_st = dict(name=std.student.name)
-                
+        context['sort'] = sort_order  # Keep track of current sort order in the template
 
-            dict_rec_list = dict(title=std.record.title,score=std.score)
-            rec_list.append(dict_rec_list)
-            dict_st['record'] = rec_list 
-            if std.student.name not in track_names.keys():
-                total_report.append(dict_st)
-                track_names[std.student.name] = total_report.index(dict_st)
+        # Build student-wise score records
+        student_names = set(students.values_list('student__name', flat=True))
+        student_objects = {name: [] for name in student_names}
 
-            else:
-                total_report[track_names[std.student.name]] = dict_st
+        for std in students:
+            student_objects[std.student.name].append(std)
 
+        students_data = []
+
+        for student_name in student_objects.keys():
+            rec_list = []
+            total_score = 0
+            student_scores = {r.record.id: r.score for r in student_objects[student_name]}
+
+            for rec in record:
+                score = student_scores.get(rec.id, '-')
+                rec_list.append({
+                    'title': rec.title,
+                    'type': rec.record_type,
+                    'score': score
+                })
+                if isinstance(score, (int, float)):
+                    total_score += score
+
+            students_data.append({
+                'name': student_name,
+                'record': rec_list,
+                'total_score': total_score
+            })
+
+        # Apply sorting
+        if sort_order == 'desc':
+            students_data.sort(key=lambda x: x['total_score'], reverse=True)
+        else:
+            students_data.sort(key=lambda x: x['name'])
+
+        # Add header row
+        total_report = [{
+            'header': True,
+            'count': 'S/N',
+            'name': 'Student',
+            'record': [{'title': rec.title, 'type': rec.record_type} for rec in record],
+            'total': 'Total Score'
+        }] + students_data
 
         context['total_report'] = total_report
-        return render(request,'report.html',context)
-    return render(request,'get_report.html',context) 
+
+        # Return partial if it's an HTMX request
+        if request.headers.get('HX-Request'):
+            return render(request, 'report-table.html', context)
+        else:
+            return render(request, 'report.html', context)
+
+    return render(request, 'get_report.html', context)
+          
 
 
 def historyView(request):

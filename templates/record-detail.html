@@ -25,7 +25,7 @@
   <div class="color-s my-2 col-12"><a href="/admin/record/record/{{record.id}}/change/" target="_blank" class="no-decoration sz-12 border rounded p-2 color-black w-100 inline-block center color-s color-bd-p"> Edit record </a> </div>
   
   <div class="my-2 col-12 right">
-    <button class="sz-12 w-100 no-border rounded p-2 btn btn-success" id="addStudent" hx-get="{%url 'addToRecord' record.id%}" color-bg-p color-white" hx-target="#addHere">Add student record</button>
+    <button class="sz-12 w-100 no-border rounded p-2 btn btn-success" id="addStudent" hx-get="{%url 'addToRecord' record.id%}" hx-target="#addHere">Add student record</button>
   </div>
   </div>
        <div id="addHere"></div>

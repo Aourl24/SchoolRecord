@@ -1,48 +1,32 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
-<div class="sz-18 my-2">Report for {{class}}
-Subject {{subject.name}}
-<br/>
-<span class="sz-12 color-grey">View on desktop to view more clearly </span>
+{% block content %}
+<div class="sz-18 my-2">
+    Report for {{ class }}<br />
+    Subject: {{ subject.name }}<br />
+    <span class="sz-12 color-grey">View on desktop to view more clearly</span>
 </div>
+<br />
 
-<table class="container color-bg-white">
-   {%for student in total_report %}
-   {%if student.header%}
-    <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white">
-        <th class="border-end center">
-            S/N
-        </th>
-        <th class="p-2">
-            Student
-        </th>
-        {%for rec in student.record%}
-        <th class="p-2 border-start">
-        	{{rec.title}} {{rec.type}}
-        </th>
-        {%endfor%}
-    </tr>
-    {%else%}
-    
-    <tr class="border-bottom">
-        <td class="border-end center color-silver">
-            {{forloop.counter0}}
-        </td>
-        <td class="border-end p-2">
-           
-                {{student.name|title}}
-            
-        </td>
+<!-- Sort Button -->
+<form hx-post="{% url 'generateReport' %}" hx-target="#report-table" hx-swap="outerHTML">
+    {%csrf_token%}
+    <input type="hidden" name="subject" value="{{ subject.id }}">
+    <input type="hidden" name="class" value="{{ class.id }}">
+    <input type="hidden" name="sot" value="{% if sort == 'desc' %}asc{% else %}desc{% endif %}">
 
-        {%for rec in student.record%}
-        <td class="p-2 border-start border-end">
-        	{{rec.score}}
-        </td>
-        {%endfor%}
+ <div class="row m-1 align-items-center">
+ <select class="col sz-12 form-control no-order bg-lght"
+        name="sort" style="background-color:white" >
+  <option value="asc"> Arrange Alphabetically </option>
+  <option value="desc"> Arrange by Score </option>
+</select>
+</div>
+    <button class="btn btn-sm my-2 w-100 color-bg-grey color-white" type="submit">
+        Apply
+    </button>
+</form>
 
-    </tr>
-    {%endif%}
-    {%endfor%}
-</table>
-{%endblock%}
+<br />
+{%include 'report-table.html'%}
+{% endblock %}

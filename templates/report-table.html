@@ -1,0 +1,44 @@
+<div id="report-table">
+<table class="container color-bg-white">
+    {% for student in total_report %}
+        {% if student.header %}
+            <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white">
+                <th class="border-end center">S/N</th>
+                <th class="p-2">Student</th>
+                {% for rec in student.record %}
+                    <th class="p-2 border-start">{{ rec.title }} {{ rec.type }}</th>
+                {% endfor %}
+                <th class="p-2 border-start">Total Score</th>
+            </tr>
+        {% else %}
+            <tr class="border-bottom">
+                <td class="border-end center color-silver center">{{ forloop.counter0 }}</td>
+                <td class="border-end p-2">{{ student.name|title }}</td>
+
+                {% for rec in student.record %}
+                    <td class="p-2 border-start border-end center">
+                        {% if rec.score == '-' %}
+                            <span class="color-grey">-</span>
+                        {% else %}
+                            {{ rec.score }}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+
+                <td class="p-2 border-start
+                {%if student.total_score <= 39 %}
+                bg-danger
+                {%elif student.total_score <= 49 %}
+                bg-warning
+                {%elif student.total_score <= 59%}
+                bg-primary
+                {%elif student.total_score <= 69%}
+                color-green
+                {%else%}
+                bg-success
+                {%endif%} center color-white">{{ student.total_score }}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+</div>
