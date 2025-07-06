@@ -16,6 +16,9 @@ TERM_CHOICES = [
     ('Third Term', 'Third Term'),
 ]
 
+#class User(models.Model):
+ # username = models.CharField(max_lemght)
+
 class Class(models.Model):
   name = models.CharField(max_length=100000,choices=CLASSES)
   batch = models.CharField(max_length=100000,choices=[("A","A"),("B","B"),("C","C"),("D","D")])

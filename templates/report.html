@@ -12,7 +12,8 @@
 <form hx-post="{% url 'generateReport' %}" hx-target="#report-table" hx-swap="outerHTML">
     {%csrf_token%}
     <input type="hidden" name="subject" value="{{ subject.id }}">
-    <input type="hidden" name="class" value="{{ class.id }}">
+    <input type="hidden" name="class" value="{{ class }}">
+    <input type="hidden" name="batch" value="{{batch}}">
     <input type="hidden" name="sot" value="{% if sort == 'desc' %}asc{% else %}desc{% endif %}">
 
  <div class="row m-1 align-items-center">

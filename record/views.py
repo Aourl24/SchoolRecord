@@ -207,41 +207,54 @@ def closeReq(request):
   return HttpResponse("")
   
 def generateReport(request):
+    from django.db.models import Q
+
     classes = Class.objects.all()
     subjects = Subject.objects.all()
     context = dict(subjects=subjects, classes=classes)
 
     if request.method == "POST":
         subject_id = request.POST.get('subject')
-        class_id = request.POST.get('class')
-        sort_order = request.POST.get('sort', 'asc')  # Default sort ascending
+        class_name = request.POST.get('class')  # e.g., "JSS1"
+        batch = request.POST.get("batch")       # e.g., "2024" or "All"
+        sort_order = request.POST.get('sort', 'asc')
+        print(class_name,batch,sort_order)
 
         try:
-            class_model = Class.objects.get(id=int(class_id))
+            # Filter all classes with the same name
+            class_model = Class.objects.filter(name=class_name)
+
+            if batch != "All":
+                class_model = class_model.filter(batch=batch)
+                context["All"] = False
+            else:
+                context["All"] = True
+
             subject_model = Subject.objects.get(id=int(subject_id))
         except (Class.DoesNotExist, Subject.DoesNotExist):
             context['error'] = "Invalid class or subject selected."
             return render(request, 'get_report.html', context)
 
-        record = Record.objects.filter(class_name=class_model, subject=subject_model)
-        students = StudentRecord.objects.filter(record__class_name=class_model, record__subject=subject_model)
+        # Fetch records and student records
+        record = Record.objects.filter(class_name__in=class_model, subject=subject_model)
+        students = StudentRecord.objects.filter(record__class_name__in=class_model, record__subject=subject_model)
 
         context['subject'] = subject_model
-        context['class'] = class_model
+        context['class'] = class_name  # Displayed in the template
+        context['batch'] = batch       # Can show batch in the template
         context['record'] = record
         context['students'] = students
-        context['sort'] = sort_order  # Keep track of current sort order in the template
+        context['sort'] = sort_order
 
-        # Build student-wise score records
+        # Prepare data per student
         student_names = set(students.values_list('student__name', flat=True))
         student_objects = {name: [] for name in student_names}
-
         for std in students:
             student_objects[std.student.name].append(std)
 
         students_data = []
 
-        for student_name in student_objects.keys():
+        for student_name in sorted(student_objects.keys()):
             rec_list = []
             total_score = 0
             student_scores = {r.record.id: r.score for r in student_objects[student_name]}
@@ -262,13 +275,13 @@ def generateReport(request):
                 'total_score': total_score
             })
 
-        # Apply sorting
+        # Sort
         if sort_order == 'desc':
             students_data.sort(key=lambda x: x['total_score'], reverse=True)
         else:
             students_data.sort(key=lambda x: x['name'])
-
-        # Add header row
+      
+        # Final report list
         total_report = [{
             'header': True,
             'count': 'S/N',
@@ -276,10 +289,9 @@ def generateReport(request):
             'record': [{'title': rec.title, 'type': rec.record_type} for rec in record],
             'total': 'Total Score'
         }] + students_data
-
         context['total_report'] = total_report
-
-        # Return partial if it's an HTMX request
+        
+        # HTMX partial or full render
         if request.headers.get('HX-Request'):
             return render(request, 'report-table.html', context)
         else:

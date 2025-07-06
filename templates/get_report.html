@@ -19,8 +19,18 @@
 
 <select name="class" class="form-control">
     {%for cl in classes%}
-        <option value="{{cl.id}}">{{cl.name}} {{cl.batch}}</option>
+        <option value="{{cl.name}}">{{cl.name}}</option>
     {%endfor%}
+</select>
+
+<div class="row my-3">
+    <div class="col"> Choose batch </div>
+</div>
+
+<select name="batch" class="form-control">
+        <option value="A"> A </option>
+        <option value="B"> B </option>
+        <option value="All"> All </option>
 </select>
 
 <div class="my-3">
