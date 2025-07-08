@@ -1,7 +1,6 @@
-<!-- class.html -->
 <h2 class="py-3 color-p">All Classes</h2>
 <ul>
   {% for c in school_class %}
-    <li> <a  class="sz-18 py-2 my-2 pointer-cursor color-hover no-decoration"  href="{% url 'get-class' c.id %}">{{ c.name }} {{c.batch}}</a></li>
+    <li> <a  class="sz-18 py-3 my-2 pointer-cursor color-hover no-decoration"  href="{% url 'get-class' c.id %}">{{ c.name }} {{c.batch}}</a></li>
   {% endfor %}
 </ul>

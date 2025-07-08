@@ -12,7 +12,7 @@
 <body class="font-montserrat bg-light">
 
     
-
+{%block nav%}
     <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p py-3 sticky-top">
         <div class="row sz-16 bold align-items-center p-2">
             <div class="col border-end color-t"> <i class="fas fa-bars p-2 color-white" onClick="menuDrop()" id="icon-menu"></i> <span class="color-white"> Dash</span>Bord </div>
@@ -24,10 +24,11 @@
             <div class="col-2 right"><a class="color-hover no-decoration pointer-cursor color-white" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true"><i class="fas fa-user rounded-circle color-bg-s p-2"></i></a></div>
         </div>
     </nav>
-
+{%endblock%}
     
     
 <div class="container">
+  {%block search%}
     <div class="p-1 rounded my-3">
       <form hx-get="{% url 'search' %}" hx-target="#load-area" hx-trigger="input changed delay:300ms" hx-swap="innerHTML">
     <input 
@@ -38,7 +39,7 @@
         />
 </form>
 </div>
-
+{%endblock%}
 <dropdown>
          <div class="position-fixed overflow-auto vh-100 w-100 d-none container-fluid color-bg-white" style="background-clor:rgba(250,250,250,0.95); to:10%;left:0%;overflow:scroll"  id="drop-area">
 <div class="row justify-content-center">
@@ -67,7 +68,7 @@
 
     <div id="menu-drop" class="container-fluid position-fixed bg-light d-none vh-100" style="top:10%;left:0">
         <div class="row my-3 mt-4">
-            <div class="col"><a href="" class="no-decoration bg-warning p-2 rounded-3 color-white sz-16"> Lesson Notes</a></div>
+            <div class="col"><a href="" class="no-decoration bg-warning p-2 rounded-3 color-white sz-16" onClick="window.history.back()"> Go back</a></div>
         </div>
 
         <div class='row my-2 mt-4'>

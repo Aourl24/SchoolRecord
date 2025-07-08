@@ -1,6 +1,47 @@
 from django.db import models
 from django.shortcuts import reverse
+import secrets
+import hashlib
+from django.db import models
+from itsdangerous import TimestampSigner, BadSignature
+from django.contrib.auth.hashers import make_password, check_password
+from uuid import uuid4
 
+class User(models.Model):
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+    secret_key = models.CharField(max_length=255, blank=True, null=True)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+        self.save()
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
+    def ensure_secret(self):
+        if not self.secret_key:
+            self.secret_key = secrets.token_urlsafe(32)
+            self.save()
+
+    def generate_token(self):
+        self.ensure_secret()
+        signer = TimestampSigner(self.secret_key)
+        token = signer.sign(f"{self.id}:{uuid4()}").decode()
+        return token
+        
+    def verify_token(self, token, max_age=60*60*24):
+          signer = TimestampSigner(self.secret_key)
+          try:
+              unsigned = signer.unsign(token, max_age=max_age).decode()
+              user_id, _ = unsigned.split(":")  # Grab the ID part
+              return str(self.id) == user_id
+          except BadSignature:
+              return False
+    
+
+
+    
 CLASSES = [
     ("JSS1", "JSS1"),
     ("JSS2", "JSS2"),
@@ -52,7 +93,7 @@ class Record(models.Model):
   title = models.CharField(max_length=10000,choices=TERM_CHOICES)
   subject = models.ForeignKey(Subject,related_name='record',on_delete=models.CASCADE)
   date_created = models.DateTimeField(auto_now_add=True)
-  record_type = models.CharField(choices=[('Test','Test'),('Exam','Exam')],max_length=1000000)
+  record_type = models.CharField(choices=[('Test','Test'),('Exam','Exam'),("Assignment","Assignment"),("Notes","Notes")],max_length=1000000)
   total_score = models.IntegerField()
   class_name = models.ForeignKey(Class,on_delete=models.CASCADE,related_name="record",null=True,blank=True)
   record_number = models.IntegerField()

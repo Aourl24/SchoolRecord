@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="sz-18 my-2">
-    Report for {{ class }}<br />
+    Report for {{ class }} {%if term%} {{term}} {%endif%}<br />
     Subject: {{ subject.name }}<br />
     <span class="sz-12 color-grey">View on desktop to view more clearly</span>
 </div>
@@ -14,7 +14,8 @@
     <input type="hidden" name="subject" value="{{ subject.id }}">
     <input type="hidden" name="class" value="{{ class }}">
     <input type="hidden" name="batch" value="{{batch}}">
-    <input type="hidden" name="sot" value="{% if sort == 'desc' %}asc{% else %}desc{% endif %}">
+     <input type="hidden" name="term" value="{{term}}">
+    
 
  <div class="row m-1 align-items-center">
  <select class="col sz-12 form-control no-order bg-lght"

@@ -2,7 +2,7 @@
     <div class="col sz-20 color-p"> Get REPORT </div>
 </div>
 
-<form class="container" method="POST">
+<form class="container" method="POST" action="{%url 'generateReport' %}">
     {%csrf_token%}
 
     <div class="row my-3">
@@ -30,6 +30,17 @@
 <select name="batch" class="form-control">
         <option value="A"> A </option>
         <option value="B"> B </option>
+        <option value="All"> All </option>
+</select>
+
+<div class="row my-3">
+    <div class="col"> Choose Term </div>
+</div>
+
+<select name="term" class="form-control">
+        <option value="First Term"> First </option>
+        <option value="Secod Term"> Second </option>
+        <option value="Third Term" > Third</option>
         <option value="All"> All </option>
 </select>
 

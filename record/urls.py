@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import recordView, studentView,classView , homeView , getClass, getRecord , getStudent , getClassRecord , getClassStudent,formView, searchView, addToRecord ,filterRecord,filterStudent,closeReq,generateReport,historyView,topicView,topicDetail,subjectView,subjectDetail,classTopic , addTopic
+from .views import recordView, studentView,classView , homeView , getClass, getRecord , getStudent , getClassRecord , getClassStudent,formView, searchView, addToRecord ,filterRecord,filterStudent,closeReq,generateReport,historyView,topicView,topicDetail,subjectView,subjectDetail,classTopic , addTopic,signUp,login
 
 urlpatterns = [
     path("record", recordView,name="record-list"),
@@ -8,7 +8,7 @@ urlpatterns = [
     path('student/<int:id>',getStudent,name='get-student-detail'),
     path('class/<int:id>',getClass,name='get-class'),
     path('record/<int:id>',getRecord,name='get-record'),
-    path('',homeView),
+    path('',homeView,name="home"),
     path('getclassrecord/<int:id>',getClassRecord,name="get-class-record"),
     path('getstudent/<int:id>',getClassStudent,name="get-student"),
     path('home/<str:part>',homeView,name='home-part'),
@@ -25,5 +25,7 @@ urlpatterns = [
     path('subject/<int:id>',subjectDetail,name="subject-detail"),
     path('topic/<int:id>',topicDetail,name="topic-detail"),
     path('classTopic/<int:id>/<str:name>',classTopic,name="class-topic"),
-    path('addTopic/<int:id>',addTopic,name="add-topic")
+    path('addTopic/<int:id>',addTopic,name="add-topic"),
+    path("signup",signUp,name="signup"),
+    path("login",login,name="login")
   ]

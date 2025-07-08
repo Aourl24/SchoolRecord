@@ -1,9 +1,16 @@
-from django.shortcuts import render,reverse
-from .models import Student, Record, Class , Subject , StudentRecord,History , Topic
+from django.shortcuts import render,reverse,redirect
+from .models import Student, Record, Class , Subject , StudentRecord,History , Topic, User
 from django.db.models import Q
 from .form import RecordForm , StudentForm , ClassForm , SubjectForm , StudentRecordForm , TopicForm
 from django.http import HttpResponse
 import datetime
+from django.contrib.auth.hashers import make_password, check_password
+from .decorator import login_require
+from uuid import uuid4
+#from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+
+#SECRET_KEY = "my_super_secret"
+#serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 def save_form(form):
     if form.is_valid():
@@ -26,6 +33,7 @@ def save_form(form):
 
     return f"<div class='alert alert-danger'><strong>Error saving form:</strong>{error_html}</div>"
 
+@login_require
 def homeView(request,part=None):
     records = Record.objects.all()
     students = Student.objects.all()
@@ -209,21 +217,21 @@ def closeReq(request):
 def generateReport(request):
     from django.db.models import Q
 
-    classes = Class.objects.all()
+    classes_obj = Class.objects.all()
+    classes = [c for c in classes_obj if c.batch == "A"]
     subjects = Subject.objects.all()
     context = dict(subjects=subjects, classes=classes)
 
     if request.method == "POST":
         subject_id = request.POST.get('subject')
-        class_name = request.POST.get('class')  # e.g., "JSS1"
-        batch = request.POST.get("batch")       # e.g., "2024" or "All"
+        class_name = request.POST.get('class')
+        batch = request.POST.get("batch")
+        term = request.POST.get("term")
         sort_order = request.POST.get('sort', 'asc')
-        print(class_name,batch,sort_order)
 
         try:
-            # Filter all classes with the same name
+            # Filter classes by name and batch
             class_model = Class.objects.filter(name=class_name)
-
             if batch != "All":
                 class_model = class_model.filter(batch=batch)
                 context["All"] = False
@@ -236,36 +244,58 @@ def generateReport(request):
             return render(request, 'get_report.html', context)
 
         # Fetch records and student records
-        record = Record.objects.filter(class_name__in=class_model, subject=subject_model)
-        students = StudentRecord.objects.filter(record__class_name__in=class_model, record__subject=subject_model)
+        record_qs = Record.objects.filter(class_name__in=class_model, subject=subject_model)
+        if term not in ["All", "None", None]:
+            record_qs = record_qs.filter(title=term)
 
-        context['subject'] = subject_model
-        context['class'] = class_name  # Displayed in the template
-        context['batch'] = batch       # Can show batch in the template
-        context['record'] = record
-        context['students'] = students
-        context['sort'] = sort_order
+        student_records = StudentRecord.objects.filter(
+            record__class_name__in=class_model,
+            record__subject=subject_model
+        )
 
-        # Prepare data per student
-        student_names = set(students.values_list('student__name', flat=True))
+        context.update({
+            'subject': subject_model,
+            'class': class_name,
+            'batch': batch,
+            'record': record_qs,
+            'students': student_records,
+            'sort': sort_order,
+            'term': None if term == "All" else term
+        })
+
+        # Prepare student data
+        student_names = set(student_records.values_list('student__name', flat=True))
         student_objects = {name: [] for name in student_names}
-        for std in students:
+
+        for std in student_records:
             student_objects[std.student.name].append(std)
 
+        record_to_render = []
         students_data = []
 
         for student_name in sorted(student_objects.keys()):
+            # Get the student's batch
+            student_batch = Student.objects.get(name=student_name).class_name.batch
+            student_records_filtered = record_qs.filter(class_name__batch=student_batch)
+
             rec_list = []
             total_score = 0
             student_scores = {r.record.id: r.score for r in student_objects[student_name]}
 
-            for rec in record:
+            for rec in student_records_filtered:
                 score = student_scores.get(rec.id, '-')
                 rec_list.append({
                     'title': rec.title,
                     'type': rec.record_type,
-                    'score': score
+                    'number': rec.record_number,
+                    'score': score,
+                    'class': rec.class_name.batch
                 })
+
+                record_id_str = f"{rec.title} {rec.record_type} {rec.record_number}"
+                if record_id_str not in record_to_render:
+                    record_to_render.append(record_id_str)
+
                 if isinstance(score, (int, float)):
                     total_score += score
 
@@ -275,27 +305,26 @@ def generateReport(request):
                 'total_score': total_score
             })
 
-        # Sort
+        # Sort the final student data
         if sort_order == 'desc':
             students_data.sort(key=lambda x: x['total_score'], reverse=True)
         else:
             students_data.sort(key=lambda x: x['name'])
-      
-        # Final report list
+
+        # Build report
         total_report = [{
             'header': True,
             'count': 'S/N',
             'name': 'Student',
-            'record': [{'title': rec.title, 'type': rec.record_type} for rec in record],
+            'record': [{'title': rec} for rec in record_to_render],
             'total': 'Total Score'
         }] + students_data
+
         context['total_report'] = total_report
-        
-        # HTMX partial or full render
-        if request.headers.get('HX-Request'):
-            return render(request, 'report-table.html', context)
-        else:
-            return render(request, 'report.html', context)
+
+        # HTMX or full render
+        template = 'report-table.html' if request.headers.get('HX-Request') else 'report.html'
+        return render(request, template, context)
 
     return render(request, 'get_report.html', context)
           
@@ -342,3 +371,41 @@ def addTopic(request,id):
 
     context = dict(form=form,form_type="topic",target="topic",recordForm=True)
     return render(request,'record-form.html',context)
+
+def signUp(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        if not username or not password:
+            return HttpResponse("Missing credentials", status=400)
+
+        hashed_password = make_password(password)
+        user = User.objects.create(username=username, password=hashed_password)
+        user.ensure_secret()  # Make sure secret is generated
+        return redirect("login")  # Redirect after signup
+    return render(request, "signup.html")
+
+
+def login(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return HttpResponse("Invalid username or password", status=401)
+
+        if not check_password(password, user.password):
+            return HttpResponse("Invalid username or password", status=401)
+
+        token = user.generate_token()
+
+        # Set token in cookie and redirect
+        response = redirect("home")  # Replace with your dashboard view name
+        response.set_cookie("auth_token", token, httponly=True, samesite="Lax")
+        return response
+
+    return render(request, "login.html")
+    
