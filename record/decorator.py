@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from .models import User
+
 def login_require(view_func):
     def wrapper(request, *args, **kwargs):
         auth_token = request.COOKIES.get("auth_token")

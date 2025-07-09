@@ -7,6 +7,7 @@ import datetime
 from django.contrib.auth.hashers import make_password, check_password
 from .decorator import login_require
 from uuid import uuid4
+from django.core import signing
 #from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 #SECRET_KEY = "my_super_secret"
@@ -99,7 +100,7 @@ def getClass(request,id):
 def getClassRecord(request,id):
     class_name = Class.objects.get(id=id)
     record = Record.objects.filter(class_name=class_name)
-    context = dict(class_name=class_name,record=record)
+    context = dict(class_name=class_name,record=record,partial=True)
     return render(request,'record-list.html',context)
 
 def getClassStudent(request,id):
@@ -167,10 +168,12 @@ def filterRecord(request):
   subject = Subject.objects.get(id=sbj_id)
   term = request.GET.get('term')
   record_type = request.GET.get('r_type')
-  records = Record.objects.filter(subject=subject,record_type=record_type,class_name__name=class_name)
+  record_number = request.GET.get('number')
+  records = Record.objects.filter(subject=subject,record_type=record_type,record_number=record_number,class_name__name=class_name)
   students = StudentRecord.objects.filter(record__in=records)
+  record_list = [r.id for r in records]
   record = dict(class_name=class_name,subject=subject,title=term,record_type=record_type,id=0,total_score= records.first().total_score if records else None)
-  context = dict(record=record, students=students,edit=None)
+  context = dict(record=record, record_list=record_list , students=students,edit=None)
   return render(request,'record-detail.html',context)
   
   
@@ -182,10 +185,15 @@ def filterStudent(request):
   students_list = request.GET.getlist("students")
   record_get = request.GET.get('record')
   edit = request.GET.get("edit")
+  record_list = request.GET.getlist("record-list")
   #students_list = [int(std) for std in students_list]
-  record = Record.objects.get(id=record_get)
-  print("record",record)
-  students = StudentRecord.objects.filter(student__id__in=students_list,record=record)
+  try:
+    record = Record.objects.get(id=record_get)
+    students = StudentRecord.objects.filter(student__id__in=students_list,record=record)
+  except Record.DoesNotExist:
+    records = Record.objects.filter(id__in=record_list)
+    students = StudentRecord.objects.filter(record__in=record_list)
+    record = records.first()
   
   if edit == "None":
     edit = False
@@ -275,7 +283,8 @@ def generateReport(request):
 
         for student_name in sorted(student_objects.keys()):
             # Get the student's batch
-            student_batch = Student.objects.get(name=student_name).class_name.batch
+            student_model = Student.objects.get(name=student_name)
+            student_batch = student_model.class_name.batch
             student_records_filtered = record_qs.filter(class_name__batch=student_batch)
 
             rec_list = []
@@ -300,9 +309,11 @@ def generateReport(request):
                     total_score += score
 
             students_data.append({
+                'id' : student_model.id,
                 'name': student_name,
                 'record': rec_list,
-                'total_score': total_score
+                'total_score': total_score,
+                'class_name' : f"{student_batch}"
             })
 
         # Sort the final student data
@@ -401,9 +412,9 @@ def login(request):
             return HttpResponse("Invalid username or password", status=401)
 
         token = user.generate_token()
-
-        # Set token in cookie and redirect
-        response = redirect("home")  # Replace with your dashboard view name
+        response = redirect("home") 
+         # "1234:uuid:signature"
+        response.set_cookie("auth_token", token, max_age=3600, httponly=True)
         response.set_cookie("auth_token", token, httponly=True, samesite="Lax")
         return response
 

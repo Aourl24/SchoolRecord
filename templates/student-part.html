@@ -43,6 +43,13 @@
 {%for s in students %}
 <input type="hidden" name="students" value={{s.student.id}} />
 {%endfor%}
+
+{%if record_list%}
+{%for r in record_list%}
+<input type="hidden" name="record-list" value="{{r}}" />
+{%endfor%}
+{%endif%}
+
 <input name="edit" value={{edit}} type="hidden" />
 <input name="record" value={{record.id}} type="hidden" />
 <div class="w-100"></div> 

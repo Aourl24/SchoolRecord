@@ -8,17 +8,18 @@
 {%endblock%}
 
 {%block content%}
-  <h2 class="color-p sz-20 my-2 mb-3">Login</h2>
+<br />
+  <h2 class="color-black sz-20 my-2 my-5 center">Login</h2>
   <form method="post">
     {% csrf_token %}
-    <label>Username:</label><br>
-    <input type="text" name="username" class="form-control"><br><br>
+    
+    <input type="text" name="username" class="form-control p-3" placeholder="Username"><br><br>
 
-    <label>Password:</label><br>
-    <input class="form-control" type="password" name="password"><br>
+    
+    <input class="form-control p-3" type="password" name="password" placeholder="Password"><br>
 
-    <button type="submit" class="w-100 color-bg-s color-white button p-2 rounded-4">Sign Up</button>
+    <button type="submit" class="w-100 my-3 color-bg-p color-white button p-2 sz-18 rounded-4">Login </button>
   </form>
 
-  <p class="sz-14 my-2">Don't have an account? <a href="{% url 'login' %}">Sign up here</a></p>
+  <p class="sz-14 my-2">Don't have an account? <a href="{% url 'signup' %}">Sign up </a></p>
 {%endblock%}

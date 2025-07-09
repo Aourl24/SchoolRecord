@@ -13,7 +13,12 @@
         {% else %}
             <tr class="border-bottom">
                 <td class="border-end center color-silver center">{{ forloop.counter0 }}</td>
-                <td class="border-end p-2">{{ student.name|title }}</td>
+                <td class="border-end p-2">
+                  <span hx-get="{% url 'get-student-detail' student.id %}" hx-target="#load-area" hx-swap="innerHTML">{{ student.name|title }}</span>
+                {%if All%}
+                <i class="color-silver sz-12"> ({{student.class_name}})</i>
+                {%endif%}
+                </td>
 
                 {% for rec in student.record %}
                     <td class="p-2 border-start border-end center">

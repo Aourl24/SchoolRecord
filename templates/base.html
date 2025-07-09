@@ -68,12 +68,12 @@
 
     <div id="menu-drop" class="container-fluid position-fixed bg-light d-none vh-100" style="top:10%;left:0">
         <div class="row my-3 mt-4">
-            <div class="col"><a href="" class="no-decoration bg-warning p-2 rounded-3 color-white sz-16" onClick="window.history.back()"> Go back</a></div>
+            <div class="col"><a href="" class="no-decoration bg-waning p-2 rounded-3 color-black sz-16 btn btn-link color-black" onClick="window.history.back()"><i class="fas fa-arrow-left"></i> Previous page </a></div>
         </div>
 
         <div class='row my-2 mt-4'>
             <div class="col sz-18 color-p">
-                Recent Activities
+                History
             </div>
         </div>
         <div hx-get="{%url 'historyView'%}" hx-swap="innerHTML" hx-trigger="load">

@@ -1,13 +1,19 @@
 {%extends 'base.html'%}
 
 {%block content%}
-<div class="my-2 sz-18 color-p">Student(s)</div>
- <div class="row sz-12">
+<div class="my-2 sz-18 color-p mb-3">All Students</div>
+ <div class="row sz-12 border">
+   <div  class="my-3 sz-16 center"> Get students record </div>
    <form hx-get="{%url 'filterRecord' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
    <select name='class' class="form-control col m-1 sz-12">
-     <option> All class </option>
      {%for class in classes %}
      <option value={{class.name}} >{{class.name}}</option>
+     {%endfor%}
+   </select>
+   
+    <select name='subject' class="form-control col m-1 sz-12">
+     {%for subject in subjects%}
+     <option value={{subject.id}} > {{subject.name}} </option>
      {%endfor%}
    </select>
    
@@ -19,21 +25,25 @@
    </select>
    
    <select name='r_type' class="form-control col m-1 sz-12">
-     <option> All Type </option>
       <option value="Test"> Test </option>
       <option value="Exam"> Exam </option>
    </select>
    
-   <select name='subject' class="form-control col m-1 sz-12">
-     <option>All Subject</option>
-     {%for subject in subjects%}
-     <option value={{subject.id}} > {{subject.name}} </option>
-     {%endfor%}
+    <select name='number' class="form-control col m-1 sz-12">
+     <option value=1 > 1 </option>
+     <option value=2 > 2 </option>
+     <option value=3 > 3 </option>
+    <option value=4 > 4 </option>
+    <option value=5 > 5 </option>
+     
    </select>
+
    <div class="my-2">
     <button class="button rounded-4 w-100 sz-12 p-2 color-bg-s"> Apply </button>
    </div>
+      <br />
    </form>
+
  </div>
 {%include "student-list.html" %}
 
