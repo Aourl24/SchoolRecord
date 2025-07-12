@@ -300,7 +300,8 @@ def generateReport(request):
             record__class_name__in=class_model,
             record__subject=subject_model
         )
-
+        term = None if term == "All" else term
+        
         context.update({
             'subject': subject_model,
             'class': class_name,
@@ -308,7 +309,7 @@ def generateReport(request):
             'record': record_qs,
             'students': student_records,
             'sort': sort_order,
-            'term': None if term == "All" else term
+            'term': term
         })
 
         # Prepare student data
@@ -320,7 +321,8 @@ def generateReport(request):
 
         record_to_render = []
         students_data = []
-
+        
+        total_available_score = 0
         for student_name in sorted(student_objects.keys()):
             # Get the student's batch
             student_model = Student.objects.get(name=student_name)
@@ -329,7 +331,14 @@ def generateReport(request):
 
             rec_list = []
             total_score = 0
-            test_total = 0
+            first_term_total_score = 0
+            second_term_total_score = 0
+            third_term_total_score = 0
+            first_term_test_total = 0
+            second_term_test_total = 0
+            third_term_test_total = 0
+            student_total_available_score = 0
+            percentage = 0
             student_scores = {r.record.id: r.score for r in student_objects[student_name]}
 
             for rec in student_records_filtered:
@@ -344,23 +353,50 @@ def generateReport(request):
 
                 record_id_str = f"{rec.title} {rec.record_type} {rec.record_number}"
                 if record_id_str not in record_to_render:
-                  if rec.record_type == "Exam":
-                    record_to_render
-                    record_to_render.append(record_id_str)
-
+                  record_to_render.append(record_id_str)
+                
                 if isinstance(score, (int, float)):
                     total_score += score
-                    if rec.record_type == "Test" or rec.record_type == "Notes":
-                      test_total += score
-
-            students_data.append({
+                    student_total_available_score += rec.total_score
+                    if not term:
+                      if rec.title == "First Term":
+                        if rec.record_type != "Exam":
+                          first_term_test_total+=score
+                        first_term_total_score+=score
+                      elif rec.title == "Second Term":
+                          if rec.record_type != "Exam":
+                            second_term_test_total+=score
+                          second_term_total_score+=score
+                            
+                      elif rec.title == "Third Term":
+                          if rec.record_type != "Exam":
+                            third_term_test_total+=score
+                          third_term_total_score+=score
+            
+            if student_total_available_score > total_available_score:
+              total_available_score = student_total_available_score
+            
+            if total_available_score != 0: 
+              percentage =round((total_score/total_available_score) * 100,2)
+            all_term = {'first_term_total_score':first_term_total_score,
+                'second_term_total_score':second_term_total_score,
+                'third_term_total_score':third_term_total_score,
+                'first_term_test_total':first_term_test_total,
+                'second_term_test_total':second_term_test_total,
+                'third_term_test_total':third_term_test_total}
+            data = {
                 'id' : student_model.id,
                 'name': student_name,
                 'record': rec_list,
                 'total_score': total_score,
                 'class_name' : f"{student_batch}",
-                'test_total': test_total
-            })
+                'percentage' : percentage,
+                'total_available_score':total_available_score
+            }
+            if not term:
+              data.update(all_term)
+            students_data.append(data)
+              
 
         # Sort the final student data
         if sort_order == 'desc':
@@ -375,11 +411,17 @@ def generateReport(request):
             'name': 'Student',
             'record': [{'title': rec} for rec in record_to_render],
             'total': 'Total Score',
-            'test_Total' : 'Test Total'
+            'first_term_test_Total' : 'First Term Test Total',
+             'second_term_test_Total' : 'Second Term Test Total',
+            'third_term_test_Total' : 'Third Term Test Total',
+            'first_term_total_score':'First Term Total Score',
+            'second_term_total_score':'Second Term Total Score',
+             'third_term_total_score':'Third Term Total Score',
+            'Percentage': '100%'
         }] + students_data
 
         context['total_report'] = total_report
-
+        
         # HTMX or full render
         template = 'report-table.html' if request.headers.get('HX-Request') else 'report.html'
         return render(request, template, context)

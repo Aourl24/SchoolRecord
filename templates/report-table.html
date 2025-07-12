@@ -8,8 +8,17 @@
                 {% for rec in student.record %}
                     <th class="p-2 border-start">{{ rec.title }} {{ rec.type }} {{rec.number}}</th>
                 {% endfor %}
-                <th class="p-2 border-start">Test Total</th>
-                <th class="p-2 border-start">Total Score</th>
+                {%if not term%}
+                 <th class="p-2 border-start">First Time Test Total</th>
+                <th class="p-2 border-start">First Term Total Score</th>
+                 <th class="p-2 border-start">Second Term Test Total</th>
+                <th class="p-2 border-start">Second Term Total Score</th>
+                 <th class="p-2 border-start">Third term Test Total</th>
+                <th class="p-2 border-start">Third term Total Score</th>
+                {%endif%}
+                 <th class="p-2 border-start"> Total Score </th>
+                  <th class="p-2 border-start"> Total Available Score </th>
+                <th class="p-2 border-start">Per(%)</th>
             </tr>
         {% else %}
             <tr class="border-bottom">
@@ -30,18 +39,28 @@
                         {% endif %}
                     </td>
                 {% endfor %}
-                <td class="border-start p-2">
-                  {{student.test_total}}
-                </td>
+                {%if not term%}
+                 <td class="p-2 border-start">{{student.first_term_test_total}}</td>
+                <td class="p-2 border-start">{{student.first_term_total_score}}</td>
+                 <td class="p-2 border-start">{{student.second_term_test_total}}</td>
+                <td class="p-2 border-start">{{student.second_term_total_score}}</td>
+                 <td class="p-2 border-start">{{student.third_term_test_total}}</td>
+                <td class="p-2 border-start">{{student.third_term_total_score}}</td>
+                 {%endif%}
+                 
+                 <td class="p-2 border-start">{{ student.total_score }} </td>
+                  <td class="p-2 border-start">{{ student.total_available_score }} </td>
 
                 <td class="p-2 border-start
-                {%if student.total_score <= 39 %}
+                {%if student.percentage <= 39 %}
                 bg-danger
-                {%elif student.total_score <= 49 %}
+                {%elif student.percentage <= 49 %}
                 bg-warning
                 {%else%}
                 bg-success
-                {%endif%} center color-white">{{ student.total_score }}</td>
+                {%endif%} center color-white">
+                   {{student.percentage}}
+                </td>
             </tr>
         {% endif %}
     {% endfor %}

@@ -1,37 +1,37 @@
 <div class="container">
       <div class="row justify-content-center sz-16">
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class=" rounded-3 p-3 py-4  color-bg-t color-white m1 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    <div class=" rounded-3 p-3 py-4  color-bg-t color-white m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
           <i class="fas fa-user-graduate sz-24 sz-24 rounded-4 p-3 -3 color-bg-white color-t"></i>
           <br />
 
-         <span class="mt-3 inline-block ">Student</span> <br /> <span class="sz-30 inline-block w-100 right">{{students.count}} </span>
+         <span class="mt-3 inline-block ">Student</span> <br /> <span class="sz-30 inline-block w-100 rigt">{{students.count}} </span>
     </div>
     </div>
     
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class="rounded-3 p-3 py-4  order-first color-bg-s color-white m1 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+    <div class="rounded-3 p-3 py-4  order-first color-bg-s color-white m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
      <i class="fas fa-chalkboard-teacher sz-24 rounded-4 p-3 color-bg-white color-s"></i>
       <br />
 
-         <span class="mt-3 inline-block ">Class</span>  <br /><span class="sz-30 inline-block w-100 right">{{classes.count}} </span>
+         <span class="mt-3 inline-block ">Class</span>  <br /><span class="sz-30 inline-block w-100 righ">{{classes.count}} </span>
     </div>
     </div>
 
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class="rounded-3 p-3 py-4  color-bg-s color-white bg-success" hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML" >
+    <div class="rounded-3 p-3 py-4  color-bg-s color-white bg-success center" hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML" >
      <i class="fas fa-book-open sz-24 sz-24 rounded-4 p-3  color-bg-white text-success"></i>
       <br />
 
-         <span class="mt-3 inline-block ">Subject</span>  <br /><span class="sz-30 inline-block w-100 right"> {{subject.count}}
+         <span class="mt-3 inline-block ">Subject</span>  <br /><span class="sz-30 inline-block w-100 righ"> {{subject.count}}
     </div>
     </div>
     
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class=" rounded-3  p-3 py-4  color-bg-grey color-white pointer-cursor color-black-hover color-bg-hover no-decoration shadow-sm" hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
+    <div class=" rounded-3  p-3 py-4  color-bg-grey color-white pointer-cursor color-black-hover color-bg-hover no-decoration shadow-sm center" hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
       <i class="fas fa-file-alt sz-24 rounded-4 p-3 color-bg-white color-grey"></i>
       <br />
-      <span class="mt-3 inline-block ">Record</span> <br /> <span class="sz-30 inline-block w-100 right"> {{records.count}}
+      <span class="mt-3 inline-block ">Record</span> <br /> <span class="sz-30 inline-block w-100"> {{records.count}}
       </span>
     </div>
    </div>
