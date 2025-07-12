@@ -1,6 +1,26 @@
 <h2 class="py-3 color-p">All Classes</h2>
-<ul>
   {% for c in school_class %}
-    <li class="my-2"> <a  class="sz-18 py-3 my-4 pointer-cursor color-black color-hover no-decoration"  href="{% url 'get-class' c.id %}">{{ c.name }} {{c.batch}}</a></li>
+       <div class="row  rounded-3 border-start border-top p-2 mb-4">
+          <div class="col-12 p-2">
+       <span  class="sz-18 py-3 my-4 pointer-cursor color-black color-hover no-decoration">
+       {{ c.name }} {{c.batch}}
+       </span>
+       </div>
+       <div class="col-12 p- py-2">
+          <span class="color-grey">Student</span> - {{c.student.all.count}}
+       </div>
+       
+              <div class="col-12 -4 py-2 hide">
+          <span class="color-grey">Subject</span> - {{c.record.subject}}
+       </div>
+       
+      <div class="col-12 -4 py-2">
+          <span class="color-grey">Records</span> - {{c.record.all.count}}
+       </div>
+       
+       <div class="col-12">
+          <a href="{% url 'get-class' c.id %}" class="w-100 no-decoration color-bg-silvr center bg-warning inline-block button color-white p-2 rounded-3">Go to class </a>
+       </div>
+       
+       </div>
   {% endfor %}
-</ul>

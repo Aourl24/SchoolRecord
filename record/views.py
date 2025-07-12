@@ -13,16 +13,23 @@ from django.core import signing
 #SECRET_KEY = "my_super_secret"
 #serializer = URLSafeTimedSerializer(SECRET_KEY)
 
-def save_form(form):
+def save_form(request,form):
     if form.is_valid():
-        instance = form.save()
+        instance = form.save(commit=False)
+        instance.user = request.user
+        try:
+          instance.save()
 
-        # Dynamically fetch all cleaned data except hidden fields
-        fields = [f.name for f in instance._meta.fields if f.name in form.cleaned_data]
-        field_values = [f"{f.capitalize()}: {form.cleaned_data.get(f)}" for f in fields]
-        display_data = "<br>".join(field_values)
+          fields = [f.name for f in instance._meta.fields if f.name in form.cleaned_data]
+          field_values = [f"{f.capitalize()}: {form.cleaned_data.get(f)}" for f in fields]
+          display_data = "<br>".join(field_values)
+          return f"<div class='alert alert-primary'>{display_data}<br>Record was created successfully.</div>"
+        except:
+          error_html = "Data Already exist"
+          return f"<div class='alert alert-danger'><strong>Error saving form:</strong>{error_html}</div>"
+          
 
-        return f"<div class='alert alert-primary'>{display_data}<br>Record was created successfully.</div>"
+        
 
     # Return detailed form errors
     error_messages = []
@@ -36,119 +43,149 @@ def save_form(form):
 
 @login_require
 def homeView(request,part=None):
-    records = Record.objects.all()
-    students = Student.objects.all()
-    classes = Class.objects.all()
-    subject = Subject.objects.all()
+    records = Record.objects.for_user(request.user)
+    students = Student.objects.for_user(request.user)
+    classes = Class.objects.for_user(request.user)
+    subject = Subject.objects.for_user(request.user)
     context = dict(records=records,students=students,classes=classes,subject=subject)
     return render(request,"home-partial.html" if part else'home.html',context)
     
-
+@login_require
 def recordView(request):
-    record = Record.objects.all()
-    history = History.objects.get_or_create(title="Record List",url=reverse('record-list'))
+    record = Record.objects.for_user(request.user)
+    history = History.objects.get_or_create(user=request.user,title="Record List",url=reverse('record-list'))
     history[0].time=datetime.datetime.now()
     history[0].save()
     context = dict(record=record)
     return render(request, "record.html", context)
 
+@login_require
 def studentView(request):
-    student = Student.objects.all()
-    subjects = Subject.objects.all()
-    classes = Class.objects.values('name').distinct()
-    history = History.objects.get_or_create(title="Student List",url=reverse('student-list'))
+    student = Student.objects.for_user(request.user)
+    subjects = Subject.objects.for_user(request.user)
+    classes = Class.objects.for_user(request.user).values('name').distinct()
+    history = History.objects.get_or_create(user=request.user,title="Student List",url=reverse('student-list'))
     history[0].time=datetime.datetime.now()
     history[0].save()
     context = dict(student=student,subjects=subjects,classes=classes)
     return render(request, "student.html", context)
 
+@login_require
 def classView(request):
-    school_class = Class.objects.all()
-    history = History.objects.get_or_create(title="Class List",url=reverse('class-list'))
+    school_class = Class.objects.for_user(request.user)
+    history = History.objects.get_or_create(user=request.user,title="Class List",url=reverse('class-list'))
     history[0].time=datetime.datetime.now()
     history[0].save()
     context = dict(school_class=school_class)
     return render(request, "class.html", context)
-    
+ 
+@login_require   
 def getRecord(request,id):
   record = Record.objects.get(id=id)
   students = StudentRecord.objects.filter(record=record)
-  history = History.objects.get_or_create(title=f"{record}",url=reverse('get-record',args=[id]))
+  history = History.objects.get_or_create(user=request.user,title=f"{record}",url=reverse('get-record',args=[id]))
   history[0].time=datetime.datetime.now()
   history[0].save()
-  context = dict(record = record,students = students,edit=True)
+  context = dict(record = record,students = students,edit=True,half=record.total_score/2)
   return render(request,'record-detail.html',context)
-  
+
+@login_require
 def getStudent(request,id):
   student = Student.objects.get(id=id)
   records = StudentRecord.objects.filter(student=student)
-  history = History.objects.get_or_create(title=f"{student}",url=reverse('get-student-detail',args=[id]))
+  history = History.objects.get_or_create(user=request.user,title=f"{student}",url=reverse('get-student-detail',args=[id]))
   history[0].time=datetime.datetime.now()
   history[0].save()
   context = dict(student = student,records=records)
   return render(request,'student-detail.html',context)
-  
+
+@login_require 
 def getClass(request,id):
   class_name = Class.objects.get(id=id)
   student = Student.objects.filter(class_name=class_name)
-  history = History.objects.get_or_create(title=f"{class_name}",url=reverse('get-class',args=[id]))
+  history = History.objects.get_or_create(user=request.user,title=f"{class_name}",url=reverse('get-class',args=[id]))
   history[0].time=datetime.datetime.now()
   history[0].save()
   context = dict(class_name = class_name , student = student)
   return render(request,'class-detail.html',context)
 
+@login_require
 def getClassRecord(request,id):
     class_name = Class.objects.get(id=id)
     record = Record.objects.filter(class_name=class_name)
+    history = History.objects.get_or_create(user=request.user,title=f"{class_name} records",url=reverse('get-class-record',args=[id]))
+    history[0].time=datetime.datetime.now()
+    history[0].save()
     context = dict(class_name=class_name,record=record,partial=True)
     return render(request,'record-list.html',context)
 
+@login_require
 def getClassStudent(request,id):
     class_name = Class.objects.get(id=id)
-    student = Student.objects.filter(class_name=class_name)
+    student = Student.objects.filter(class_name=class_name).order_by("name")
+    history = History.objects.get_or_create(user=request.user,title=f"{class_name} students",url=reverse('get-student',args=[id]))
+    history[0].time=datetime.datetime.now()
+    history[0].save()
     context = dict(student=student)
     return render(request,'student-list.html',context)
 
-def formView(request,get_form):
+@login_require
+def formView(request,get_form,update=False):
+    model = None
     match get_form:
         case 'record':
             form_class = RecordForm
+            if update:
+              model = Record.objects.get(id=update)
         case 'subject':
             form_class = SubjectForm
+            if update:
+              model = Subject.objects.get(id=update)
         case 'class':
             form_class = ClassForm
+            if update:
+              model = Class.objects.get(id=update)
         case 'student':
             form_class = StudentForm
+            if update:
+              model = Student.objects.get(id=update)
         case 'student-record':
             form_class = StudentRecordForm
+            if update:
+              model = StudentRecord.objects.get(id=update)
         case 'topic':
             form_class = TopicForm
+            if update:
+              model = Topic.objects.get(id=update)
         case _:
             form = RecordForm
     
 
     if request.method == 'POST':
-        form = form_class(request.POST)
-        saved=save_form(form)
+        if not model:
+          form = form_class(request.POST)
+        else:
+          form = form_class(request.POST,instance=model)
+        saved=save_form(request,form)
         history = History.objects.get_or_create(title=f"Create new {get_form}")
         history[0].time=datetime.datetime.now()
         history[0].save()
         return HttpResponse(saved)
     else:
-        form = form_class()
+        form = form_class(instance=model)
         saved = ""
     
     for field in form.fields.values():
         field.widget.attrs.update({'class':'form-control p-3'})
-    context = dict(form=form,saved=saved ,form_type=get_form,target="drop-area")
+    context = dict(form=form,saved=saved ,form_type=get_form,target="drop-area",model=model,update=update)
     return render(request,'record-form.html',context)
 
-
+@login_require
 def searchView(request):
   data = request.GET.get('search')
-  record = Record.objects.filter(title__icontains=data)
-  student = Student.objects.filter(name__icontains=data)
-  school_class = Class.objects.filter(name__icontains=data)
+  record = Record.objects.for_user(request.user).filter(title__icontains=data)
+  student = Student.objects.for_user(request.user).filter(name__icontains=data)
+  school_class = Class.objects.for_user(request.user).filter(name__icontains=data)
   context=dict(record=record,student=student,school_class=school_class)
   return render(request,'search.html',context)
 
@@ -172,7 +209,7 @@ def filterRecord(request):
   records = Record.objects.filter(subject=subject,record_type=record_type,record_number=record_number,class_name__name=class_name)
   students = StudentRecord.objects.filter(record__in=records)
   record_list = [r.id for r in records]
-  record = dict(class_name=class_name,subject=subject,title=term,record_type=record_type,id=0,total_score= records.first().total_score if records else None)
+  record = dict(class_name=class_name,subject=subject,title=term,record_type=record_type,id=0,total_score= records.first().total_score if records else None,half=records.first().total_score/2 if records else None )
   context = dict(record=record, record_list=record_list , students=students,edit=None)
   return render(request,'record-detail.html',context)
   
@@ -186,14 +223,17 @@ def filterStudent(request):
   record_get = request.GET.get('record')
   edit = request.GET.get("edit")
   record_list = request.GET.getlist("record-list")
+  half = None
   #students_list = [int(std) for std in students_list]
   try:
     record = Record.objects.get(id=record_get)
+    half = record.total_score/2
     students = StudentRecord.objects.filter(student__id__in=students_list,record=record)
   except Record.DoesNotExist:
     records = Record.objects.filter(id__in=record_list)
     students = StudentRecord.objects.filter(record__in=record_list)
     record = records.first()
+    half = record.total_score/2
   
   if edit == "None":
     edit = False
@@ -216,7 +256,7 @@ def filterStudent(request):
     case _:
       pass
       
-  return render(request,'students-table.html',dict(students=students,edit=edit,record=record))
+  return render(request,'students-table.html',dict(students=students,edit=edit,record=record,half=half))
   
 
 def closeReq(request):
@@ -289,6 +329,7 @@ def generateReport(request):
 
             rec_list = []
             total_score = 0
+            test_total = 0
             student_scores = {r.record.id: r.score for r in student_objects[student_name]}
 
             for rec in student_records_filtered:
@@ -303,17 +344,22 @@ def generateReport(request):
 
                 record_id_str = f"{rec.title} {rec.record_type} {rec.record_number}"
                 if record_id_str not in record_to_render:
+                  if rec.record_type == "Exam":
+                    record_to_render
                     record_to_render.append(record_id_str)
 
                 if isinstance(score, (int, float)):
                     total_score += score
+                    if rec.record_type == "Test" or rec.record_type == "Notes":
+                      test_total += score
 
             students_data.append({
                 'id' : student_model.id,
                 'name': student_name,
                 'record': rec_list,
                 'total_score': total_score,
-                'class_name' : f"{student_batch}"
+                'class_name' : f"{student_batch}",
+                'test_total': test_total
             })
 
         # Sort the final student data
@@ -328,7 +374,8 @@ def generateReport(request):
             'count': 'S/N',
             'name': 'Student',
             'record': [{'title': rec} for rec in record_to_render],
-            'total': 'Total Score'
+            'total': 'Total Score',
+            'test_Total' : 'Test Total'
         }] + students_data
 
         context['total_report'] = total_report
@@ -345,9 +392,9 @@ def historyView(request):
     history = History.objects.all().order_by('-time')
     return render(request,'history.html',dict(history=history))
 
-
+@login_require
 def subjectView(request):
-    subjects = Subject.objects.all()
+    subjects = Subject.objects.for_user(request.user)
     return render(request,'subject.html',dict(subjects=subjects))
 
 
@@ -419,4 +466,38 @@ def login(request):
         return response
 
     return render(request, "login.html")
+    
+
+def updateRecord(request,id):
+  #student = Student.objects.get(id=id)
+  model = StudentRecord.objects.get(id=id)
+  #form = StudentRecordForm(initial=dict(student=student_records.student,record=student_records.record))
+  form = StudentRecordForm(instance=model)
+  #if request.method == "POST":
+    #save_form(form)
+    
+  for field in form.fields.values():
+        field.widget.attrs.update({'class':'form-control p-3'})
+
+  context = dict(form=form,form_type="student-record",target="addHere",recordForm=True,update=True,model=model)
+  return render(request,"record-form.html",context)
+    
+@login_require   
+def addStudent(request,id):
+  class_model = Class.objects.get(id=id)
+  if request.method == "POST":
+    student = request.POST.get("name")
+    student_model = Student.objects.create(user=request.user,name=student,class_name=class_model)
+    
+    return HttpResponse(f"{student} is added to class {class_model.name}")
+  return render(request,"add-student.html",{"class":class_model})
+  
+@login_require   
+def addRecord(request,id):
+  class_model = Class.objects.get(id=id)
+  form = RecordForm(initial=dict(class_name=class_model))
+  for field in form.fields.values():
+     field.widget.attrs.update({"class" :'form-control'})
+  return render(request,"record-form.html",{"class":class_model,"form":form,"form_type":"record","recordForm":True})
+    
     

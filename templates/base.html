@@ -28,6 +28,7 @@
     
     
 <div class="container">
+  <div id="addHere"></div>
   {%block search%}
     <div class="p-1 rounded my-3">
       <form hx-get="{% url 'search' %}" hx-target="#load-area" hx-trigger="input changed delay:300ms" hx-swap="innerHTML">

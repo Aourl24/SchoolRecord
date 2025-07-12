@@ -8,6 +8,7 @@
                 {% for rec in student.record %}
                     <th class="p-2 border-start">{{ rec.title }} {{ rec.type }} {{rec.number}}</th>
                 {% endfor %}
+                <th class="p-2 border-start">Test Total</th>
                 <th class="p-2 border-start">Total Score</th>
             </tr>
         {% else %}
@@ -29,6 +30,9 @@
                         {% endif %}
                     </td>
                 {% endfor %}
+                <td class="border-start p-2">
+                  {{student.test_total}}
+                </td>
 
                 <td class="p-2 border-start
                 {%if student.total_score <= 39 %}

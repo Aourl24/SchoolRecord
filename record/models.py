@@ -7,6 +7,22 @@ from itsdangerous import TimestampSigner, BadSignature
 from django.contrib.auth.hashers import make_password, check_password
 from uuid import uuid4
 
+class UserQuerySet(models.QuerySet):
+    def for_user(self, user):
+        return self.filter(user)
+    
+
+
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
+
+    def for_user(self, user):
+        return self.get_queryset().filter(user=user)
+
+    def create_for_user(self, user, **kwargs):
+        return self.model.objects.create(user=user, **kwargs)
+        
 class User(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
@@ -40,7 +56,13 @@ class User(models.Model):
               return False
     
 
-
+class UserModel(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    objects = UserManager()
+    
+    class Meta:
+        abstract = True
+        
     
 CLASSES = [
     ("JSS1", "JSS1"),
@@ -60,17 +82,17 @@ TERM_CHOICES = [
 #class User(models.Model):
  # username = models.CharField(max_lemght)
 
-class Class(models.Model):
+class Class(UserModel):
   name = models.CharField(max_length=100000,choices=CLASSES)
   batch = models.CharField(max_length=100000,choices=[("A","A"),("B","B"),("C","C"),("D","D")])
   
   class Meta:
-    unique_together = ("name","batch")
+    unique_together = ("user","name","batch")
   
   def __str__(self):
     return f"{self.name} {self.batch}"
 
-class Student(models.Model):
+class Student(UserModel):
   name = models.CharField(max_length=100000)
   class_name = models.ForeignKey(Class, related_name="student",on_delete=models.CASCADE)
 
@@ -80,7 +102,7 @@ class Student(models.Model):
   def __str__(self):
     return self.name
 
-class Subject(models.Model):
+class Subject(UserModel):
   name = models.CharField(max_length=1000000,unique=True)
 
   def __str__(self):
@@ -89,7 +111,7 @@ class Subject(models.Model):
   def get_absolute_url(self):
     return reverse('subject-detail',args=[self.id])
 
-class Record(models.Model):
+class Record(UserModel):
   title = models.CharField(max_length=10000,choices=TERM_CHOICES)
   subject = models.ForeignKey(Subject,related_name='record',on_delete=models.CASCADE)
   date_created = models.DateTimeField(auto_now_add=True)
@@ -105,7 +127,7 @@ class Record(models.Model):
     return f"{self.title} {self.subject} {self.record_type} {self.class_name} ({self.record_number})"
 
    
-class StudentRecord(models.Model):
+class StudentRecord(UserModel):
   student = models.ForeignKey(Student,related_name="record",on_delete=models.CASCADE)
   record =  models.ForeignKey(Record,related_name='evaluation',on_delete=models.CASCADE)
   score = models.IntegerField()
@@ -117,7 +139,7 @@ class StudentRecord(models.Model):
     return f"{self.student.name} {self.record.title} {self.record.subject}"
     
   
-class History(models.Model):
+class History(UserModel):
   title = models.CharField(max_length=1000000,null=True,blank=True)
   url = models.URLField(null=True,blank=True)
   time = models.DateTimeField(auto_now_add=True,null=True,blank=True)
@@ -126,7 +148,7 @@ class History(models.Model):
     return self.title
 
 
-class Topic(models.Model):
+class Topic(UserModel):
   subject = models.ForeignKey(Subject,related_name='topic',on_delete=models.CASCADE)
   class_name = models.ForeignKey(Class,related_name="topic",on_delete=models.CASCADE,null=True,blank=True)
   title = models.CharField(max_length=10000)

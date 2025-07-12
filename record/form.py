@@ -4,33 +4,33 @@ from .models import Student, Record, Class , Subject , StudentRecord , Topic
 class RecordForm(ModelForm):
 	class Meta:
 		model = Record 
-		fields = "__all__"
+		exclude = ["user"]
 
 
 class SubjectForm(ModelForm):
 	class Meta:
 		model = Subject
-		fields = "__all__"
+		exclude = ["user"]
 
 
 class ClassForm(ModelForm):
 	class Meta:
 		model = Class
-		fields = "__all__"
+		exclude = ["user"]
 
 
 class StudentForm(ModelForm):
 	class Meta:
 		model = Student
-		fields = "__all__"
+		exclude = ["user"]
 
 class StudentRecordForm(ModelForm):
 	class Meta:
 		model = StudentRecord
-		fields = "__all__"
+		exclude = ["user"]
 
 
 class TopicForm(ModelForm):
 	class Meta:
 		model = Topic
-		fields = "__all__"
+		exclude = ["user"]

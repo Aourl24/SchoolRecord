@@ -2,11 +2,11 @@
 
 {%block content%}
 <div>
-<div class="mt-2 rounded-3 p-2 color-bg-white shadow-sm">
+<div class="mt-2 rounded-3 p-3 color-bg-white shadow-sm">
   
   <div class="row align-items-center">
   <div class="col sz-24 bold my-1"> <span class="color-p">{{record.class_name}}</div></span>
-  <div class="col right px-3"> <span class="text-danger">{{record.title}}</span></div>
+  <div class="col-12"> <span class="text-danger">{{record.title}}</span></div>
 </div>
 
   <div class="sz-18 mt">  <span class="">{{record.subject}} </span></div>
@@ -22,13 +22,13 @@
 
   {%if edit %}
   <div class="row my-2  align-items-center">
-  <div class="color-s my-2 col-12"><a href="/admin/record/record/{{record.id}}/change/" target="_blank" class="no-decoration sz-12 border rounded p-2 color-black w-100 inline-block center color-s color-bd-p"> Edit record </a> </div>
+  <div class="color-s my-2 col"><a hx-get="{%url 'update-form' 'record' record.id%}" hx-target="#addHere"hx-trigger="click" target="_blank" class="no-decoration sz-12 border rounded p-2 color-black w-100 inline-block center color-s color-bd-p"> Edit record </a> </div>
   
-  <div class="my-2 col-12 right">
+  <div class="my-2 col right">
     <button class="sz-12 w-100 no-border rounded p-2 btn btn-success" id="addStudent" hx-get="{%url 'addToRecord' record.id%}" hx-target="#addHere">Add student record</button>
   </div>
   </div>
-       <div id="addHere"></div>
+       
   {%endif%}
   
 {%include 'student-part.html'%}

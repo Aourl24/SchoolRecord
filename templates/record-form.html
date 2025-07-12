@@ -1,5 +1,5 @@
  <div id="formBox" class="container-fluid position-fixed vh-100 p-2 color-black" style="top:10%;left:0;background-color:rgba(250, 250, 250, 1);overflow: auto;z-index: 100000;">
-{%if not recordForm%}
+{%if not recordForm or update%}
   <div class="row justify-content-center mb-3 align-items-center p-2">
       <div class="col pointer-cursor m-1  p-1 sz-12 rounded-2  {%if form_type == 'record'%}color-bg-p color-white{%else%} color-bg-white border{%endif%}  color-black" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">           Record
      </div>
@@ -21,9 +21,9 @@
   </div>
   {%endif%}
   <div id="formBx" class="container">
-	<h3 class="my-2 color-p sz-20"> Create {{form_type}} </h3>
+	<h3 class="my-2 color-p sz-20">{%if update%} Update {%else%} Create {%endif%} {{form_type}} </h3>
 <div id="saved"></div> 
-	<form method='post' hx-post="{% url 'form' form_type%}" hx-target="#saved" hx-swap="innerHTML">
+	<form method='post'  {%if update%} hx-post="{% url 'update-form' form_type model.id%}"  {%else%} hx-post="{% url 'form' form_type%}" {%endif%} hx-target="#saved" hx-swap="innerHTML">
 		{%csrf_token%}
 		{% for field in form%}
 			<div class="my-2 py-2"> {{field.label}} </div>
@@ -32,7 +32,7 @@
 		<br />
 		<button class="btn btn-success w-100 p-3">Save </button>
 	</form>
-	{%if recordForm%}
+	{%if recordForm or update%}
 	<div class="my-2">
 	  <button class="form-control btn-danger color-white bg-danger no-border" hx-target="#formBox" hx-swap="outerHTML" style="padding:10px" hx-get="{%url 'closeRequest'%}">Close window </button>
 	</div>
