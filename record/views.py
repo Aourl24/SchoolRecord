@@ -83,10 +83,13 @@ def classView(request):
 def getRecord(request,id):
   record = Record.objects.get(id=id)
   students = StudentRecord.objects.filter(record=record)
+  student_not = Student.objects.filter(class_name=record.class_name)
+  students_without_record = student_not.exclude(record__in=students).order_by('name')
+  
   history = History.objects.get_or_create(user=request.user,title=f"{record}",url=reverse('get-record',args=[id]))
   history[0].time=datetime.datetime.now()
   history[0].save()
-  context = dict(record = record,students = students,edit=True,half=record.total_score/2)
+  context = dict(record = record,students = students,students_without_record=students_without_record,edit=True,half=record.total_score/2)
   return render(request,'record-detail.html',context)
 
 @login_require

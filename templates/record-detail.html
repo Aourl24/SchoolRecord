@@ -32,5 +32,20 @@
   {%endif%}
   
 {%include 'student-part.html'%}
+
+<br/>
+
+<div class=" p-2 my-2 mb-4 color-bg-white rounded">
+ <div class="row my-2">
+  <div class="col sz-14  text-danger center">
+    Students in Class without record 
+  </div>
+</div>
+<div class="">
+{%for student in students_without_record%}
+<div class="p-2">{{forloop.counter}}. {{student.name}} </div>
+{%endfor%}
+</div>
+</div>
 </div>
 {%endblock%}

@@ -5,6 +5,8 @@
     Report for {{ class }} {{batch}} {%if term%} {{term}} {%endif%}<br />
     Subject: {{ subject.name }}<br />
     <span class="sz-12 color-grey">View on desktop to view more clearly</span>
+    <br />
+    <a href="{% url 'export_report_excel' %}?subject={{ subject.id }}&class={{ class }}&batch={{ batch }}&term={{ term }}&sort={{ sort }}">Download Excel</a>
 </div>
 <br />
 
