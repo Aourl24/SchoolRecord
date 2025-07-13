@@ -1,68 +1,74 @@
-<div id="report-table">
-<table class="container color-bg-white d-flex overflow-auto">
-    {% for student in total_report %}
-        {% if student.header %}
-            <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white">
-                <th class="border-end center">S/N</th>
-                <th class="p-2">Student</th>
-                {% for rec in student.record %}
-                    <th class="p-2 border-start">{{ rec.title }} {{ rec.type }} {{rec.number}}</th>
-                {% endfor %}
-                {%if not term%}
-                 <th class="p-2 border-start">First Time Test Total</th>
-                <th class="p-2 border-start">First Term Total Score</th>
-                 <th class="p-2 border-start">Second Term Test Total</th>
-                <th class="p-2 border-start">Second Term Total Score</th>
-                 <th class="p-2 border-start">Third term Test Total</th>
-                <th class="p-2 border-start">Third term Total Score</th>
-                {%endif%}
-                 <th class="p-2 border-start"> Total Score </th>
-                  <th class="p-2 border-start"> Total Available Score </th>
-                <th class="p-2 border-start">Per(%)</th>
-            </tr>
-        {% else %}
-            <tr class="border-bottom">
-                <td class="border-end center color-silver center">{{ forloop.counter0 }}</td>
-                <td class="border-end p-2">
-                  <span hx-get="{% url 'get-student-detail' student.id %}" hx-target="#load-area" hx-swap="innerHTML">{{ student.name|title }}</span>
-                {%if All%}
-                <i class="color-silver sz-12"> ({{student.class_name}})</i>
-                {%endif%}
-                </td>
+{% load extra %}
+{% load string_extra %}
 
-                {% for rec in student.record %}
-                    <td class="p-2 border-start border-end center">
-                        {% if rec.score == '-' %}
-                            <span class="color-grey">-</span>
-                        {% else %}
-                            {{ rec.score }}
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% elif total_report %}
+<div class=" d-flex overflow-auto flex-column">
+    <table class="table table-bordered table-striped table-hover mt-4">
+        <thead>
+            <!-- First Row: Term Headers -->
+            <tr>
+                <th rowspan="2">S/N</th>
+                <th rowspan="2">Student</th>
+                {% for term in terms %}
+                    {% with term_header=total_report.0.term_headers|dict_get:term %}
+                        {% if term_header %}
+                            <th colspan="{{ term_header|length }}">{{ term }}</th>
                         {% endif %}
-                    </td>
+                    {% endwith %}
+                    {% if total_report.0.term_totals %}
+                        <th colspan="2">{{ term }} Totals</th>
+                    {% endif %}
                 {% endfor %}
-                {%if not term%}
-                 <td class="p-2 border-start">{{student.first_term_test_total}}</td>
-                <td class="p-2 border-start">{{student.first_term_total_score}}</td>
-                 <td class="p-2 border-start">{{student.second_term_test_total}}</td>
-                <td class="p-2 border-start">{{student.second_term_total_score}}</td>
-                 <td class="p-2 border-start">{{student.third_term_test_total}}</td>
-                <td class="p-2 border-start">{{student.third_term_total_score}}</td>
-                 {%endif%}
-                 
-                 <td class="p-2 border-start">{{ student.total_score }} </td>
-                  <td class="p-2 border-start">{{ student.total_available_score }} </td>
-
-                <td class="p-2 border-start
-                {%if student.percentage <= 39 %}
-                bg-danger
-                {%elif student.percentage <= 49 %}
-                bg-warning
-                {%else%}
-                bg-success
-                {%endif%} center color-white">
-                   {{student.percentage}}
-                </td>
+                <th rowspan="2">Total Score</th>
+                <th rowspan="2">Percentage</th>
             </tr>
-        {% endif %}
-    {% endfor %}
-</table>
-</div>
+
+            <!-- Second Row: Assessment Headers -->
+            <tr>
+                {% for term in terms %}
+                    {% with term_header=total_report.0.term_headers|dict_get:term %}
+                        {% for rec in term_header %}
+                            <th>{{ rec.type }} {{ rec.number }}</th>
+                        {% endfor %}
+                    {% endwith %}
+                    {% if total_report.0.term_totals %}
+                        <th>Test Total</th>
+                        <th>Term Total</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for student in total_report %}
+                {% if not student.header %}
+                    <tr>
+                        <td>{{ forloop.counter0 }}</td>
+                        <td>{{ student.name }}</td>
+                        {% for term in terms %}
+                            {% with term_records=student.record_by_term|dict_get:term %}
+                                {% for rec in term_records %}
+                                    <td>{{ rec.score|default:"-" }}</td>
+                                {% endfor %}
+                            {% endwith %}
+
+                            {% if student.term_totals %}
+                                {% with term_data=student.term_totals|dict_get:term %}
+                                    <td>{{ term_data.test_total|default:"-" }}</td>
+                                    <td>{{ term_data.total_score|default:"-" }}</td>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                        <td>{{ student.total_score }}</td>
+                        <td class="{%if student.percentage >= 50%} bg-success color-white {%else%} bg-danger color-white {%endif%} color-white" style="color:white">{{ student.percentage }}%</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">No report data available. Please select criteria and generate report.</div>
+{% endif %}

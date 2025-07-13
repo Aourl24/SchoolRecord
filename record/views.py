@@ -8,6 +8,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from .decorator import login_require
 from uuid import uuid4
 from django.core import signing
+from .report import generate_report
 #from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 #SECRET_KEY = "my_super_secret"
@@ -186,16 +187,22 @@ def formView(request,get_form,update=False):
 @login_require
 def searchView(request):
   data = request.GET.get('search')
-  record = Record.objects.for_user(request.user).filter(title__icontains=data)
-  student = Student.objects.for_user(request.user).filter(name__icontains=data)
-  school_class = Class.objects.for_user(request.user).filter(name__icontains=data)
+  # record = Record.objects.for_user(request.user).filter(title__icontains=data)
+  # student = Student.objects.for_user(request.user).filter(name__icontains=data)
+  # school_class = Class.objects.for_user(request.user).filter(name__icontains=data)
+  record = Record.objects.filter(title__icontains=data)
+  student = Student.objects.filter(name__icontains=data)
+  school_class = Class.objects.filter(name__icontains=data)
   context=dict(record=record,student=student,school_class=school_class)
   return render(request,'search.html',context)
 
 def addToRecord(request, id):
     record = Record.objects.get(id=id)
     form = StudentRecordForm(initial={'record': record})
-    form.fields['student'].queryset = Student.objects.filter(class_name=record.class_name).order_by('name')
+    students = StudentRecord.objects.filter(record=record)
+    student_not = Student.objects.filter(class_name=record.class_name)
+    students_without_record = student_not.exclude(record__in=students).order_by('name')
+    form.fields['student'].queryset = students_without_record
     for field in form.fields.values():
         field.widget.attrs.update({'class':'form-control p-3'})
     #form.fields['record'].widget = forms.HiddenInput()
@@ -265,171 +272,49 @@ def filterStudent(request):
 def closeReq(request):
   return HttpResponse("")
   
-def generateReport(request):
-    from django.db.models import Q
-
+def Report(request):
     classes_obj = Class.objects.all()
     classes = [c for c in classes_obj if c.batch == "A"]
     subjects = Subject.objects.all()
     context = dict(subjects=subjects, classes=classes)
-
+    
     if request.method == "POST":
         subject_id = request.POST.get('subject')
         class_name = request.POST.get('class')
         batch = request.POST.get("batch")
         term = request.POST.get("term")
         sort_order = request.POST.get('sort', 'asc')
-
+        
         try:
-            # Filter classes by name and batch
-            class_model = Class.objects.filter(name=class_name)
-            if batch != "All":
-                class_model = class_model.filter(batch=batch)
-                context["All"] = False
-            else:
-                context["All"] = True
-
-            subject_model = Subject.objects.get(id=int(subject_id))
-        except (Class.DoesNotExist, Subject.DoesNotExist):
-            context['error'] = "Invalid class or subject selected."
+            total_report, subject_model, is_all, term, terms = generate_report(
+                subject_id, class_name, batch, term, sort_order
+            )
+            context.update({
+                'total_report': total_report,
+                'subject': subject_model,
+                'term': term,
+                'batch': batch,
+                'sort': sort_order,
+                'class': class_name,
+                'All': is_all,
+                'terms': terms
+            })
+            
+            # Remove duplicate assignment - it's already in context.update()
+            # context['total_report'] = total_report  # REMOVED THIS LINE
+            
+            # HTMX or full render
+            template = 'report-table.html' if request.headers.get('HX-Request') else 'report.html'
+            return render(request, template, context)
+            
+        except Exception as e:
+            # Add error handling
+            context['error'] = f"Error generating report: {str(e)}"
             return render(request, 'get_report.html', context)
 
-        # Fetch records and student records
-        record_qs = Record.objects.filter(class_name__in=class_model, subject=subject_model)
-        if term not in ["All", "None", None]:
-            record_qs = record_qs.filter(title=term)
-
-        student_records = StudentRecord.objects.filter(
-            record__class_name__in=class_model,
-            record__subject=subject_model
-        )
-        term = None if term == "All" else term
-        
-        context.update({
-            'subject': subject_model,
-            'class': class_name,
-            'batch': batch,
-            'record': record_qs,
-            'students': student_records,
-            'sort': sort_order,
-            'term': term
-        })
-
-        # Prepare student data
-        student_names = set(student_records.values_list('student__name', flat=True))
-        student_objects = {name: [] for name in student_names}
-
-        for std in student_records:
-            student_objects[std.student.name].append(std)
-
-        record_to_render = []
-        students_data = []
-        
-        total_available_score = 0
-        for student_name in sorted(student_objects.keys()):
-            # Get the student's batch
-            student_model = Student.objects.get(name=student_name)
-            student_batch = student_model.class_name.batch
-            student_records_filtered = record_qs.filter(class_name__batch=student_batch)
-
-            rec_list = []
-            total_score = 0
-            first_term_total_score = 0
-            second_term_total_score = 0
-            third_term_total_score = 0
-            first_term_test_total = 0
-            second_term_test_total = 0
-            third_term_test_total = 0
-            student_total_available_score = 0
-            percentage = 0
-            student_scores = {r.record.id: r.score for r in student_objects[student_name]}
-
-            for rec in student_records_filtered:
-                score = student_scores.get(rec.id, '-')
-                rec_list.append({
-                    'title': rec.title,
-                    'type': rec.record_type,
-                    'number': rec.record_number,
-                    'score': score,
-                    'class': rec.class_name.batch
-                })
-
-                record_id_str = f"{rec.title} {rec.record_type} {rec.record_number}"
-                if record_id_str not in record_to_render:
-                  record_to_render.append(record_id_str)
-                
-                if isinstance(score, (int, float)):
-                    total_score += score
-                    student_total_available_score += rec.total_score
-                    if not term:
-                      if rec.title == "First Term":
-                        if rec.record_type != "Exam":
-                          first_term_test_total+=score
-                        first_term_total_score+=score
-                      elif rec.title == "Second Term":
-                          if rec.record_type != "Exam":
-                            second_term_test_total+=score
-                          second_term_total_score+=score
-                            
-                      elif rec.title == "Third Term":
-                          if rec.record_type != "Exam":
-                            third_term_test_total+=score
-                          third_term_total_score+=score
-            
-            if student_total_available_score > total_available_score:
-              total_available_score = student_total_available_score
-            
-            if total_available_score != 0: 
-              percentage =round((total_score/total_available_score) * 100,2)
-            all_term = {'first_term_total_score':first_term_total_score,
-                'second_term_total_score':second_term_total_score,
-                'third_term_total_score':third_term_total_score,
-                'first_term_test_total':first_term_test_total,
-                'second_term_test_total':second_term_test_total,
-                'third_term_test_total':third_term_test_total}
-            data = {
-                'id' : student_model.id,
-                'name': student_name,
-                'record': rec_list,
-                'total_score': total_score,
-                'class_name' : f"{student_batch}",
-                'percentage' : percentage,
-                'total_available_score':total_available_score
-            }
-            if not term:
-              data.update(all_term)
-            students_data.append(data)
-              
-
-        # Sort the final student data
-        if sort_order == 'desc':
-            students_data.sort(key=lambda x: x['total_score'], reverse=True)
-        else:
-            students_data.sort(key=lambda x: x['name'])
-
-        # Build report
-        total_report = [{
-            'header': True,
-            'count': 'S/N',
-            'name': 'Student',
-            'record': [{'title': rec} for rec in record_to_render],
-            'total': 'Total Score',
-            'first_term_test_Total' : 'First Term Test Total',
-             'second_term_test_Total' : 'Second Term Test Total',
-            'third_term_test_Total' : 'Third Term Test Total',
-            'first_term_total_score':'First Term Total Score',
-            'second_term_total_score':'Second Term Total Score',
-             'third_term_total_score':'Third Term Total Score',
-            'Percentage': '100%'
-        }] + students_data
-
-        context['total_report'] = total_report
-        
-        # HTMX or full render
-        template = 'report-table.html' if request.headers.get('HX-Request') else 'report.html'
-        return render(request, template, context)
-
     return render(request, 'get_report.html', context)
+
+
           
 
 

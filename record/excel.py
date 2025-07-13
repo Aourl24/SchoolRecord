@@ -1,7 +1,9 @@
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Alignment, Border, Side
 from django.http import HttpResponse
 from .models import Subject, Class, Record, StudentRecord, Student
+from .report import generate_report
 
 def export_report_excel(request):
     subject_id = request.GET.get('subject')
@@ -9,176 +11,214 @@ def export_report_excel(request):
     batch = request.GET.get("batch")
     term = request.GET.get("term")
     sort_order = request.GET.get('sort', 'asc')
-
-    # Validate input
+    
     try:
-        class_model = Class.objects.filter(name=class_name)
-        if batch != "All":
-            class_model = class_model.filter(batch=batch)
-        subject_model = Subject.objects.get(id=int(subject_id))
-    except (Class.DoesNotExist, Subject.DoesNotExist):
-        return HttpResponse("Invalid class or subject", status=400)
-
-    record_qs = Record.objects.filter(class_name__in=class_model, subject=subject_model)
-    if term not in ["All", "None", None]:
-        record_qs = record_qs.filter(title=term)
-    student_records = StudentRecord.objects.filter(record__class_name__in=class_model, record__subject=subject_model)
-
-    term = None if term == "All" else term
-    student_names = set(student_records.values_list('student__name', flat=True))
-    student_objects = {name: [] for name in student_names}
-
-    for std in student_records:
-        student_objects[std.student.name].append(std)
-
-    record_to_render = []
-    students_data = []
-    total_available_score = 0
-
-    for student_name in sorted(student_objects.keys()):
-        student_model = Student.objects.get(name=student_name)
-        student_batch = student_model.class_name.batch
-        student_records_filtered = record_qs.filter(class_name__batch=student_batch)
-
-        rec_list = []
-        total_score = 0
-        first_term_total_score = 0
-        second_term_total_score = 0
-        third_term_total_score = 0
-        first_term_test_total = 0
-        second_term_test_total = 0
-        third_term_test_total = 0
-        student_total_available_score = 0
-        percentage = 0
-        student_scores = {r.record.id: r.score for r in student_objects[student_name]}
-
-        for rec in student_records_filtered:
-            score = student_scores.get(rec.id, '-')
-            rec_list.append({
-                'title': rec.title,
-                'type': rec.record_type,
-                'number': rec.record_number,
-                'score': score,
-            })
-
-            record_id_str = f"{rec.title} {rec.record_type} {rec.record_number}"
-            if record_id_str not in record_to_render:
-                record_to_render.append(record_id_str)
-
-            if isinstance(score, (int, float)):
-                total_score += score
-                student_total_available_score += rec.total_score
-                if not term:
-                    if rec.title == "First Term":
-                        if rec.record_type != "Exam":
-                            first_term_test_total += score
-                        first_term_total_score += score
-                    elif rec.title == "Second Term":
-                        if rec.record_type != "Exam":
-                            second_term_test_total += score
-                        second_term_total_score += score
-                    elif rec.title == "Third Term":
-                        if rec.record_type != "Exam":
-                            third_term_test_total += score
-                        third_term_total_score += score
-
-        if student_total_available_score > total_available_score:
-            total_available_score = student_total_available_score
-        if total_available_score != 0:
-            percentage = round((total_score / total_available_score) * 100, 2)
-
-        data = {
-            'id': student_model.id,
-            'name': student_name,
-            'record': rec_list,
-            'total_score': total_score,
-            'class_name': f"{student_batch}",
-            'percentage': percentage,
-            'total_available_score': total_available_score
-        }
-        if not term:
-            data.update({
-                'first_term_total_score': first_term_total_score,
-                'second_term_total_score': second_term_total_score,
-                'third_term_total_score': third_term_total_score,
-                'first_term_test_total': first_term_test_total,
-                'second_term_test_total': second_term_test_total,
-                'third_term_test_total': third_term_test_total,
-            })
-
-        students_data.append(data)
-
-    if sort_order == 'desc':
-        students_data.sort(key=lambda x: x['total_score'], reverse=True)
-    else:
-        students_data.sort(key=lambda x: x['name'])
-
-    # === Generate Excel ===
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Student Report"
-# Make header row bold and wrap text
-    from openpyxl.styles import Font, Alignment
-    bold_font = Font(bold=True)
-    wrap_text = Alignment(wrap_text=True)
-
-    for cell in ws[1]:
-      cell.font = bold_font
-      cell.alignment = wrap_text
-
-# Set width for the first 50 columns (adjust if you have more)
-    for col in range(1, 51):
-      col_letter = get_column_letter(col)
-      ws.column_dimensions[col_letter].width = 20  # You can increase this to 25 or reduce to 15 if needed
-
-    row = 1
-    col = 1
-
-    # Header
-    ws.cell(row=row, column=col, value="S/N"); col += 1
-    ws.cell(row=row, column=col, value="Student"); col += 1
-
-    for rec in record_to_render:
-        ws.cell(row=row, column=col, value=rec)
-        col += 1
-
-    if not term:
-        ws.cell(row=row, column=col, value="First Term Test Total"); col += 1
-        ws.cell(row=row, column=col, value="First Term Total Score"); col += 1
-        ws.cell(row=row, column=col, value="Second Term Test Total"); col += 1
-        ws.cell(row=row, column=col, value="Second Term Total Score"); col += 1
-        ws.cell(row=row, column=col, value="Third Term Test Total"); col += 1
-        ws.cell(row=row, column=col, value="Third Term Total Score"); col += 1
-
-    ws.cell(row=row, column=col, value="Total Score"); col += 1
-    ws.cell(row=row, column=col, value="Total Available Score"); col += 1
-    ws.cell(row=row, column=col, value="Percentage")
-
-    # Student Rows
-    for idx, student in enumerate(students_data, start=1):
-        row += 1
+        # Get report data
+        total_report, subject_model, is_all, term, terms = generate_report(
+            subject_id, class_name, batch, term, sort_order
+        )
+        
+        # Validate that we have data
+        if not total_report or len(total_report) < 2:
+            raise ValueError("No data available for export")
+        
+        # Extract header and student data
+        header_data = total_report[0]
+        students_data = total_report[1:]  # All items except the header
+        
+        # === Generate Excel ===
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Student Report"
+        
+        # Style configuration
+        bold_font = Font(bold=True)
+        center_alignment = Alignment(horizontal='center', vertical='center')
+        wrap_alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
+        border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        
+        # === CALCULATE COLUMN STRUCTURE ===
+        col_position = 1
+        
+        # Basic columns
+        basic_cols = 2  # S/N and Student
+        col_position += basic_cols
+        
+        # Calculate columns for each term
+        term_columns = {}
+        for term_name in terms:
+            term_records = header_data.get('term_headers', {}).get(term_name, [])
+            record_count = len(term_records)
+            totals_count = 2 if header_data.get('term_totals') else 0  # Test Total + Term Total
+            
+            term_columns[term_name] = {
+                'start_col': col_position,
+                'record_count': record_count,
+                'totals_count': totals_count,
+                'total_cols': record_count + totals_count
+            }
+            col_position += record_count + totals_count
+        
+        # Final columns
+        final_cols = 2  # Total Score + Percentage
+        total_columns = col_position + final_cols - 1
+        
+        # === CREATE FIRST HEADER ROW (Term Headers) ===
+        row = 1
         col = 1
-        ws.cell(row=row, column=col, value=idx); col += 1
-        ws.cell(row=row, column=col, value=f"{student['name']} ({student['class_name']})"); col += 1
-
-        for rec in student['record']:
-            ws.cell(row=row, column=col, value=rec['score'] if rec['score'] != '-' else None)
+        
+        # S/N and Student (rowspan=2)
+        ws.cell(row=row, column=col, value="S/N")
+        ws.merge_cells(start_row=row, start_column=col, end_row=row+1, end_column=col)
+        col += 1
+        
+        ws.cell(row=row, column=col, value="Student")
+        ws.merge_cells(start_row=row, start_column=col, end_row=row+1, end_column=col)
+        col += 1
+        
+        # Term headers with colspan
+        for term_name in terms:
+            term_info = term_columns[term_name]
+            if term_info['total_cols'] > 0:
+                ws.cell(row=row, column=col, value=term_name)
+                if term_info['total_cols'] > 1:
+                    ws.merge_cells(start_row=row, start_column=col, end_row=row, end_column=col + term_info['total_cols'] - 1)
+                col += term_info['total_cols']
+            
+            # Add term totals header if exists
+            if header_data.get('term_totals'):
+                ws.cell(row=row, column=col, value=f"{term_name} Totals")
+                if term_info['totals_count'] > 1:
+                    ws.merge_cells(start_row=row, start_column=col, end_row=row, end_column=col + term_info['totals_count'] - 1)
+                col += term_info['totals_count']
+        
+        # Total Score and Percentage (rowspan=2)
+        ws.cell(row=row, column=col, value="Total Score")
+        ws.merge_cells(start_row=row, start_column=col, end_row=row+1, end_column=col)
+        col += 1
+        
+        ws.cell(row=row, column=col, value="Percentage")
+        ws.merge_cells(start_row=row, start_column=col, end_row=row+1, end_column=col)
+        
+        # === CREATE SECOND HEADER ROW (Assessment Headers) ===
+        row = 2
+        col = 3  # Skip S/N and Student columns
+        
+        # Assessment headers for each term
+        for term_name in terms:
+            term_records = header_data.get('term_headers', {}).get(term_name, [])
+            
+            # Individual assessment headers
+            for rec in term_records:
+                ws.cell(row=row, column=col, value=f"{rec['type']} {rec['number']}")
+                col += 1
+            
+            # Term totals headers if exists
+            if header_data.get('term_totals'):
+                ws.cell(row=row, column=col, value="Test Total")
+                col += 1
+                ws.cell(row=row, column=col, value="Term Total")
+                col += 1
+        
+        # === APPLY HEADER STYLING ===
+        for row_num in [1, 2]:
+            for col_num in range(1, total_columns + 1):
+                cell = ws.cell(row=row_num, column=col_num)
+                cell.font = bold_font
+                cell.alignment = wrap_alignment
+                cell.border = border
+        
+        # === CREATE DATA ROWS ===
+        for idx, student in enumerate(students_data, start=1):
+            row += 1
+            col = 1
+            
+            # Basic student info
+            ws.cell(row=row, column=col, value=idx)
+            ws.cell(row=row, column=col).alignment = center_alignment
+            ws.cell(row=row, column=col).border = border
             col += 1
-
-        if not term:
-            ws.cell(row=row, column=col, value=student.get('first_term_test_total')); col += 1
-            ws.cell(row=row, column=col, value=student.get('first_term_total_score')); col += 1
-            ws.cell(row=row, column=col, value=student.get('second_term_test_total')); col += 1
-            ws.cell(row=row, column=col, value=student.get('second_term_total_score')); col += 1
-            ws.cell(row=row, column=col, value=student.get('third_term_test_total')); col += 1
-            ws.cell(row=row, column=col, value=student.get('third_term_total_score')); col += 1
-
-        ws.cell(row=row, column=col, value=student.get('total_score')); col += 1
-        ws.cell(row=row, column=col, value=student.get('total_available_score')); col += 1
-        ws.cell(row=row, column=col, value=student.get('percentage'))
-
-    # === Send Response ===
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename=f"{class_name} {batch} Report.xlsx"'
-    wb.save(response)
-    return response
+            
+            ws.cell(row=row, column=col, value=f"{student['name']} ({student['class_name']})")
+            ws.cell(row=row, column=col).border = border
+            col += 1
+            
+            # Add scores for each term
+            for term_name in terms:
+                term_records = student.get('record_by_term', {}).get(term_name, [])
+                
+                # Individual assessment scores
+                for rec in term_records:
+                    score_value = rec['score'] if rec['score'] != '-' else None
+                    cell = ws.cell(row=row, column=col, value=score_value)
+                    cell.alignment = center_alignment
+                    cell.border = border
+                    col += 1
+                
+                # Term totals if exists
+                if header_data.get('term_totals') and 'term_totals' in student:
+                    term_data = student['term_totals'].get(term_name, {})
+                    
+                    # Test Total
+                    cell = ws.cell(row=row, column=col, value=term_data.get('test_total', 0))
+                    cell.alignment = center_alignment
+                    cell.border = border
+                    col += 1
+                    
+                    # Term Total
+                    cell = ws.cell(row=row, column=col, value=term_data.get('total_score', 0))
+                    cell.alignment = center_alignment
+                    cell.border = border
+                    col += 1
+            
+            # Final totals
+            cell = ws.cell(row=row, column=col, value=student.get('total_score', 0))
+            cell.alignment = center_alignment
+            cell.border = border
+            col += 1
+            
+            cell = ws.cell(row=row, column=col, value=f"{student.get('percentage', 0)}%")
+            cell.alignment = center_alignment
+            cell.border = border
+        
+        # === SET COLUMN WIDTHS ===
+        # Set appropriate widths for different column types
+        ws.column_dimensions['A'].width = 8   # S/N
+        ws.column_dimensions['B'].width = 25  # Student names
+        
+        # Assessment columns
+        for col_num in range(3, total_columns - 1):
+            col_letter = get_column_letter(col_num)
+            ws.column_dimensions[col_letter].width = 12
+        
+        # Final columns
+        final_col_letters = [get_column_letter(total_columns - 1), get_column_letter(total_columns)]
+        for col_letter in final_col_letters:
+            ws.column_dimensions[col_letter].width = 15
+        
+        # === FREEZE PANES ===
+        ws.freeze_panes = 'C3'  # Freeze first 2 columns and first 2 rows
+        
+        # === Send Response ===
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+        # Create filename
+        batch_text = batch if batch != "All" else "All_Batches"
+        term_text = term if term else "All_Terms"
+        filename = f"{class_name}_{batch_text}_{subject_model.name}_{term_text}_Report.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        wb.save(response)
+        return response
+        
+    except Exception as e:
+        # Return error response
+        response = HttpResponse(f"Error generating Excel report: {str(e)}", status=500)
+        return response

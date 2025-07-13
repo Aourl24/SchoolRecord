@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import recordView, studentView,classView , homeView , getClass, getRecord , getStudent , getClassRecord , getClassStudent,formView, searchView, addToRecord ,filterRecord,filterStudent,closeReq,generateReport,historyView,topicView,topicDetail,subjectView,subjectDetail,classTopic , addTopic,signUp,login, updateRecord,addStudent,addRecord
+from .views import recordView, studentView,classView , homeView , getClass, getRecord , getStudent , getClassRecord , getClassStudent,formView, searchView, addToRecord ,filterRecord,filterStudent,closeReq,Report,historyView,topicView,topicDetail,subjectView,subjectDetail,classTopic , addTopic,signUp,login, updateRecord,addStudent,addRecord
 from .excel import export_report_excel
 
 urlpatterns = [
@@ -19,7 +19,7 @@ urlpatterns = [
     path('filter-students',filterStudent,name="filterStudent"),
     path('filter-record',filterRecord,name="filterRecord"),
     path("close",closeReq,name="closeRequest"),
-    path("generate-report",generateReport,name="generateReport"),
+    path("generate-report",Report,name="generateReport"),
     path('history',historyView,name="historyView"),
     path("subjects",subjectView,name="subject-list"),
     path('topics',topicView,name="topic-list"),
