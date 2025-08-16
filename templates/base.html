@@ -9,7 +9,16 @@
     <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
 </head>
-<body class="font-montserrat bg-light">
+<style>
+.bg-yellow-light { background-color: #FFF9C4; }
+.bg-blue-light   { background-color: #E3F2FD; }
+.bg-red-light    { background-color: #FFEBEE; }
+.bg-green-light  { background-color: #E8F5E9; }
+/* optional: better spacing like bootstrap */
+.p-3 { padding: 1rem; }
+.rounded { border-radius: .25rem; }
+</style>
+<body class="font-montserrat">
 
     
 {%block nav%}
@@ -43,23 +52,23 @@
 {%endblock%}
 <dropdown>
          <div class="position-fixed overflow-auto vh-100 w-100 d-none container-fluid color-bg-white" style="background-clor:rgba(250,250,250,0.95); to:10%;left:0%;overflow:scroll"  id="drop-area">
-<div class="row justify-content-center">
-      <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2  bg-light" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">          Add Record
+<div class="row justify-content-center m-2">
+      <div class="col-12 pointer-cursor bg-light rounded p-4 m-2 bg-light" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">          Add Record
      </div>
 
-     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
+     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
           Add Subject
      </div>
 
-     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
+     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
           Add Class
      </div>
 
-     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
+     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
           Add Student
      </div>
 
-     <div class="col-5 pointer-cursor shadow-sm rounded p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
+     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
           Add Student Record
      </div>
       </div>
@@ -76,9 +85,6 @@
             <div class="col sz-18 color-p">
                 History
             </div>
-        </div>
-        <div hx-get="{%url 'historyView'%}" hx-swap="innerHTML" hx-trigger="load">
-
         </div>
 
     </div>

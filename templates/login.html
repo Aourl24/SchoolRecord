@@ -12,7 +12,11 @@
   <h2 class="color-black sz-20 my-2 my-5 center">Login</h2>
   <form method="post">
     {% csrf_token %}
-    
+     {%if form.errors or errors %}
+    <div class="alert alert-danger">
+      {{form.errors}} {{errors}}
+    </div>
+    {%endif%}
     <input type="text" name="username" class="form-control p-3" placeholder="Username"><br><br>
 
     

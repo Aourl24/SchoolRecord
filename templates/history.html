@@ -1,9 +1,8 @@
-<div class="d-flex overflow-auto flex-column">
+<div class="container">
 {%for hist in history%}
-<div class="row p-2">
-	<div class="col ">  <a href='{{hist.url}}' class="no-decoration color-black"> {{hist.title}} </a> </div>
+<div class="row my-2">
+	<div class="col border-bottom p-2">  <a href='{{hist.url}}' class="no-decoration color-black sz-12">{{hist.title}} </a> </div>
 </div>
-
 {%endfor%}
 
 </div>

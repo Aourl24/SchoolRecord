@@ -11,12 +11,17 @@
 <br />
   <h2 class="color-black sz-20 my-2 my-5 center">Create an Account</h2>
   <form method="post">
+    {%if form.errors or errors %}
+    <div class="alert alert-danger">
+      {{form.errors}} {{errors}}
+    </div>
+    {%endif%}
     {% csrf_token %}
     
-    <input type="text" name="username" class="form-control p-3" placeholder="Username"><br><br>
-
+    {%for field in form%}
+     <div class="my-2 mb-3"><div class="py-2">{{field.label}}</div> {{field}} </div>
+    {%endfor%}
     
-    <input class="form-control p-3" type="password" name="password" placeholder="Password"><br>
 
     <button type="submit" class="w-100 my-3 color-bg-s color-white button p-2 sz-18 rounded-4">Sign Up</button>
   </form>

@@ -11,7 +11,16 @@ class UserQuerySet(models.QuerySet):
     def for_user(self, user):
         return self.filter(user)
     
-
+class StudentRecordQuerySet(UserQuerySet):
+    def by_score_range(self, min_score, max_score):
+        return self.filter(score__gte=min_score, score__lte=max_score)
+    
+    def passed(self, passing_score=50):
+        return self.filter(score__gte=passing_score)
+    
+    def failed(self, passing_score=50):
+        return self.filter(score__lt=passing_score)
+        
 
 class UserManager(models.Manager):
     def get_queryset(self):
@@ -22,10 +31,20 @@ class UserManager(models.Manager):
 
     def create_for_user(self, user, **kwargs):
         return self.model.objects.create(user=user, **kwargs)
-        
+
+class School(models.Model):
+  name = models.CharField(max_length=10000)
+  
+  def __str__(self):
+    return self.name
+    
 class User(models.Model):
+    full_name = models.CharField(max_length=500, blank=True,null=True)
     username = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(max_length=500,blank=True,null=True)
     password = models.CharField(max_length=255)
+    school = models.ForeignKey(School,related_name="user",null=True,blank=True,on_delete=models.CASCADE)
+    role = models.CharField(choices=[("Teacher","Teacher"),("School Administration","School Administration"),("Student","Student")],default="Teacher")
     secret_key = models.CharField(max_length=255, blank=True, null=True)
 
     def set_password(self, raw_password):
@@ -55,7 +74,7 @@ class User(models.Model):
           except BadSignature:
               return False
     
-
+ 
 class UserModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     objects = UserManager()
@@ -85,6 +104,7 @@ TERM_CHOICES = [
 class Class(UserModel):
   name = models.CharField(max_length=100000,choices=CLASSES)
   batch = models.CharField(max_length=100000,choices=[("A","A"),("B","B"),("C","C"),("D","D")])
+  class_teacher = models.ForeignKey(User,related_name="class_name",on_delete=models.CASCADE,null=True,blank=True)
   
   class Meta:
     unique_together = ("user","name","batch")
@@ -95,12 +115,22 @@ class Class(UserModel):
 class Student(UserModel):
   name = models.CharField(max_length=100000)
   class_name = models.ForeignKey(Class, related_name="student",on_delete=models.CASCADE)
+  gender = models.CharField(choices=[("Male","Male"),("Female","Female")],null=True,blank=True)
+  admission_number = models.IntegerField(null=True,blank=True)
+  contact_info = models.CharField(max_length=9000000,null=True,blank=True)
+  date_of_birth = models.CharField(max_length=1000000,null=True,blank=True)
+  school = models.ForeignKey(School,related_name="Student",on_delete=models.CASCADE,null=True,blank=True)
+  #profile_photo = models.ImageField(null=True,blank=True)
 
   class Meta:
     unique_together = ("name","class_name")
   
   def __str__(self):
     return self.name
+    
+  def save(self):
+    self.school = self.user.school
+    super().save()
 
 class Subject(UserModel):
   name = models.CharField(max_length=1000000,unique=True)
@@ -110,6 +140,16 @@ class Subject(UserModel):
 
   def get_absolute_url(self):
     return reverse('subject-detail',args=[self.id])
+    
+class SubjectTeacher(UserModel):
+  subject = models.ForeignKey(Subject,related_name="subjectTeacher",null=True,blank=True,on_delete=models.CASCADE)
+  class_name = models.ForeignKey(Class,related_name="subjectTeacher",null=True,blank=True,on_delete=models.CASCADE)
+  
+  class Meta: 
+    unique_together = ("subject","class_name")
+
+  def __str__(self):
+    return self.subject.name
 
 class Record(UserModel):
   title = models.CharField(max_length=10000,choices=TERM_CHOICES)

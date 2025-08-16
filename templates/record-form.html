@@ -21,7 +21,7 @@
   </div>
   {%endif%}
   <div id="formBx" class="container">
-	<h3 class="my-2 color-p sz-20">{%if update%} Update {%else%} Create {%endif%} {{form_type}} </h3>
+	<h3 class="my-2 color-p sz-20">{%if update%} Update {%else%} Add {%endif%} {{form_type}} </h3>
 <div id="saved"></div> 
 	<form method='post'  {%if update%} hx-post="{% url 'update-form' form_type model.id%}"  {%else%} hx-post="{% url 'form' form_type%}" {%endif%} hx-target="#saved" hx-swap="innerHTML">
 		{%csrf_token%}

@@ -2,7 +2,7 @@
 
 {%block content%}
 <div class="my-2 sz-18 color-p mb-3">All Students</div>
- <div class="row sz-12 border">
+ <div class="row sz-12 border d-none hide">
    <div  class="my-3 sz-16 center"> Get students record </div>
    <form hx-get="{%url 'filterRecord' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
    <select name='class' class="form-control col m-1 sz-12">

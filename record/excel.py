@@ -3,7 +3,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment, Border, Side
 from django.http import HttpResponse
 from .models import Subject, Class, Record, StudentRecord, Student
-from .report import generate_report
+from .report import Report
 
 def export_report_excel(request):
     subject_id = request.GET.get('subject')
@@ -14,7 +14,7 @@ def export_report_excel(request):
     
     try:
         # Get report data
-        total_report, subject_model, is_all, term, terms = generate_report(
+        total_report, subject_model, is_all, term, terms = Report.generate_report(
             subject_id, class_name, batch, term, sort_order
         )
         

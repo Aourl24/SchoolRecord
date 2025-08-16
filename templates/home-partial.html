@@ -1,7 +1,19 @@
+ <div class="row my-2 mb-4 sz-18 bod py-2 border-botom">
+    <div class="col">
+      Hello {{request.user.username}}, 
+      <div class="sz-12 color-grey">Let be productive today!! </div>
+    </div>
+  </div>
+
+<div class="row my-2">
+  <div class="col bold">
+    Overview 
+  </div>
+</div>
 <div class="container">
       <div class="row justify-content-center sz-16">
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class=" rounded-3 p-3 py-4  color-bg-t color-white m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    <div class=" rounded-3 p-3 py-4  bg-yellow-light m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
           <i class="fas fa-user-graduate sz-24 sz-24 rounded-4 p-3 -3 color-bg-white color-t"></i>
           <br />
 
@@ -10,7 +22,7 @@
     </div>
     
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class="rounded-3 p-3 py-4  order-first color-bg-s color-white m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+    <div class="rounded-3 p-3 py-4  order-first bg-blue-light m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
      <i class="fas fa-chalkboard-teacher sz-24 rounded-4 p-3 color-bg-white color-s"></i>
       <br />
 
@@ -19,31 +31,51 @@
     </div>
 
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class="rounded-3 p-3 py-4  color-bg-s color-white bg-success center" hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML" >
+    <div class="rounded-3 p-3 py-4  color-bg-s  bg-green-light center" hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML" >
      <i class="fas fa-book-open sz-24 sz-24 rounded-4 p-3  color-bg-white text-success"></i>
       <br />
 
-         <span class="mt-3 inline-block ">Subject</span>  <br /><span class="sz-30 inline-block w-100 righ"> {{subject.count}}
+         <span class="mt-3 inline-block ">Subject</span>  <br /><span class="sz-30 inline-block w-100 righ"> {{subjects.count}}
     </div>
     </div>
     
    <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class=" rounded-3  p-3 py-4  color-bg-grey color-white pointer-cursor color-black-hover color-bg-hover no-decoration shadow-sm center" hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
+    <div class=" rounded-3  p-3 py-4  bg-red-light center" hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
       <i class="fas fa-file-alt sz-24 rounded-4 p-3 color-bg-white color-grey"></i>
       <br />
       <span class="mt-3 inline-block ">Record</span> <br /> <span class="sz-30 inline-block w-100"> {{records.count}}
       </span>
     </div>
    </div>
-    <div class="col-md-4 center rounded-3 p-4 color-bg-p  color-white m-2 pointer-cursor color-black-hover color-bg-hover" hx-get="{% url 'generateReport' %}" hx-target="#load-area" hx-swap="innerHTML">
+   </div>
+ </div> 
+  <br />
+   
+<div class="row my-2">
+  <div class="col bold">
+    Report
+  </div>
+</div>
+<div class="row">
+    <div class="col rounded-3 p-4 border center pointer-cursor color-bg-hover" hx-get="{% url 'generateReport' %}" hx-target="#load-area" hx-swap="innerHTML">
      <i class="fas fa-chalkboard-teacher sz-24"></i>
       <br />
          Report
     </div>
-
-    
-</div>
+ </div>
 <br />
+
+
+<div class="row my-2">
+  <div class="col bold">
+    Recent Actions
+  </div>
+</div>
+
+   <div hx-get="{%url 'historyView'%}" hx-swap="innerHTML" hx-trigger="load" class="bg-light">
+
+        </div>
+
 
 <div class="row justify-content-center d-none">
       <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">          Add Record
@@ -67,4 +99,7 @@
 
 
 </div>
+
+<div class="bottom-left position-fixed inline-block" style="top:25%;right:10% hide d-none">
+  <i class="fas fa-plus rounded-5 hide d-none shadow-sm sz-36 color-s shadow-d p-2 color-bg-white"></i>
 </div>
