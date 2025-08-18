@@ -1,29 +1,73 @@
-{%extends "base.html"%}
-{%block nav%}
+{% extends "base.html" %}
+{% block nav %}
+{% endblock %}
 
-{%endblock%}
+{% block search %}
+{% endblock %}
 
-{%block search%}
+{% block content %}
+<div class="container py-5">
+  <!-- Brand/Header --><div class="text-center mb-4">
+    <h1 class="fw-bold color-p display-5">         <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-1">
+          <i class="fas fa-graduation-cap"></i>
+        </span> Oluko</h1>
+    <p class="text-muted">Welcome Back </p>
+  </div>
+ 
 
-{%endblock%}
+  <!-- Login Card -->
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4 fw-semibold">Login</h2>
 
-{%block content%}
-<br />
-  <h2 class="color-black sz-20 my-2 my-5 center">Login</h2>
-  <form method="post">
-    {% csrf_token %}
-     {%if form.errors or errors %}
-    <div class="alert alert-danger">
-      {{form.errors}} {{errors}}
+          <!-- Error Display -->
+          {% if form.errors or errors %}
+          <div class="alert alert-danger">
+            {{ form.errors }} {{ errors }}
+          </div>
+          {% endif %}
+
+          <!-- Form -->
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-medium">Username</label>
+              <input type="text" name="username" class="form-control form-p" placeolder="Enter your username">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Password</label>
+              <input type="password" name="password" class="form-control form-p" placeholer="Enter your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 form-p my-2 rounded-3 fw-semibold">
+              Login
+            </button>
+          </form>
+
+          <!-- Forgot Password -->
+          <div class="text-center mt-2">
+            <a href="" class="small text-decoration-none text-muted">Forgot your password?</a>
+          </div>
+
+          <!-- Divider -->
+          <div class="d-none text-center my-3 text-muted">OR</div>
+
+          <!-- Google Login -->
+          <a href="" class="btn d-none btn-outline-danger w-100 py-2 rounded-3">
+            <i class="bi bi-google me-2"></i> Login with Google
+          </a>
+
+          <!-- Signup Redirect -->
+          <p class="text-center mt-3 mb-0">
+            Don’t have an account? 
+            <a href="{% url 'signup' %}" class="text-decoration-none fw-semibold">Sign up</a>
+          </p>
+        </div>
+      </div>
     </div>
-    {%endif%}
-    <input type="text" name="username" class="form-control p-3" placeholder="Username"><br><br>
-
-    
-    <input class="form-control p-3" type="password" name="password" placeholder="Password"><br>
-
-    <button type="submit" class="w-100 my-3 color-bg-p color-white button p-2 sz-18 rounded-4">Login </button>
-  </form>
-
-  <p class="sz-14 my-2">Don't have an account? <a href="{% url 'signup' %}">Sign up </a></p>
-{%endblock%}
+  </div>
+</div>
+{% endblock %}

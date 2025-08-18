@@ -1,26 +1,39 @@
-<h2 class="py-3 color-p">All Classes</h2>
+<h2 class="py-3 color-p sz-24 fw-bold">All Classes</h2>
+
+<div class="row">
   {% for c in school_class %}
-       <div class="row  rounded-3 border p-2 mb-4">
-          <div class="col-12 p-2">
-       <span  class="sz-18 py-3 my-4 pointer-cursor color-black color-hover no-decoration bold">
-       {{ c.name }} {{c.batch}}
-       </span>
-       </div>
-       <div class="col-12 p- py-2">
-          <span class="color-grey">Student</span> - {{c.student.all.count}}
-       </div>
-       
-              <div class="col-12 -4 py-2 hide">
-          <span class="color-grey">Subject</span> - {{c.record.subject}}
-       </div>
-       
-      <div class="col-12 -4 py-2">
-          <span class="color-grey">Records</span> - {{c.record.all.count}}
-       </div>
-       
-       <div class="col-12">
-          <a href="{% url 'get-class' c.id %}" class="w-100 no-decoration color-bg-silvr center bg-warning inline-block button color-white p-2 rounded-3">Go to class </a>
-       </div>
-       
-       </div>
+  <div class="col-12 col-md-6 col-lg-4 mb-4">
+    <div class="p-3 rounded-3 shadow-sm color-bg-s">
+      
+      <!-- Class Name -->
+      <h5 class="mb-2 color-white sz-18 fw-semibold">
+        {{ c.name }} {{ c.batch }}
+      </h5>
+
+      <!-- Students -->
+      <p class="mb-1 color-grey sz-14">
+        <span class="fw-semibold">Students:</span> {{ c.student.all.count }}
+      </p>
+
+      <!-- Subjects (optional, only show if available) -->
+      {% if c.record.subject %}
+      <p class="mb-1 color-grey sz-14">
+        <span class="fw-semibold">Subject:</span> {{ c.record.subject }}
+      </p>
+      {% endif %}
+
+      <!-- Records -->
+      <p class="mb-3 color-grey sz-14">
+        <span class="fw-semibold">Records:</span> {{ c.record.all.count }}
+      </p>
+
+      <!-- CTA Button -->
+      <a href="{% url 'get-class' c.id %}" 
+         class="btn w-100 color-bg-p color-white rounded-3 shadow-sm">
+        Go to Class
+      </a>
+
+    </div>
+  </div>
   {% endfor %}
+</div>

@@ -8,8 +8,50 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap-5/css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
+     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
 </head>
 <style>
+:root{
+  --p: #4f46e5;   /* primary */
+  --s: #06b6d4;   /* secondary */
+  --t: #10b981;   /* tertiary */
+  --accent: #f59e0b;
+  --dark: #0f172a;
+  --muted: #6b7280;
+  --glass: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.12);
+  --fw-regular: 500;
+}
+
+/* -------------------------
+   Color utility classes (text)
+   ------------------------- */
+.color-p { color: var(--p) !important; }
+.color-s { color: var(--s) !important; }
+.color-t { color: var(--t) !important; }
+
+body{
+  font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  color: #0b1220;
+  background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%);
+  line-height:1.6;
+}
+
+.color-bg-p {
+  background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(59,130,246,0.9));
+  color: white;
+}
+.color-bg-s {
+  background: linear-gradient(135deg, rgba(6,182,212,0.95), rgba(16,185,129,0.9));
+  color: white;
+}
+.color-bg-t {
+  background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(245,158,11,0.9));
+  color: white;
+}
+
 .bg-yellow-light { background-color: #FFF9C4; }
 .bg-blue-light   { background-color: #E3F2FD; }
 .bg-red-light    { background-color: #FFEBEE; }
@@ -17,77 +59,175 @@
 /* optional: better spacing like bootstrap */
 .p-3 { padding: 1rem; }
 .rounded { border-radius: .25rem; }
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-p{
+  padding:10px;
+}
 </style>
-<body class="font-montserrat">
+<body class="">
 
     
-{%block nav%}
-    <nav class="container-fluid p-2 shadow-sm mb-2 color-white color-bg-p py-3 sticky-top">
-        <div class="row sz-16 bold align-items-center p-2">
-            <div class="col border-end color-t"> <i class="fas fa-bars p-2 color-white" onClick="menuDrop()" id="icon-menu"></i> <span class="color-white"> Dash</span>Bord </div>
-            
-            <div class="col-2">
-              <i class="fas fa-plus-circle sz-20" id="icon" onClick="showDrop()"></i>
-            </div>
-            
-            <div class="col-2 right"><a class="color-hover no-decoration pointer-cursor color-white" hx-get="{%url 'home-part' 'part' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true"><i class="fas fa-user rounded-circle color-bg-s p-2"></i></a></div>
-        </div>
-    </nav>
+{%block nav%} 
+  <nav class="navbar navbar-expand-lg navbar-sticky sticky-top bg-white color-bgp border-bottom">
+    <div class="container ">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-2">
+          <i class="fas fa-graduation-cap"></i>
+        </span>
+        <span class="fw-700 brand-text">Oluko</span>
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" onClick="menuDrop()">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="#lesson">Lesson Notes</a></li>
+          <li class="nav-item"><a class="nav-link" href="#reports">Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item ms-lg-3">
+            <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-primary ms-2 btn-sm">Get Started</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+<nav class="navbar d-none navbar-expand color-bg-p sticky-top shadow-sm px-3">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    
+    <!-- Brand -->
+    <div class="navbar-brand text-white fw-bold fs-4">
+            <i class="fas fa-bars text-white fs-5 pointer" onClick="menuDrop()" id="icon-menu" title="Menu"></i>
+      Oluko
+    </div>
+
+    <!-- Icons Row (always visible, no collapse) -->
+    <div class="d-flex align-items-center gap-3 border-start px-2">
+      <!-- Menu -->
+
+
+      <!-- Add -->
+      <i class="fas d-none fa-plus-circle text-white fs-5 pointer" id="icon" onClick="showDrop()" title="Add"></i>
+
+      <!-- Profile -->
+      <a class="text-decoration-none" 
+         hx-get="{% url 'home-part' 'part' %}" 
+         hx-target="#load-area" 
+         hx-swap="innerHTML" 
+         hx-push-url="true">
+        <i class="fas fa-user rounded-circle bg-light text-primary p-2"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
 {%endblock%}
     
     
 <div class="container">
   <div id="addHere"></div>
   {%block search%}
-    <div class="p-1 rounded my-3">
-      <form hx-get="{% url 'search' %}" hx-target="#load-area" hx-trigger="input changed delay:300ms" hx-swap="innerHTML">
-    <input 
-        class="form-control sz-14 input rounded-2" 
-        name="search"
-        placeholder="Search students, records,classes..." style="padding:10px"
-        
+<div class="container my-4">
+  <div class="search-wrapper p-2 bg-white rounded-3 shadow-sm border">
+    <form 
+      hx-get="{% url 'search' %}" 
+      hx-target="#load-area" 
+      hx-trigger="input changed delay:300ms" 
+      hx-swap="innerHTML"
+      class="d-flex align-items-center"
+    >
+      <div class="input-group">
+        <span class="input-group-text bg-white border-0">
+          <i class="fas fa-search text-muted"></i>
+        </span>
+        <input 
+          type="text"
+          class="form-control border-0 shadow-none" 
+          name="search"
+          placeholder="Search students, records, classes..."
         />
-</form>
-</div>
-{%endblock%}
-<dropdown>
-         <div class="position-fixed overflow-auto vh-100 w-100 d-none container-fluid color-bg-white" style="background-clor:rgba(250,250,250,0.95); to:10%;left:0%;overflow:scroll"  id="drop-area">
-<div class="row justify-content-center m-2">
-      <div class="col-12 pointer-cursor bg-light rounded p-4 m-2 bg-light" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">          Add Record
-     </div>
-
-     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
-          Add Subject
-     </div>
-
-     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
-          Add Class
-     </div>
-
-     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
-          Add Student
-     </div>
-
-     <div class="col-12 pointer-cursor bg-light rounded p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
-          Add Student Record
-     </div>
       </div>
-      
-        </div>
-    </dropdown>
+    </form>
+  </div>
+</div>
 
-    <div id="menu-drop" class="container-fluid position-fixed bg-light d-none vh-100" style="top:10%;left:0">
-        <div class="row my-3 mt-4">
-            <div class="col"><a href="" class="no-decoration bg-waning p-2 rounded-3 color-black sz-16 btn btn-link color-black" onClick="window.history.back()"><i class="fas fa-arrow-left"></i> Previous page </a></div>
-        </div>
 
-        <div class='row my-2 mt-4'>
-            <div class="col sz-18 color-p">
-                History
-            </div>
-        </div>
+{%endblock%}
+<div id="drop-area" style="z-index:999"></div>
+<dropdown>
+  <div 
+    id="menu-drop" class="position-fixed vh-100 vw-100 d-none bg-white shadow-lg p-3" 
+    style="background-color: rgba(250,250,250,0.95); top: 10%; left: 0; overflow-y: auto; z-index:99"  
+    id="drop-area">
 
+    <div class="container py-4">
+      <h5 class="text-center fw-bold mb-4">📋 Teacher Menu</h5>
+
+      <div class="list-group">
+
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+          ✅ <span class="ms-2">Attendance Marking</span>
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+          👨‍🏫 <span class="ms-2">My Class</span>
+        </a>
+
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+          📅 <span class="ms-2">Timetable</span>
+        </a>
+
+<br/>
+        <a hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
+          ➕ <span class="ms-2">Add Record</span>
+        </a>
+
+        <a hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML"  class="list-group-item list-group-item-action d-flex align-items-center">
+          📘 <span class="ms-2">Add Subject</span>
+        </a>
+
+        <a hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
+          🏫 <span class="ms-2">Add Class</span>
+        </a>
+
+        <a hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
+          👨‍🎓 <span class="ms-2">Add Student</span>
+        </a>
+
+        <a hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
+          📑 <span class="ms-2">Add Student Record</span>
+        </a>
+<br/>
+
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center ">
+          ⚙️ <span class="ms-2">Settings</span>
+        </a>
+
+      </div>
     </div>
+  </div>
+</dropdown>
+
       
     <main>
         <div id="load-area" class="container-fluid">

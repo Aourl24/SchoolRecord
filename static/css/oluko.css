@@ -1,0 +1,201 @@
+/* oluko.css - personal stylesheet
+   Uses:
+     color-p / color-s / color-t  => TEXT color utilities
+     color-bg-p / color-bg-s / color-bg-t => BACKGROUND utilities
+*/
+
+/* -------------------------
+   Theme variables
+   Edit these values to change whole theme quickly
+   ------------------------- */
+:root{
+  --p: #4f46e5;   /* primary */
+  --s: #06b6d4;   /* secondary */
+  --t: #10b981;   /* tertiary */
+  --accent: #f59e0b;
+  --dark: #0f172a;
+  --muted: #6b7280;
+  --glass: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.12);
+  --fw-regular: 500;
+}
+
+/* -------------------------
+   Color utility classes (text)
+   ------------------------- */
+.color-p { color: var(--p) !important; }
+.color-s { color: var(--s) !important; }
+.color-t { color: var(--t) !important; }
+
+/* -------------------------
+   Background utility classes
+   ------------------------- */
+.color-bg-p {
+  background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(59,130,246,0.9));
+  color: white;
+}
+.color-bg-s {
+  background: linear-gradient(135deg, rgba(6,182,212,0.95), rgba(16,185,129,0.9));
+  color: white;
+}
+.color-bg-t {
+  background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(245,158,11,0.9));
+  color: white;
+}
+
+/* -------------------------
+   Basic page & typography
+   ------------------------- */
+html,body { height:100%; }
+body{
+  font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  color: #0b1220;
+  background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%);
+  line-height:1.6;
+}
+
+/* smaller helpers */
+.text-white-90 { color: rgba(255,255,255,0.92); }
+.text-white-75 { color: rgba(255,255,255,0.75); }
+.text-muted { color: var(--muted) !important; }
+
+/* -------------------------
+   Navbar
+   ------------------------- */
+.navbar-sticky {
+  padding: 0.9rem 0;
+  transition: background 250ms ease, backdrop-filter 250ms ease, box-shadow 250ms ease;
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+.navbar-sticky .brand-mark{
+  width:44px; height:44px; font-size:16px;
+}
+.navbar-sticky .brand-text{ font-weight:800; font-size:1.05rem; color:var(--dark); }
+.navbar-sticky .navbar-nav .nav-link{
+  color: rgba(15,23,42,0.8);
+  font-weight:600;
+  padding: .5rem .9rem;
+}
+.btn-ghost { background: transparent; border:1px solid rgba(15,23,42,0.06); color:var(--dark); }
+.btn-primary, .btn-primary:focus { background: var(--p); border-color: var(--p); color:#fff }
+
+/* nav after scroll */
+.nav-scrolled {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(16,24,40,0.06);
+}
+
+/* -------------------------
+   Hero
+   ------------------------- */
+.hero{
+  padding-top: 120px;
+  padding-bottom: 100px;
+  position: relative;
+  overflow: hidden;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+}
+.hero-title{
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, rgba(255,255,255,1), rgba(225,231,255,0.9));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.badge-soft {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  padding: .5rem .8rem;
+  border-radius: 999px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+}
+
+/* hero stats */
+.hero-stats .stat h4 { margin:0; font-weight:800; font-size:1.125rem; }
+.hero-stats .stat small { color: rgba(255,255,255,0.85); }
+
+/* mockup */
+.device-mockup{ width:340px; height:auto; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); }
+
+/* floating icons */
+.floating-icon { position:absolute; font-size:4.5rem; color: rgba(255,255,255,0.06); pointer-events:none; }
+.floating-icon.top-right{ top:6%; right:6%; transform:rotate(-8deg) }
+.floating-icon.bottom-left{ bottom:6%; left:6%; transform:rotate(10deg) }
+
+/* -------------------------
+   Sections & cards
+   ------------------------- */
+.section { padding-top: 80px; padding-bottom: 80px; }
+.section-divider { height:6px; background: linear-gradient(90deg,var(--p),var(--s),var(--t)); }
+
+/* feature cards */
+.feature-card{
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(16,24,40,0.06);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.feature-card .feature-icon{
+  width:72px; height:72px; border-radius: 999px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff; margin:0 auto 1rem;
+}
+.color-bg-p .feature-icon, .color-bg-s .feature-icon, .color-bg-t .feature-icon { color:#fff; }
+
+/* card hover */
+.card-hover:hover { transform: translateY(-10px); box-shadow: 0 26px 50px rgba(16,24,40,0.12); }
+
+/* badges */
+.badge-soft-primary { background: linear-gradient(90deg,var(--p),var(--s)); color:#fff; padding:.45rem .7rem; border-radius:999px; }
+
+/* small utility badges */
+.badge-soft { background: rgba(15,23,42,0.04); padding:.4rem .55rem; border-radius:8px; color:var(--dark); }
+
+/* icon boxes */
+.icon-box{ width:48px; height:48px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; color:#fff; }
+.icon-box.color-bg-p{ background: linear-gradient(135deg,var(--p),#3b82f6); }
+.icon-box.color-bg-s{ background: linear-gradient(135deg,var(--s),#06b6d4); }
+
+/* notes mockup */
+.notes-mockup{ border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03)); }
+
+/* shadow-soft */
+.shadow-soft{ box-shadow: 0 10px 30px rgba(16,24,40,0.06); }
+
+/* CTA */
+.cta { padding: 80px 0; }
+.btn-xl{ padding: 0.9rem 1.6rem; font-size:1.05rem; border-radius:999px; font-weight:700; }
+.btn-glow{
+  box-shadow: 0 8px 30px rgba(79,70,229,0.12);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.btn-glow:hover{ transform:translateY(-4px); box-shadow: 0 16px 50px rgba(79,70,229,0.18); }
+
+/* small responsive */
+@media (max-width: 992px){
+  .device-mockup{ display:none; }
+  .hero{ padding-top: 90px; padding-bottom: 60px; }
+  .hero-title{ font-size: 2rem; }
+}
+
+/* prefers reduced motion */
+@media (prefers-reduced-motion: reduce){
+  * { transition: none !important; animation: none !important; }
+}
+
+/* small helpers */
+.rounded-4{ border-radius: 1rem !important; }
+.fw-700{ font-weight: 700 !important; }
+.fw-800{ font-weight: 800 !important; }
+.text-white-80{ color: rgba(255,255,255,0.8); }
+.text-white-75{ color: rgba(255,255,255,0.75); }

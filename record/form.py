@@ -16,8 +16,8 @@ class BaseForm(forms.ModelForm):
         """Add consistent CSS classes to all form fields"""
         for field in self.fields.values():
             field.widget.attrs.update({
-                'class': 'form-control p-3',
-                'placeholder': field.label or ''
+                'class': 'form-control form-p',
+                'plaeholder': field.label or ''
             })
             
 class UserForm(BaseForm):

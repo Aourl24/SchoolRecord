@@ -1,105 +1,93 @@
- <div class="row my-2 mb-4 sz-18 bod py-2 border-botom">
-    <div class="col">
-      Hello {{request.user.username}}, 
-      <div class="sz-12 color-grey">Let be productive today!! </div>
-    </div>
-  </div>
+<!-- Greeting Section -->
 
-<div class="row my-2">
-  <div class="col bold">
-    Overview 
+<div class="row align-items-center mb-5">
+  <div class="col">
+    <h5 class="fw-bold mb-1">Hello {{request.user.username}}, 👋</h5>
+    <p class="text-muted mb-0">Let’s be productive today!</p>
   </div>
 </div>
-<div class="container">
-      <div class="row justify-content-center sz-16">
-   <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class=" rounded-3 p-3 py-4  bg-yellow-light m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-          <i class="fas fa-user-graduate sz-24 sz-24 rounded-4 p-3 -3 color-bg-white color-t"></i>
-          <br />
 
-         <span class="mt-3 inline-block ">Student</span> <br /> <span class="sz-30 inline-block w-100 rigt">{{students.count}} </span>
-    </div>
-    </div>
-    
-   <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class="rounded-3 p-3 py-4  order-first bg-blue-light m1 pointer-cursor color-black-hover color-bg-hover center" hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
-     <i class="fas fa-chalkboard-teacher sz-24 rounded-4 p-3 color-bg-white color-s"></i>
-      <br />
-
-         <span class="mt-3 inline-block ">Class</span>  <br /><span class="sz-30 inline-block w-100 righ">{{classes.count}} </span>
-    </div>
-    </div>
-
-   <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class="rounded-3 p-3 py-4  color-bg-s  bg-green-light center" hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML" >
-     <i class="fas fa-book-open sz-24 sz-24 rounded-4 p-3  color-bg-white text-success"></i>
-      <br />
-
-         <span class="mt-3 inline-block ">Subject</span>  <br /><span class="sz-30 inline-block w-100 righ"> {{subjects.count}}
-    </div>
-    </div>
-    
-   <div class="col-md-4 col-6 p-1 m-0 py-2">
-    <div class=" rounded-3  p-3 py-4  bg-red-light center" hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
-      <i class="fas fa-file-alt sz-24 rounded-4 p-3 color-bg-white color-grey"></i>
-      <br />
-      <span class="mt-3 inline-block ">Record</span> <br /> <span class="sz-30 inline-block w-100"> {{records.count}}
-      </span>
-    </div>
-   </div>
-   </div>
- </div> 
-  <br />
-   
-<div class="row my-2">
-  <div class="col bold">
-    Report
+<!-- Overview Section -->
+<div class="row mb-3">
+  <div class="col">
+    <h6 class="fw-bold text-uppercase text-secondary">Overview</h6>
   </div>
 </div>
+
+<div class="row g-3">
+  <!-- Student Card -->
+  <div class="col-md-3 col-6">
+    <div class="card bg-yellow-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
+         hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+      <div class="icon-circle bg-warning bg-opacity-25 mb-3 mx-auto">
+        <i class="fas fa-user-graduate text-warning fa-lg"></i>
+      </div>
+      <h6 class="fw-semibold mb-1">Student</h6>
+      <h3 class="fw-bold mb-0 sz-24">{{students.count}}</h3>
+    </div>
+  </div>
+
+  <!-- Class Card -->
+  <div class="col-md-3 col-6">
+    <div class="card bg-blue-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
+         hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+      <div class="icon-circle bg-primary bg-opacity-25 mb-3 mx-auto">
+        <i class="fas fa-chalkboard-teacher text-primary fa-lg"></i>
+      </div>
+      <h6 class="fw-semibold mb-1">Class</h6>
+      <h3 class="fw-bold mb-0 sz-24">{{classes.count}}</h3>
+    </div>
+  </div>
+
+  <!-- Subject Card -->
+  <div class="col-md-3 col-6">
+    <div class="card bg-green-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
+         hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+      <div class="icon-circle bg-success bg-opacity-25 mb-3 mx-auto">
+        <i class="fas fa-book-open text-success fa-lg"></i>
+      </div>
+      <h6 class="fw-semibold mb-1">Subject</h6>
+      <h3 class="fw-bold mb-0 sz-24">{{subjects.count}}</h3>
+    </div>
+  </div>
+
+  <!-- Record Card -->
+  <div class="col-md-3 col-6">
+    <div class="card bg-red-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
+         hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
+      <div class="icon-circle bg-danger bg-opacity-25 mb-3 mx-auto">
+        <i class="fas fa-file-alt text-danger fa-lg"></i>
+      </div>
+      <h6 class="fw-semibold mb-1">Record</h6>
+      <h3 class="fw-bold mb-0 sz-24">{{records.count}}</h3>
+    </div>
+  </div>
+</div>
+
+
+<!-- Report Section -->
+<div class="row mt-5 mb-3">
+  <div class="col">
+    <h6 class="fw-bold text-uppercase text-secondary">Report</h6>
+  </div>
+</div>
+
 <div class="row">
-    <div class="col rounded-3 p-4 border center pointer-cursor color-bg-hover" hx-get="{% url 'generateReport' %}" hx-target="#load-area" hx-swap="innerHTML">
-     <i class="fas fa-chalkboard-teacher sz-24"></i>
-      <br />
-         Report
+  <div class="col">
+    <div class="card shadow-md border-0 rounded-4 text-center p-4 pointer-cursor hover-lift"
+         hx-get="{% url 'generateReport' %}" hx-target="#load-area" hx-swap="innerHTML">
+      <i class="fas fa-chart-pie text-primary fa-2x mb-2"></i>
+      <h6 class="fw-semibold">Generate Report</h6>
     </div>
- </div>
-<br />
-
-
-<div class="row my-2">
-  <div class="col bold">
-    Recent Actions
   </div>
 </div>
 
-   <div hx-get="{%url 'historyView'%}" hx-swap="innerHTML" hx-trigger="load" class="bg-light">
-
-        </div>
-
-
-<div class="row justify-content-center d-none">
-      <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">          Add Record
-     </div>
-
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'subject' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
-          Add Subject
-     </div>
-
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'class' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
-          Add Class
-     </div>
-
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
-          Add Student
-     </div>
-
-     <div class="col-5 pointer-cursor border p-4 m-2" hx-get="{% url 'form' 'student-record' %}" hx-target="#load-area" hx-swap="innerHTML" hx-push-url="true">
-          Add Student Record
-     </div>
-
-
+<!-- Recent Actions -->
+<div class="row mt-5 mb-3">
+  <div class="col">
+    <h6 class="fw-bold text-uppercase text-secondary">Recent Actions</h6>
+  </div>
 </div>
 
-<div class="bottom-left position-fixed inline-block" style="top:25%;right:10% hide d-none">
-  <i class="fas fa-plus rounded-5 hide d-none shadow-sm sz-36 color-s shadow-d p-2 color-bg-white"></i>
+<div hx-get="{% url 'historyView' %}" hx-swap="innerHTML" hx-trigger="load" class="bg-light rounded-4 p-3 shadow-sm">
 </div>

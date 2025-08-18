@@ -1,30 +1,65 @@
-{%extends "base.html"%}
-{%block nav%}
+{% extends "base.html" %}
+{% block nav %}
+{% endblock %}
 
-{%endblock%}
+{% block search %}
+{% endblock %}
 
-{%block search%}
+{% block content %}
+<div class="container py-5">
+  <!-- Brand/Header -->
+  <div class="text-center mb-4">
+    <h1 class="fw-bold color-p display-5">         <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-1">
+          <i class="fas fa-graduation-cap"></i>
+        </span> Oluko</h1>
+    <p class="text-muted">Your journey of learning starts here</p>
+  </div>
 
-{%endblock%}
+  <!-- Signup Card -->
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4 sz-20 fw-semibold">Sign Up</h2>
 
-{%block content%}
-<br />
-  <h2 class="color-black sz-20 my-2 my-5 center">Create an Account</h2>
-  <form method="post">
-    {%if form.errors or errors %}
-    <div class="alert alert-danger">
-      {{form.errors}} {{errors}}
+          <!-- Error Display -->
+          {% if form.errors or errors %}
+          <div class="alert alert-danger">
+            {{ form.errors }} {{ errors }}
+          </div>
+          {% endif %}
+
+          <!-- Form -->
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+              <div class="mb-3">
+                <label class="form-label fw-medium">{{ field.label }}</label>
+                {{ field }}
+              </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary my-2 no-border color-bg-p w-100 py2 form-p rounded-3 fw-semibold">
+              Sign Up
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="d-none text-center my-3 text-muted">OR</div>
+
+          <!-- Google Signup -->
+          <a href="" class="d-none btn btn-outline-danger w-100 py-2 rounded-3">
+            <i class="bi bi-google me-2"></i> Sign up with Google
+          </a>
+
+          <!-- Login Redirect -->
+          <p class="text-center mt-3 mb-0">
+            Already have an account? 
+            <a href="{% url 'login' %}" class="text-decoration-none fw-semibold">Login here</a>
+          </p>
+        </div>
+      </div>
     </div>
-    {%endif%}
-    {% csrf_token %}
-    
-    {%for field in form%}
-     <div class="my-2 mb-3"><div class="py-2">{{field.label}}</div> {{field}} </div>
-    {%endfor%}
-    
-
-    <button type="submit" class="w-100 my-3 color-bg-s color-white button p-2 sz-18 rounded-4">Sign Up</button>
-  </form>
-
-  <p class="sz-14 my-2">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-{%endblock%}
+  </div>
+</div>
+{% endblock %}

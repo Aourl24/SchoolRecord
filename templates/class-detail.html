@@ -1,61 +1,74 @@
-{%extends 'base.html'%}
-{%block content%}
-<div>
-  <br />
-  <div class="mb-4">
-     <div class="row mb-2">
-        <div class="col center">
-           <i class="fas color-s rounded-4 color-bg-white fa-chalkboard-teacher sz-30 p-4 shadow-sm"></i>
-        </div>
-     </div>
-     
-     <div class="row my-2">
-        <div class="col sz-24 center">
-           {{class_name.name}} {{class_name.batch}}
-           <br\>
-         <div class="sz-14 color-grey">number of students : {{class_name.student.count}}</div>
-        </div>
-     </div>
-     
-     <div class="row sz-12">
-        <div hx-get="{%url 'update-form' 'class' class_name.id%}" hx-target="#addHere" class="col m-1 rounded border p-3 center">
-           <i class="fas fa-pen p-2 sz-20 color-s"></i>
-           <br/>
-           Edit <br/> Class
-        </div>
-        
-         <div class="col m-1 rounded border p-3 center" hx-get="{%url 'add-student' class_name.id %}" hx-target="#addHere" hx-swap="innerHTML" >
-           <i class="fas fa-user-graduate p-2 sz-20 color-s"></i>
-           <br/>
-           Add <br/> students
-        </div>
-        
-        <div class="col rounded m-1 border p-3 center sz-12" hx-get="{%url 'addRecord' class_name.id%}" hx-target="#addHere">
-           <i class="fas fa-file-alt p-2 sz-20 color-s"></i>
-           <br/>
-           Add <br/> Record
-           
-        </div>
-     </div>
- 
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-4">
 
-
-   <br/> 
-  <div class="row my-3 sz-16">
-      <div class="col-md-2 col color-bg-p color-white p-2 center">
-          <span class="" hx-get="{% url 'get-class-record' class_name.id %}" hx-target="#mini-load-area" hx-swap="innerHTML"> View Records</span>
-
-      </div>
-    <div class="col-md-2 col color-bg-s color-white p-2 order-first center"> 
-          <span class="" hx-get="{% url 'get-student' class_name.id %}" hx-target="#mini-load-area" hx-swap="innerHTML"> View Student</span>
-
-      </div>
+  <!-- Class Icon -->
+  <div class="row mb-3">
+    <div class="col text-center">
+      <i class="fas fa-chalkboard-teacher text-success bg-white rounded-circle p-4 shadow-sm fs-1"></i>
+    </div>
   </div>
-</div>
-      
-    <div id="mini-load-area">
 
+  <!-- Class Info -->
+  <div class="row mb-3">
+    <div class="col text-center">
+      <h4 class="fw-bold text-dark">
+        {{ class_name.name }} {{ class_name.batch }}
+      </h4>
+      <p class="text-muted small mb-0">
+        Number of students: {{ class_name.student.count }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="row g-3 my-2 justify-content-center text-center sz-12">
+
+    <!-- Edit Class -->
+    <div hx-get="{% url 'update-form' 'class' class_name.id %}" 
+         hx-target="#addHere" 
+         class="col-3 m-1 border rounded shadow-sm p-3 bg-light hover-shadow">
+      <i class="fas fa-pen text-success fs-4 mb-2"></i>
+      <div class="fw-semibold">Edit Class</div>
     </div>
 
+    <!-- Add Students -->
+    <div hx-get="{% url 'add-student' class_name.id %}" 
+         hx-target="#addHere" hx-swap="innerHTML" 
+         class="col-4 m-1 border rounded shadow-sm p-3 bg-light hover-shadow">
+      <i class="fas fa-user-graduate text-success fs-4 mb-2"></i>
+      <div class="fw-semibold">Add Students</div>
+    </div>
+
+    <!-- Add Record -->
+    <div hx-get="{% url 'add-record' class_name.id %}" 
+         hx-target="#addHere" 
+         class="col-3 m-1 border rounded shadow-sm p-3 bg-light hover-shadow">
+      <i class="fas fa-file-alt text-success fs-4 mb-2"></i>
+      <div class="fw-semibold">Add Record</div>
+    </div>
+  </div>
+
+  <!-- View Buttons -->
+  <div class="row mt-4 g-2 text-center">
+    <div class="col-md-3 col">
+      <button class="btn btn-success w-100"
+              hx-get="{% url 'get-class-record' class_name.id %}" 
+              hx-target="#mini-load-area" hx-swap="innerHTML">
+        View Records
+      </button>
+    </div>
+    <div class="col-md-3 col">
+      <button class="btn btn-outline-success w-100"
+              hx-get="{% url 'get-student' class_name.id %}" 
+              hx-target="#mini-load-area" hx-swap="innerHTML">
+        View Students
+      </button>
+    </div>
+  </div>
+
+  <!-- Dynamic Area -->
+  <div id="mini-load-area" class="mt-4"></div>
+
 </div>
-{%endblock%}
+{% endblock %}

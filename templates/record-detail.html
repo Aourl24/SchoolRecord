@@ -1,51 +1,71 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
-<div>
-<div class="mt-2 rounded-3 p-3 color-bg-white shadow-sm">
-  
-  <div class="row align-items-center">
-  <div class="col sz-24 bold my-1"> <span class="color-p">{{record.class_name}}</div></span>
-  <div class="col-12"> <span class="text-danger">{{record.title}}</span></div>
-</div>
+{% block content %}
+<div class="mt-3">
 
-  <div class="sz-18 mt">  <span class="">{{record.subject}} </span></div>
-  <div class="sz-16"> <span class="color-p">{{record.record_type}} {{record.record_number}}</span></div>
+  <!-- Record Info Card -->
+  <div class="rounded-3 p-4 color-bg-white shadow-sm mb-4">
+    <div class="row align-items-center mb-3">
+      <div class="col sz-24 fw-bold color-p">{{ record.class_name }}</div>
+      <div class="col-12 sz-16 fw-semibold text-danger">{{ record.title }}</div>
+    </div>
 
-  <div class="sz-16 my-3 mt-3">
-    <div class="color-grey sz-12">Date & Time </div>{{record.date_created}}</div>
-  <div class="my-3 sz-16"> <div class="sz-12 color-grey">Total Number of Student </div>
-  {{students.count}} </div>
-  <div class="my-3 sz-16"> <div class="color-grey sz-12">Maximum Mark </div> {{record.total_score}}</div>
+    <div class="sz-18 fw-bold mb-2">{{ record.subject }}</div>
+    <div class="sz-16 color-p mb-3">{{ record.record_type }} {{ record.record_number }}</div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="color-grey sz-12">Date & Time</div>
+        <div class="sz-14">{{ record.date_created }}</div>
+      </div>
+      <div class="col-md-6">
+        <div class="color-grey sz-12">Total Number of Students</div>
+        <div class="sz-14 fw-semibold">{{ students.count }}</div>
+      </div>
+      <div class="col-md-6">
+        <div class="color-grey sz-12">Maximum Mark</div>
+        <div class="sz-14 fw-semibold">{{ record.total_score }}</div>
+      </div>
+    </div>
   </div>
 
-
-  {%if edit %}
-  <div class="row my-2  align-items-center">
-  <div class="color-s my-2 col"><a hx-get="{%url 'update-form' 'record' record.id%}" hx-target="#addHere"hx-trigger="click" target="_blank" class="no-decoration sz-12 border rounded p-2 color-black w-100 inline-block center color-s color-bd-p"> Edit record </a> </div>
-  
-  <div class="my-2 col right">
-    <button class="sz-12 w-100 no-border rounded p-2 btn btn-success" id="addStudent" hx-get="{%url 'addToRecord' record.id%}" hx-target="#addHere">Add student record</button>
+  {% if edit %}
+  <!-- Action Buttons -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <a hx-get="{% url 'update-form' 'record' record.id %}" 
+         hx-target="#addHere" hx-trigger="click" target="_blank"
+         class="d-block text-center sz-14 fw-semibold border rounded p-2 color-black color-bg-s transition no-decoration">
+        Edit Record
+      </a>
+    </div>
+    <div class="col-md-6 text-end">
+      <button class="btn sz-14 fw-semibold w-100 color-bg-p color-white rounded p-2 shadow-sm no-border"
+              id="addStudent"
+              hx-get="{% url 'add-to-record' record.id %}" 
+              hx-target="#addHere">
+        Add Student Record
+      </button>
+    </div>
   </div>
-  </div>
-       
-  {%endif%}
-  
-{%include 'student-part.html'%}
+  {% endif %}
 
-<br/>
+  <!-- Student Part (Filter + Table) -->
+  {% include 'student-part.html' %}
 
-<div class=" p-2 my-2 mb-4 color-bg-white rounded">
- <div class="row my-2">
-  <div class="col sz-14  text-danger center">
-    Students in Class without record 
+  <!-- Students Without Record -->
+  <div class="p-3 my-4 color-bg-white rounded shadow-sm">
+    <div class="row mb-2">
+      <div class="col sz-14 text-danger text-center fw-semibold">
+        Students in Class without record
+      </div>
+    </div>
+    <div>
+      {% for student in students_without_record %}
+      <div class="p-2 border-bottom sz-14">{{ forloop.counter }}. {{ student.name }}</div>
+      {% endfor %}
+    </div>
   </div>
+
 </div>
-<div class="">
-{%for student in students_without_record%}
-<div class="p-2">{{forloop.counter}}. {{student.name}} </div>
-{%endfor%}
-</div>
-</div>
-</div>
-{%endblock%}
+{% endblock %}

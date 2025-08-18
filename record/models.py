@@ -153,7 +153,7 @@ class SubjectTeacher(UserModel):
 
 class Record(UserModel):
   title = models.CharField(max_length=10000,choices=TERM_CHOICES)
-  subject = models.ForeignKey(Subject,related_name='record',on_delete=models.CASCADE)
+  subject = models.ForeignKey(SubjectTeacher,related_name='record',on_delete=models.CASCADE,null=True,blank=True)
   date_created = models.DateTimeField(auto_now_add=True)
   record_type = models.CharField(choices=[('Test','Test'),('Exam','Exam'),("Assignment","Assignment"),("Notes","Notes")],max_length=1000000)
   total_score = models.IntegerField()

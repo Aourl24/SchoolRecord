@@ -1,44 +1,172 @@
- <div id="formBox" class="container-fluid position-fixed vh-100 p-2 color-black" style="top:10%;left:0;background-color:rgba(250, 250, 250, 1);overflow: auto;z-index: 100000;">
-{%if not recordForm or update%}
-  <div class="row justify-content-center mb-3 align-items-center p-2">
-      <div class="col pointer-cursor m-1  p-1 sz-12 rounded-2  {%if form_type == 'record'%}color-bg-p color-white{%else%} color-bg-white border{%endif%}  color-black" hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">           Record
-     </div>
-     <div class="col pointer-cursor p-1 sz-12 rounded-2 {%if form_type == 'subject'%}color-bg-p color-white{%else%} color-bg-white border{%endif%} color-black m-1" hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML">
-           Subject
-     </div>
+<div id="formBox" class="container-fluid position-fixed vh-100 p-0" 
+     style="top: 0; left: 0; bacground: linear-gradient(135deg, #4A90E2 0%, #43A047 100%); z-index: 100000; overflow-y: auto; background-color: rgba(1,1,1,0.3);">
 
-     <div class="col pointer-cursor p-1 sz-12 rounded-2 {%if form_type == 'class'%}color-bg-p color-white{%else%} color-bg-white border{%endif%} m-1 color-black" hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
-           Class
-     </div>
+  <!-- Main Content Container -->
+  <div class="container-lg py-4 px-3" style="margin-top: 5vh;">
+    
+    {%if not recordForm or update%}
+    <!-- Navigation Tabs Card -->
+    <div class="card shadow mb-4 border-0" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95);">
+      <div class="card-body p-3">
+        <div class="row g-2 justify-content-center">
+          
+          <div class="col-6 col-md-2">
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'record'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+                    hx-get="{% url 'form' 'record' %}" 
+                    hx-target="#drop-area" 
+                    hx-swap="innerHTML"
+                    style="font-size: 0.9rem; font-weight: 500;">
+              <i class="fas fa-file-alt me-1"></i>Record
+            </button>
+          </div>
+          
+          <div class="col-6 col-md-2">
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'subject'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+                    hx-get="{% url 'form' 'subject' %}" 
+                    hx-target="#drop-area" 
+                    hx-swap="innerHTML"
+                    style="font-size: 0.9rem; font-weight: 500;">
+              <i class="fas fa-book me-1"></i>Subject
+            </button>
+          </div>
+          
+          <div class="col-6 col-md-2">
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'class'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+                    hx-get="{% url 'form' 'class' %}" 
+                    hx-target="#drop-area" 
+                    hx-swap="innerHTML"
+                    style="font-size: 0.9rem; font-weight: 500;">
+              <i class="fas fa-chalkboard me-1"></i>Class
+            </button>
+          </div>
+          
+          <div class="col-6 col-md-2">
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'student'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+                    hx-get="{% url 'form' 'student' %}" 
+                    hx-target="#drop-area" 
+                    hx-swap="innerHTML"
+                    style="font-size: 0.9rem; font-weight: 500;">
+              <i class="fas fa-user-graduate me-1"></i>Student
+            </button>
+          </div>
+          
+          <div class="col-6 col-md-2">
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'student-record'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+                    hx-get="{% url 'form' 'student-record' %}" 
+                    hx-target="#drop-area" 
+                    hx-swap="innerHTML" 
+                    hx-push-url="true"
+                    style="font-size: 0.9rem; font-weight: 500;">
+              <i class="fas fa-chart-line me-1"></i>Std Rec
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {%endif%}
 
-     <div class="col pointer-cursor p-1 sz-12 rounded-2 {%if form_type == 'student'%}color-bg-p color-white{%else%} color-bg-white border{%endif%} color-black m-1" hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML">
-          Student
-     </div>
-
-     <div class="col pointer-cursor p-1 sz-12 rounded-2 {%if form_type == 'student-record'%}color-bg-p color-white{%else%} color-bg-white border{%endif%} color-black m-1" hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" hx-push-url="true">
-          Std Rec
-     </div>
+    <!-- Form Card -->
+    <div class="card shadow-lg border-0" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.98);">
+      <div class="card-header text-white py-3" 
+           style="background: linear-gradient(135deg, #4A90E2 0%, #43A047 100%);">
+        <h3 class="card-title mb-0 d-flex align-items-center">
+          <i class="fas fa-plus-circle me-2"></i>
+          {%if update%} Update {%else%} Add {%endif%} {{form_type|capfirst}}
+        </h3>
+      </div>
+      
+      <div class="card-body p-4">
+        <div id="saved" class="mb-3"></div>
+        
+        <form method='post' 
+              {%if update%} hx-post="{% url 'update-form' form_type model.id%}" {%else%} hx-post="{% url 'form' form_type%}" {%endif%} 
+              hx-target="#saved" 
+              hx-swap="innerHTML"
+              class="needs-validation" 
+              novalidate>
+          
+          {%csrf_token%}
+          
+          <div class="row">
+            {% for field in form%}
+            <div class="col-12 col-md-6 mb-4">
+              <div class="form-floating">
+                {{field}}
+                <label for="{{field.id_for_label}}" class="text-muted fw-medium p-2">
+                  <i class="fas fa-edit me-1"></i>{{field.label}}
+                </label>
+              </div>
+              {% if field.help_text %}
+              <div class="form-text text-muted small mt-1">
+                <i class="fas fa-info-circle me-1"></i>{{field.help_text}}
+              </div>
+              {% endif %}
+              {% if field.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in field.errors %}
+                <small><i class="fas fa-exclamation-triangle me-1"></i>{{error}}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            {%endfor%}
+          </div>
+          
+          <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-lg py-3 text-white fw-semibold shadow-lg" 
+                    style="background: linear-gradient(135deg, #43A047 0%, #66BB6A 100%); border: none; border-radius: 12px;">
+              <i class="fas fa-save me-2"></i>
+              {%if update%}Update{%else%}Save{%endif%} {{form_type|capfirst}}
+            </button>
+          </div>
+        </form>
+        
+        <div class="mt-4">
+          <button class="btn btn-lg w-100 py-3 text-white fw-bold shadow-lg" 
+                  style="background: linear-gradient(135deg, #E53935 0%, #E57373 100%); border: none; border-radius: 12px;"
+                  hx-target="#formBox" 
+                  hx-swap="outerHTML" 
+                  hx-get="{%url 'closeRequest'%}">
+            <i class="fas fa-times-circle me-2"></i>Close Window
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-  {%endif%}
-  <div id="formBx" class="container">
-	<h3 class="my-2 color-p sz-20">{%if update%} Update {%else%} Add {%endif%} {{form_type}} </h3>
-<div id="saved"></div> 
-	<form method='post'  {%if update%} hx-post="{% url 'update-form' form_type model.id%}"  {%else%} hx-post="{% url 'form' form_type%}" {%endif%} hx-target="#saved" hx-swap="innerHTML">
-		{%csrf_token%}
-		{% for field in form%}
-			<div class="my-2 py-2"> {{field.label}} </div>
-			<div> {{field}} 
-		{%endfor%}
-		<br />
-		<button class="btn btn-success w-100 p-3">Save </button>
-	</form>
-	{%if recordForm or update%}
-	<div class="my-2">
-	  <button class="form-control btn-danger color-white bg-danger no-border" hx-target="#formBox" hx-swap="outerHTML" style="padding:10px" hx-get="{%url 'closeRequest'%}">Close window </button>
-	</div>
-	{%endif%}
-	</div>
-	<br />
-	<br />
-	<br />
+  
+  <!-- Add some spacing at bottom for mobile scrolling -->
+  <div style="height: 100px;"></div>
 </div>
+
+<style>
+.transition-all {
+  transition: all 0.3s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.card { border-radius: 20px !important; overflow: hidden; }
+
+.form-floating > .form-control {
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+.form-floating > .form-control:focus {
+  border-color: #4A90E2;
+  box-shadow: 0 0 0 0.25rem rgba(74, 144, 226, 0.25);
+  transform: translateY(-2px);
+}
+.form-floating > label { transition: all 0.3s ease; }
+
+/* Gradient animations */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.bg-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

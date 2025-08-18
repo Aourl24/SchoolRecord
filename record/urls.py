@@ -4,8 +4,10 @@ from . import views
 from .excel import export_report_excel
 
 urlpatterns = [
+  #Landing views
+  path("",views.landing_view),
     # Main views
-    path('', views.home_view, name='home'),
+    path('home/', views.home_view, name='home'),
     path('home/<str:part>/', views.home_view, name='home-part'),
     
     # List views

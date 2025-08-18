@@ -29,6 +29,10 @@ class HistoryMixin:
             )
         return super().dispatch(request, *args, **kwargs)
 
+#Landimg Views
+def landing_view(request):
+  return render(request,"landing.html")
+  
 # Main Views
 @login_require
 def home_view(request, part=None):
@@ -319,10 +323,11 @@ def filter_student_view(request):
     return render(request, 'students-table.html', context)
 
 # Utility Views
+@login_require
 def add_to_record_view(request, id):
     """Add student to specific record"""
     record = get_object_or_404(Record, id=id)
-    form = StudentRecordForm(initial={'record': record})
+    form = StudentRecordForm(initial={'record': record},user=request.user)
     
     students_without_record = StudentRecordService.get_students_without_record(record)
     form.fields['student'].queryset = students_without_record
@@ -509,7 +514,7 @@ def update_record_view(request, id):
 def add_record_to_class_view(request, id):
     """Add record to specific class"""
     class_obj = get_object_or_404(Class, id=id)
-    form = RecordForm(initial={'class_name': class_obj})
+    form = RecordForm(initial={'class_name': class_obj},user=request.user)
     
     context = {
         'class': class_obj,
@@ -519,6 +524,7 @@ def add_record_to_class_view(request, id):
     }
     return render(request, "record-form.html", context)
 
+@login_require
 def get_class_records_view(request, id):
     """Get all records for a specific class"""
     class_obj = get_object_or_404(Class, id=id)
@@ -537,6 +543,7 @@ def get_class_records_view(request, id):
     }
     return render(request, 'record-list.html', context)
 
+@login_require
 def get_class_students_view(request, id):
     """Get all students for a specific class"""
     class_obj = get_object_or_404(Class, id=id)
