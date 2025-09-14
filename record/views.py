@@ -359,7 +359,7 @@ def add_student_to_class_view(request, id):
 
 # Authentication Views
 
-def login(username,password,url=None):
+def login(request,username,password,url=None):
   try:
     user = User.objects.get(username=username)
     if check_password(password, user.password):
@@ -374,7 +374,7 @@ def login(username,password,url=None):
         )
         return response
     else:
-        messages.error(request, "Invalid credentials")
+        return render (request,'login.html',{"error":"Invalid credentials"})
   except User.DoesNotExist:
     messages.error(request, "Invalid credentials")
   
@@ -392,7 +392,7 @@ def signup_view(request):
               result = UserService.create_user(username, password)
               if result['success']:
                   messages.success(request, "Account created successfully!")
-                  return login(username,password,url="new_user_detail")
+                  return login(request,username,password,url="new_user_detail")
               else:
                   messages.error(request, result['error'])
             
@@ -407,13 +407,13 @@ def signup_view(request):
 
 def login_view(request):
     """User login"""
-    errors = None
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        return(login(username,password,url="home"))
+        next_url = request.POST.get("next")
+        return(login(request,username,password,url= next_url if next_url else "home"))
         
-    return render(request, "login.html",{"errors":errors})
+    return render(request, "login.html")
     
 # Other Views (subjects, topics, history, reports)
 @login_require
@@ -654,9 +654,9 @@ def api_class_summary(request, class_id):
 @login_require
 def report_view(request):
     """Enhanced report generation view"""
-    classes_obj = Class.objects.all()
+    classes_obj = Class.objects.for_user(request.user)
     classes = [c for c in classes_obj if c.batch == "A"]
-    subjects = Subject.objects.all()
+    subjects = Subject.objects.for_user(request.user)
 
     context = {
         'subjects': subjects,
@@ -670,6 +670,10 @@ def report_view(request):
         batch = request.POST.get("batch", "A")
         term = request.POST.get("term", "all")
         sort_order = request.POST.get('sort', 'asc')
+
+        if not all([subject_id,class_name,batch,term,sort_order]):
+            context['error'] = "Invalid Parameters"
+            return render(request,'get_report.html' ,context)
 
         report_result = Report.generate_report(
             subject_id=subject_id,
@@ -712,6 +716,7 @@ def logout_view(request):
 
 @login_require
 def user_detail(request,form="role"):
+  schools = None   
   if request.method == "POST":
     user = request.user
     if form == "role":
@@ -721,12 +726,8 @@ def user_detail(request,form="role"):
       form = "full_name"
     elif form == "school":
       school = request.POST.get("school")
-      check_school = School.objects.filter(name__icontains=school)
-      if check_school:
-        user.school = check_school.first()
-      else:
-        create_school = School.objects.create(name=school)
-        user.school = create_school
+      check_school = School.objects.get(id=school)
+      user.school = check_school
       user.save()
       return redirect("home")
     elif form == "full_name":
@@ -739,7 +740,7 @@ def user_detail(request,form="role"):
       user.email = email
       user.save()
       form = "school"
+      schools = School.objects.all()
       
-      
-  context = {"form":form}
+  context = {"form":form,"schools":schools}
   return render(request,"details.html",context)

@@ -27,15 +27,15 @@
     <!-- Edit Class -->
     <div hx-get="{% url 'update-form' 'class' class_name.id %}" 
          hx-target="#addHere" 
-         class="col-3 m-1 border rounded p-3 bg-liht hover-shadow">
-      <i class="fas fa-pen text-success fs-4 mb-2"></i>
+         class="col-3 m-1 borde rounded p-3 bg-light hover-shadow pointer-cursor">
+      <i class="fas fa-pen text-primary fs-4 mb-2"></i>
       <div class="fw-semibold">Edit Class</div>
     </div>
 
     <!-- Add Students -->
     <div hx-get="{% url 'add-student' class_name.id %}" 
          hx-target="#addHere" hx-swap="innerHTML" 
-         class="col-4 m-1 border rounded shaw-sm p-3  hover-shadow">
+         class="col-4 m-1 bg-green-light rounded shaw-sm p-3  hover-shadow pointer-cursor">
       <i class="fas fa-user-graduate text-success fs-4 mb-2"></i>
       <div class="fw-semibold">Add Students</div>
     </div>
@@ -43,14 +43,14 @@
     <!-- Add Record -->
     <div hx-get="{% url 'add-record' class_name.id %}" 
          hx-target="#addHere" 
-         class="col-3 m-1 border rounded p-3 hover-shadow">
-      <i class="fas fa-file-alt text-success fs-4 mb-2"></i>
+         class="col-3 m-1 bg-yellow-light rounded p-3 hover-shadow pointer-cursor">
+      <i class="fas fa-file-alt text-warning fs-4 mb-2"></i>
       <div class="fw-semibold">Add Record</div>
     </div>
   </div>
 
   <!-- View Buttons -->
-  <div class="row mt-4 g-2 text-center">
+  <div class="row mt-4 g-2 text-center justify-content-center">
     <div class="col-md-3 col">
       <button class="btn border w-100" id="view_record" onClick="swap('view_record')"
               hx-get="{% url 'get-class-record' class_name.id %}" 

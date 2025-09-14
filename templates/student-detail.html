@@ -1,22 +1,29 @@
+{%extends 'base.html'%}
+
+{%block content%}
 <div>
-  <div class="row my-2">
-    <div class="col-3">
-    <i class="fas fa-user-graduate sz-24 sz-24 rounded-4 p-3 color-bg-white color-s"></i>
-  </div>
-  <div class="col">
-    <div class="sz-20"> {{student.name}}</div>
-    <div class="sz-16">{{student.class_name}} </div>
-  </div>
+
+    <!-- Student Icon -->
+  <div class="row mb-3">
+    <div class="col text-center">
+      <i class="fas fa-user-graduate color-t bg-white rounded-circle p-4 shadow-sm fs-1"></i>
+    </div>
   </div>
 
-  <div class="row">
-    <div class="col">
-      
-    </div>    
+  <!-- Student Info -->
+  <div class="row mb-3">
+    <div class="col text-center">
+      <h4 class="fw-bold text-dark sz-24">
+        {{ student.name }} 
+      </h4>
+      <p class="text-muted small mb-0">
+        class {{ student.class_name }}
+      </p>
+    </div>
   </div>
 
-    <div class="row">
-    <div class="col right">
+    <div class="row justify-content-center my-2">
+    <div class="col text-center">
       <div class="color-s"><a hx-get="{%url 'update-form' 'student' student.id%}" hx-target="#addHere"hx-trigger="click" class="no-decoration bg-danger color-white rounded p-2" target="_blank"> edit student </a> </div>  
     </div>    
   </div>
@@ -34,3 +41,4 @@
 </div>
 
 
+{%endblock%}

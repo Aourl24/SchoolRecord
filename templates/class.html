@@ -1,12 +1,15 @@
+{%extends 'base.html'%}
+
+{%block content%}
 <h2 class="py-3 color-p sz-24 fw-bold">All Classes</h2>
 
 <div class="row">
   {% for c in school_class %}
   <div class="col-12 col-md-6 col-lg-4 mb-4">
-    <div class="p-3 rounded-3 shadow-sm color-bg-s">
+    <div class="p-3 rounded-3 shadow-sm bg-green-light">
       
       <!-- Class Name -->
-      <h5 class="mb-2 color-white sz-20 fw-semibold">
+      <h5 class="mb-2 color-black sz-20 fw-semibold">
         {{ c.name }} {{ c.batch }}
       </h5>
 
@@ -28,8 +31,8 @@
       </p>
 
       <!-- CTA Button -->
-      <a href="{% url 'get-class' c.id %}" 
-         class="btn w-100 color-bg-p color-white rounded-3 shadow-sm">
+      <a hx-get="{% url 'get-class' c.id %}" 
+         class="btn w-100 color-bg-p color-white rounded-3 shadow-sm" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
         Go to Class
       </a>
 
@@ -37,3 +40,4 @@
   </div>
   {% endfor %}
 </div>
+{%endblock%}

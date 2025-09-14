@@ -1,17 +1,25 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Student Record System{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap-5/css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
-    <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
-     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
-</head>
-<style>
-:root{
+    <head>
+        <meta charset="utf-8">
+            <meta content="width=device-width, initial-scale=1.0" name="viewport">
+                <title>
+                    {% block title %}Student Record System{% endblock %}
+                </title>
+                <link href="{% static 'css/bootstrap-5/css/bootstrap.css' %}" rel="stylesheet">
+                    <link href="{% static 'css/acss/acss.css' %}" rel="stylesheet">
+                        <link href="{% static 'css/fontawesome/css/all.min.css' %}" rel="stylesheet">
+                            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
+                            </link>
+                        </link>
+                    </link>
+                </link>
+            </meta>
+        </meta>
+    </head>
+    <style>
+        :root{
   --p: #4f46e5;   /* primary */
   --s: #06b6d4;   /* secondary */
   --t: #10b981;   /* tertiary */
@@ -35,7 +43,7 @@ body{
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   color: #0b1220;
-  background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%);
+  ackground: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%);
   line-height:1.6;
 }
 
@@ -79,146 +87,254 @@ body{
 .form-p{
   padding:10px;
 }
-</style>
-<body class="">
 
-    
-{%block nav%} 
-  <nav class="navbar navbar-expand-lg navbar-sticky sticky-top bg-white color-bgp border-bottom">
-    <div class="container ">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-        <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-2">
-          <i class="fas fa-graduation-cap"></i>
-        </span>
-        <span class="fw-700 brand-text">Oluko</span>
-      </a>
+/* Container (no layout impact) */
+#htmx-global-indicator { pointer-events: none; }
 
-      <button class="navbar-toggler  d-block border-0" type="button" onClick="menuDrop()">
-        <i  id="icon-menu"  class="fa navbar-toggler-icon"></i>
-      </button>
+/* Top progress bar */
+.htmx-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg,#ff5a5f,#ffbd2e);
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+  z-index: 9999;
+  transition: width 200ms ease;
+}
 
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav ms-auto align-items-lg-center">
-          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
-          <li class="nav-item"><a class="nav-link" href="#lesson">Lesson Notes</a></li>
-          <li class="nav-item"><a class="nav-link" href="#reports">Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-          <li class="nav-item ms-lg-3">
-            <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Login</a>
-            <a href="{% url 'signup' %}" class="btn btn-primary ms-2 btn-sm">Get Started</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+/* Overlay spinner (optional) */
+.htmx-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;               /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  backdrop-filter: blur(2px);
+  background: rgba(255,255,255,0.4);
+}
 
-{%endblock%}
-    
-    
-<div class="container">
-  <div id="addHere"></div>
-  {%block search%}
-<div class="container my-4">
-  <div class="search-wrapper p-2 bg-white rounded-3 shadow-sm border">
-    <form 
-      hx-get="{% url 'search' %}" 
-      hx-target="#load-area" 
-      hx-trigger="input changed delay:300ms" 
-      hx-swap="innerHTML"
-      class="d-flex align-items-center"
-    >
-      <div class="input-group">
-        <span class="input-group-text bg-white border-0">
-          <i class="fas fa-search text-muted"></i>
-        </span>
-        <input 
-          type="text"
-          class="form-control border-0 shadow-none" 
-          name="search"
-          placeholder="Search students, records, classes..."
-        />
-      </div>
-    </form>
+/* when shown */
+.htmx-overlay.show { display: flex; pointer-events: none; }
+
+/* Spinner */
+.htmx-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid rgba(0,0,0,0.08);
+  border-top-color: rgba(0,0,0,0.55);
+  animation: spin 0.9s linear infinite;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* small helper for error state (optional) */
+.htmx-progress.error {
+  background: linear-gradient(90deg,#ff4d4f,#d9363e);
+}
+
+    </style>
+    <body class="">
+      <!-- HTMX global indicator -->
+<div id="htmx-global-indicator" aria-hidden="true">
+  <div class="htmx-progress" id="htmx-progress"></div>
+  <div class="htmx-overlay" id="htmx-overlay" role="status" aria-live="polite">
+    <div class="htmx-spinner" aria-hidden="true"></div>
   </div>
 </div>
 
+        {%block nav%}
+        <nav class="navbar navbar-expand-lg navbar-sticky sticky-top bg-white color-bgp border-bottom">
+            <div class="container ">
+                <a class="navbar-brand d-flex align-items-center gap-2" href="" hx-get="{%url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+                    <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-2">
+                        <i class="fas fa-graduation-cap">
+                        </i>
+                    </span>
+                    <span class="fw-700 brand-text">
+                        Mark
+                        <span class="color-s">
+                            Book.com
+                        </span>
+                    </span>
+                </a>
+                 
+                 <div class="right col-md-4 col-6">
+                  <button onClick="history.back()" class="btn btn-link"> <i class="fas fa-arrow-left"> <span class="d-md-inline d-none"> back </span></i> </button>
+                </div>
 
-{%endblock%}
-<div id="drop-area" style="z-index:999"></div>
-<dropdown>
-  <div 
-    id="menu-drop" class="position-fixed vh-100 vw-100 d-none bg-white shadow-lg p-3" 
-    style="background-color: rgba(250,250,250,0.95); top: 10%; left: 0; overflow-y: auto; z-index:99"  
-    id="drop-area">
+                <button class="navbar-toggler border-0" onclick="menuDrop()" type="button">
+                    <i class="fa navbar-toggler-icon" id="icon-menu">
+                    </i>
+                </button>
+               
+                <div class="collapse navbar-collapse" id="navMenu">
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <li class="nav-item">
+                            <a class="list-group-item list-group-item-action d-flex align-items-center pointer-cursor color-hover px-2 sz-12 border-end" hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                        
+                                <span class="ms-2">
+                                    Add Record
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="list-group-item list-group-item-action d-flex align-items-center pointer-cursor color-hover px-2 sz-12 border-end" hx-get="{% url 'form' 'subject' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                              
+                                <span class="ms-2">
+                                    Add Subject
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="list-group-item list-group-item-action d-flex align-items-center pointer-cursor color-hover px-2 sz-12 border-end" hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                
+                                <span class="ms-2">
+                                    Add Class
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="list-group-item list-group-item-action d-flex align-items-center pointer-cursor color-hover px-2 sz-12 border-end" hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                
+                                <span class="ms-2">
+                                    Add Student
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="list-group-item list-group-item-action d-flex align-items-center pointer-cursor color-hover px-2 sz-12 border-end" hx-get="{% url 'form' 'student-record' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                
+                                <span class="ms-2">
+                                    Add Student Record
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-primary ms-2 btn-sm" hx-get=" {{request.get_full_path}}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+                                {{request.user.username}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
 
-    <div class="container py-4">
-      <h5 class="text-center fw-bold mb-4">📋 Teacher Menu</h5>
-
-      <div class="list-group">
-
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center d-none">
-          ✅ <span class="ms-2">Attendance Marking</span>
-        </a>
-
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center d-none">
-          👨‍🏫 <span class="ms-2">My Class</span>
-        </a>
-
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center d-none">
-          📅 <span class="ms-2">Timetable</span>
-        </a>
-
-<br/>
-        <a hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
-          ➕ <span class="ms-2">Add Record</span>
-        </a>
-
-        <a hx-get="{% url 'form' 'subject' %}" hx-target="#drop-area" hx-swap="innerHTML"  class="list-group-item list-group-item-action d-flex align-items-center">
-          📘 <span class="ms-2">Add Subject</span>
-        </a>
-
-        <a hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
-          🏫 <span class="ms-2">Add Class</span>
-        </a>
-
-        <a hx-get="{% url 'form' 'student' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
-          👨‍🎓 <span class="ms-2">Add Student</span>
-        </a>
-
-        <a hx-get="{% url 'form' 'student-record' %}" hx-target="#drop-area" hx-swap="innerHTML" class="list-group-item list-group-item-action d-flex align-items-center">
-          📑 <span class="ms-2">Add Student Record</span>
-        </a>
-<br/>
-
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center ">
-          ⚙️ <span class="ms-2">Settings</span>
-        </a>
-
-      </div>
-    </div>
-  </div>
-</dropdown>
-
-      
-    <main>
-        <div id="load-area" class="container-fluid">
-        {% block content %}
+        {%endblock%}
+        <div class="container">
+            <div id="addHere">
+            </div>
+            {%block search%}
+            <div class="container my-4">
+                <div class="search-wrapper p-2 bg-white rounded-3 shadow-sm border">
+                    <form class="d-flex align-items-center" hx-get="{% url 'search' %}" hx-swap="innerHTML" hx-target="#load-area" hx-trigger="input changed delay:300ms">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="fas fa-search text-muted">
+                                </i>
+                            </span>
+                            <input class="form-control border-0 shadow-none" name="search" placeholder="Search students, records, classes..." type="text"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {%endblock%}
+            <div id="drop-area" style="z-index:999">
+            </div>
+            <dropdown>
+                <div class="position-fixed vh-100 vw-100 d-none bg-white shadow-lg p-3" id="menu-drop" style="background-color: rgba(250,250,250,0.95); top: 10%; left: 0; overflow-y: auto; z-index:99">
+                    <div class="container py-4">
+                        <h5 class="text-center fw-bold mb-4">
+                            📋 Teacher Menu
+                        </h5>
+                        <div class="list-group">
+                            <a class="list-group-item list-group-item-action d-flex align-items-center d-none" href="#">
+                                ✅
+                                <span class="ms-2">
+                                    Attendance Marking
+                                </span>
+                            </a>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center d-none" href="#">
+                                👨‍🏫
+                                <span class="ms-2">
+                                    My Class
+                                </span>
+                            </a>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center d-none" href="#">
+                                📅
+                                <span class="ms-2">
+                                    Timetable
+                                </span>
+                            </a>
+                            <br/>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center" hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                ➕
+                                <span class="ms-2">
+                                    Add Record
+                                </span>
+                            </a>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center" hx-get="{% url 'form' 'subject' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                📘
+                                <span class="ms-2">
+                                    Add Subject
+                                </span>
+                            </a>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center" hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                🏫
+                                <span class="ms-2">
+                                    Add Class
+                                </span>
+                            </a>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center" hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                👨‍🎓
+                                <span class="ms-2">
+                                    Add Student
+                                </span>
+                            </a>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center" hx-get="{% url 'form' 'student-record' %}" hx-swap="innerHTML" hx-target="#drop-area">
+                                📑
+                                <span class="ms-2">
+                                    Add Student Record
+                                </span>
+                            </a>
+                            <br/>
+                            <a class="list-group-item list-group-item-action d-flex align-items-center " href="#">
+                                ⚙️
+                                <span class="ms-2">
+                                    Settings
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </dropdown>
+            <main>
+                <div class="container-fluid" id="load-area">
+                    {% block content %}
         
         
         {% endblock %}
+                </div>
+            </main>
+            <footer class="hide d-none">
+                <p>
+                    © {{ now|date:"Y" }} Student Records
+                </p>
+            </footer>
         </div>
-    </main>
-
-    <footer class="hide d-none">
-        <p>&copy; {{ now|date:"Y" }} Student Records</p>
-    </footer>
-</div>
-    <script src="{% static 'js/htmx.min.js' %}"></script>
-    <!-- 
+        <script src="{% static 'js/htmx.min.js' %}">
+        </script>
+        <!-- 
       htmx.config.pushUrl = true;  // replaces current history entry instead of pushing
     </script> -->
-    <script>
-    function showDrop(){
+        <script>
+            function showDrop(){
         document.getElementById('drop-area').classList.toggle('d-none')
         let icon = document.getElementById('icon')
         icon.classList.toggle("fa-times-circle")
@@ -232,6 +348,108 @@ body{
         icon.classList.toggle("text-danger")
         icon.classList.toggle("navbar-toggler-icon")
     }
-    </script>
-</body>
+
+(function () {
+  // Config
+  const SHOW_DELAY = 120;      // ms: don't show indicator for very fast requests
+  const PROGRESS_STEP_MS = 200; // interval to nudge the progress bar
+  const MAX_PROGRESS_BEFORE_COMPLETE = 92; // percent
+
+  // Elements
+  const progress = document.getElementById('htmx-progress');
+  const overlay = document.getElementById('htmx-overlay');
+
+  // State
+  let inflight = 0;
+  let showTimer = null;
+  let progressTimer = null;
+  let currentProgress = 0;
+
+  function resetProgress() {
+    currentProgress = 0;
+    progress.style.width = '0%';
+    progress.classList.remove('error');
+  }
+
+  function startProgressAnimation() {
+    clearInterval(progressTimer);
+    progressTimer = setInterval(() => {
+      // advance slowly but not all the way
+      if (currentProgress < MAX_PROGRESS_BEFORE_COMPLETE) {
+        currentProgress += Math.random() * 6 + 3; // random step 3-9
+        if (currentProgress > MAX_PROGRESS_BEFORE_COMPLETE) currentProgress = MAX_PROGRESS_BEFORE_COMPLETE;
+        progress.style.width = currentProgress + '%';
+      }
+    }, PROGRESS_STEP_MS);
+  }
+
+  function showIndicator() {
+    // show bar and overlay
+    progress.style.width = '6%'; // quick initial visual
+    overlay.classList.add('show');
+    startProgressAnimation();
+  }
+
+  function hideIndicator(signalError=false) {
+    clearInterval(progressTimer);
+    clearTimeout(showTimer);
+    // visually complete
+    progress.style.width = '100%';
+    if (signalError) progress.classList.add('error');
+
+    // small delay so user sees completion, then reset
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      // fade out progress (let transition take place), then reset
+      setTimeout(() => resetProgress(), 200);
+    }, 180);
+  }
+
+  // HTMX event handlers
+  document.body.addEventListener('htmx:beforeRequest', function (evt) {
+    inflight += 1;
+    // If the indicator is already visible, keep it; otherwise schedule show after a short delay
+    if (inflight === 1) {
+      showTimer = setTimeout(() => {
+        // Only show if still inflight
+        if (inflight > 0) {
+          showIndicator();
+        }
+      }, SHOW_DELAY);
+    }
+  });
+
+  function onRequestFinished(evt, isError=false) {
+    if (inflight > 0) inflight -= 1;
+    // Only hide when all inflight requests are done
+    if (inflight === 0) {
+      hideIndicator(isError);
+    }
+  }
+
+  document.body.addEventListener('htmx:afterRequest', function (evt) {
+    onRequestFinished(evt, false);
+  });
+
+  // HTMX fires this on non-200 responses
+  document.body.addEventListener('htmx:responseError', function (evt) {
+    onRequestFinished(evt, true);
+  });
+
+  // Safety: in case HTMX triggers other finish events
+  document.body.addEventListener('htmx:afterOnLoad', function (evt) {
+    // sometimes afterOnLoad indicates the request lifecycle is effectively complete
+    // we won't decrement here because afterRequest should handle it — keeping this minimal.
+  });
+
+  // Optional: expose a small API if you need to trigger manually
+  window._htmxIndicator = {
+    show: showIndicator,
+    hide: () => hideIndicator(false),
+    error: () => hideIndicator(true)
+  };
+})();
+
+        </script>
+    </body>
 </html>

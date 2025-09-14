@@ -6,6 +6,7 @@ from django.db import models
 from itsdangerous import TimestampSigner, BadSignature
 from django.contrib.auth.hashers import make_password, check_password
 from uuid import uuid4
+from django.core.exceptions import ValidationError
 
 class UserQuerySet(models.QuerySet):
     def for_user(self, user):
@@ -44,7 +45,7 @@ class User(models.Model):
     email = models.EmailField(max_length=500,blank=True,null=True)
     password = models.CharField(max_length=255)
     school = models.ForeignKey(School,related_name="user",null=True,blank=True,on_delete=models.CASCADE)
-    role = models.CharField(choices=[("Teacher","Teacher"),("School Administration","School Administration"),("Student","Student")],default="Teacher")
+    role = models.CharField(choices=[("Teacher","Teacher"),("School Administration","School Administration"),("Student","Student")],default="Teacher",max_length=255)
     secret_key = models.CharField(max_length=255, blank=True, null=True)
 
     def set_password(self, raw_password):
@@ -115,7 +116,7 @@ class Class(UserModel):
 class Student(UserModel):
   name = models.CharField(max_length=100000)
   class_name = models.ForeignKey(Class, related_name="student",on_delete=models.CASCADE)
-  gender = models.CharField(choices=[("Male","Male"),("Female","Female")],null=True,blank=True)
+  gender = models.CharField(choices=[("Male","Male"),("Female","Female")],null=True,blank=True,max_length=255)
   admission_number = models.IntegerField(null=True,blank=True)
   contact_info = models.CharField(max_length=9000000,null=True,blank=True)
   date_of_birth = models.CharField(max_length=1000000,null=True,blank=True)
@@ -158,7 +159,7 @@ class Record(UserModel):
   record_type = models.CharField(choices=[('Test','Test'),('Exam','Exam'),("Assignment","Assignment"),("Notes","Notes")],max_length=1000000)
   total_score = models.IntegerField()
   class_name = models.ForeignKey(Class,on_delete=models.CASCADE,related_name="record",null=True,blank=True)
-  record_number = models.IntegerField()
+  record_number = models.IntegerField(null=True,blank=True)
 
   class Meta: 
     unique_together = ("title","subject","class_name","record_type","record_number")
@@ -166,7 +167,7 @@ class Record(UserModel):
   def __str__(self):
     return f"{self.title} {self.subject} {self.record_type} {self.class_name} ({self.record_number})"
 
-   
+
 class StudentRecord(UserModel):
   student = models.ForeignKey(Student,related_name="record",on_delete=models.CASCADE)
   record =  models.ForeignKey(Record,related_name='evaluation',on_delete=models.CASCADE)
@@ -177,6 +178,15 @@ class StudentRecord(UserModel):
   
   def __str__(self):
     return f"{self.student.name} {self.record.title} {self.record.subject}"
+
+  def save(self):
+    total_score = self.record.total_score
+    print(total_score)
+    print(self.score)
+    if self.score > total_score:
+      raise ValidationError("Score can't be greater than Total Score")
+    else:
+      super().save()
     
   
 class History(UserModel):

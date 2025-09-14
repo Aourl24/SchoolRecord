@@ -30,7 +30,7 @@
   <!-- Class Card -->
   <div class="col-md-3 col-6">
     <div class="card bg-blue-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
-         hx-get="{% url 'class-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+         hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
       <div class="icon-circle bg-primary bg-opacity-25 mb-3 mx-auto">
         <i class="fas fa-chalkboard-teacher text-primary fa-lg"></i>
       </div>
@@ -42,7 +42,7 @@
   <!-- Subject Card -->
   <div class="col-md-3 col-6">
     <div class="card bg-green-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
-         hx-get="{% url 'subject-list' %}" hx-target="#load-area" hx-swap="innerHTML">
+         hx-get="{% url 'subject-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
       <div class="icon-circle bg-success bg-opacity-25 mb-3 mx-auto">
         <i class="fas fa-book-open text-success fa-lg"></i>
       </div>
@@ -54,7 +54,7 @@
   <!-- Record Card -->
   <div class="col-md-3 col-6">
     <div class="card bg-red-light border-0 rounded-4 text-center p-3 h-100 pointer-cursor hover-lift" 
-         hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML">
+         hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
       <div class="icon-circle bg-danger bg-opacity-25 mb-3 mx-auto">
         <i class="fas fa-file-alt text-danger fa-lg"></i>
       </div>
@@ -75,7 +75,7 @@
 <div class="row">
   <div class="col">
     <div class="card shadow-md border-0 rounded-4 text-center p-4 pointer-cursor hover-lift"
-         hx-get="{% url 'generateReport' %}" hx-target="#load-area" hx-swap="innerHTML">
+         hx-get="{% url 'generateReport' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
       <i class="fas fa-chart-pie text-primary fa-2x mb-2"></i>
       <h6 class="fw-semibold">Generate Report</h6>
     </div>

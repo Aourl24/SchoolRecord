@@ -1,6 +1,10 @@
+{%extends 'base.html'%}
+
+{%block content%}
 <h2 class="py-3 color-p">All Subjects </h2>
 <ul>
   {% for subject in subjects %}
     <li> <a  class="sz-18 py-2 my-2 pointer-cursor color-hover no-decoration"  href="{{subject.get_absolute_url}}"> {{subject.name}}</a></li>
   {% endfor %}
 </ul>
+{%endblock%}

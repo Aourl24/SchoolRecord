@@ -6,7 +6,7 @@ def login_require(view_func):
     def wrapper(request, *args, **kwargs):
         auth_token = request.COOKIES.get("auth_token")
         if not auth_token:
-            return redirect("signup")
+            return redirect(f"/login/?next={request.get_full_path}")
 
         try:
             # Unsigned later in verify_token

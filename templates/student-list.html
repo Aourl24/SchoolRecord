@@ -1,12 +1,12 @@
  
     {% for s in student %}
   <div class="row my-2 mb-3 align-items-center">
-     <div class="col-2">
-        <span class="rounded color-bg-t color-black p-3">{{forloop.counter}}</span>
+     <div class="col-1">
+        <span class="rounded  color-black p-2">{{forloop.counter}}</span>
      </div>
      <div class="col">
         <div class="row">
-           <div class="col sz-16" hx-get="{% url 'get-student-detail' s.id %}" hx-target="#load-area" hx-swap="innerHTML">
+           <div class="col sz-16" hx-get="{% url 'get-student-detail' s.id %}"  hx-target="body" hx-swap="outerHTML" hx-push-url="true">
               {{ s.name }}
            </div>
         </div>

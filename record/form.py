@@ -88,8 +88,6 @@ class StudentRecordForm(BaseForm):
 	  self.fields["record"].queryset = record
 	  self.fields["student"].queryset = student
 
-		
-
 
 class TopicForm(BaseForm):
 	class Meta:
