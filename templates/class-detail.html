@@ -5,14 +5,14 @@
   <!-- Class Icon -->
   <div class="row mb-3">
     <div class="col text-center">
-      <i class="fas fa-chalkboard-teacher text-success bg-white rounded-circle p-4 shadow-sm fs-1"></i>
+      <i class="fas fa-chalkboard-teacher color-t bg-white rounded-circle p-4 shadow-sm fs-1"></i>
     </div>
   </div>
 
   <!-- Class Info -->
   <div class="row mb-3">
     <div class="col text-center">
-      <h4 class="fw-bold text-dark">
+      <h4 class="fw-bold text-dark sz-24">
         {{ class_name.name }} {{ class_name.batch }}
       </h4>
       <p class="text-muted small mb-0">
@@ -27,7 +27,7 @@
     <!-- Edit Class -->
     <div hx-get="{% url 'update-form' 'class' class_name.id %}" 
          hx-target="#addHere" 
-         class="col-3 m-1 border rounded shadow-sm p-3 bg-light hover-shadow">
+         class="col-3 m-1 border rounded p-3 bg-liht hover-shadow">
       <i class="fas fa-pen text-success fs-4 mb-2"></i>
       <div class="fw-semibold">Edit Class</div>
     </div>
@@ -35,7 +35,7 @@
     <!-- Add Students -->
     <div hx-get="{% url 'add-student' class_name.id %}" 
          hx-target="#addHere" hx-swap="innerHTML" 
-         class="col-4 m-1 border rounded shadow-sm p-3 bg-light hover-shadow">
+         class="col-4 m-1 border rounded shaw-sm p-3  hover-shadow">
       <i class="fas fa-user-graduate text-success fs-4 mb-2"></i>
       <div class="fw-semibold">Add Students</div>
     </div>
@@ -43,7 +43,7 @@
     <!-- Add Record -->
     <div hx-get="{% url 'add-record' class_name.id %}" 
          hx-target="#addHere" 
-         class="col-3 m-1 border rounded shadow-sm p-3 bg-light hover-shadow">
+         class="col-3 m-1 border rounded p-3 hover-shadow">
       <i class="fas fa-file-alt text-success fs-4 mb-2"></i>
       <div class="fw-semibold">Add Record</div>
     </div>
@@ -52,14 +52,14 @@
   <!-- View Buttons -->
   <div class="row mt-4 g-2 text-center">
     <div class="col-md-3 col">
-      <button class="btn btn-success w-100"
+      <button class="btn border w-100" id="view_record" onClick="swap('view_record')"
               hx-get="{% url 'get-class-record' class_name.id %}" 
               hx-target="#mini-load-area" hx-swap="innerHTML">
         View Records
       </button>
     </div>
     <div class="col-md-3 col">
-      <button class="btn btn-outline-success w-100"
+      <button class="btn w-100 border" id="view_student" onClick="swap('view_student')"
               hx-get="{% url 'get-student' class_name.id %}" 
               hx-target="#mini-load-area" hx-swap="innerHTML">
         View Students
@@ -71,4 +71,26 @@
   <div id="mini-load-area" class="mt-4"></div>
 
 </div>
+<script>
+  function swap(a){
+    if(a==="view_record"){
+      var first = document.getElementById("view_record")
+      var second = document.getElementById("view_student")
+      first.classList.add("color-bg-p")
+      first.classList.add("text-white")
+         second.classList.remove("color-bg-p")
+        second.classList.remove("text-white")
+   }
+   else if (a==="view_student"){
+    var first = document.getElementById("view_student")
+      var second = document.getElementById("view_record")
+      first.classList.add("color-bg-p")
+      first.classList.add("text-white")
+         second.classList.remove("color-bg-p")
+        second.classList.remove("text-white")
+   }
+   
+    //second.classList.add("border")
+  }
+</script>
 {% endblock %}

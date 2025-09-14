@@ -1,17 +1,17 @@
 <div id="formBox" class="container-fluid position-fixed vh-100 p-0" 
-     style="top: 0; left: 0; bacground: linear-gradient(135deg, #4A90E2 0%, #43A047 100%); z-index: 100000; overflow-y: auto; background-color: rgba(1,1,1,0.3);">
+     style="top: 0; left: 0; bacground: linear-gradient(135deg, #4A90E2 0%, #43A047 100%); z-index: 100000; overflow-y: auto; background-color: rgba(1,1,1,0.5);">
 
   <!-- Main Content Container -->
   <div class="container-lg py-4 px-3" style="margin-top: 5vh;">
     
     {%if not recordForm or update%}
     <!-- Navigation Tabs Card -->
-    <div class="card shadow mb-4 border-0" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95);">
+    <div class="card shado mb-4 border-0" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.98);">
       <div class="card-body p-3">
         <div class="row g-2 justify-content-center">
           
           <div class="col-6 col-md-2">
-            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'record'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'record'%}color-bg-p{%else%}btn-outline-primary {%endif%}" 
                     hx-get="{% url 'form' 'record' %}" 
                     hx-target="#drop-area" 
                     hx-swap="innerHTML"
@@ -21,7 +21,7 @@
           </div>
           
           <div class="col-6 col-md-2">
-            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'subject'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'subject'%}color-bg-p text-white{%else%}btn-outline-primary{%endif%}" 
                     hx-get="{% url 'form' 'subject' %}" 
                     hx-target="#drop-area" 
                     hx-swap="innerHTML"
@@ -31,7 +31,7 @@
           </div>
           
           <div class="col-6 col-md-2">
-            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'class'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'class'%}color-bg-p text-white{%else%}btn-outline-primary{%endif%}" 
                     hx-get="{% url 'form' 'class' %}" 
                     hx-target="#drop-area" 
                     hx-swap="innerHTML"
@@ -41,7 +41,7 @@
           </div>
           
           <div class="col-6 col-md-2">
-            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'student'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'student'%}color-bg-p text-white{%else%}btn-outline-primary{%endif%}" 
                     hx-get="{% url 'form' 'student' %}" 
                     hx-target="#drop-area" 
                     hx-swap="innerHTML"
@@ -51,7 +51,7 @@
           </div>
           
           <div class="col-6 col-md-2">
-            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'student-record'%}btn-primary text-white{%else%}btn-outline-primary{%endif%}" 
+            <button class="btn w-100 py-2 px-3 rounded-pill transition-all {%if form_type == 'student-record'%}color-bg-p text-white{%else%}btn-outline-primary{%endif%}" 
                     hx-get="{% url 'form' 'student-record' %}" 
                     hx-target="#drop-area" 
                     hx-swap="innerHTML" 
@@ -66,7 +66,7 @@
     {%endif%}
 
     <!-- Form Card -->
-    <div class="card shadow-lg border-0" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.98);">
+    <div class="card shadow-sm border-0" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.98);">
       <div class="card-header text-white py-3" 
            style="background: linear-gradient(135deg, #4A90E2 0%, #43A047 100%);">
         <h3 class="card-title mb-0 d-flex align-items-center">
@@ -113,7 +113,7 @@
           </div>
           
           <div class="d-grid gap-2 mt-4">
-            <button type="submit" class="btn btn-lg py-3 text-white fw-semibold shadow-lg" 
+            <button type="submit" class="btn btn-lg py-3 text-white fw-semibold shadow-sm" 
                     style="background: linear-gradient(135deg, #43A047 0%, #66BB6A 100%); border: none; border-radius: 12px;">
               <i class="fas fa-save me-2"></i>
               {%if update%}Update{%else%}Save{%endif%} {{form_type|capfirst}}
@@ -122,7 +122,7 @@
         </form>
         
         <div class="mt-4">
-          <button class="btn btn-lg w-100 py-3 text-white fw-bold shadow-lg" 
+          <button class="btn btn-lg w-100 py-3 text-white fw-bold shadow-sm" 
                   style="background: linear-gradient(135deg, #E53935 0%, #E57373 100%); border: none; border-radius: 12px;"
                   hx-target="#formBox" 
                   hx-swap="outerHTML" 

@@ -17,6 +17,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <!-- Your personal CSS (put file at static/css/oluko.css) -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap-5/css/bootstrap.css' %}">
   <link href="{% static 'css/oluko.css' %}" rel="stylesheet">
    <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
@@ -65,7 +66,7 @@
             <a href="{% url 'signup' %}" class="btn btn-xl btn-primary btn-glow">
               <i class="fas fa-user-plus me-2"></i>Create Account
             </a>
-            <a href="#features" class="btn btn-xl btn-outline-light">
+            <a href="#features" class="btn btn-xl btn-outline-light d-none">
               <i class="fas fa-play me-2"></i>Watch Demo
             </a>
           </div>

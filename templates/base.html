@@ -93,8 +93,8 @@ body{
         <span class="fw-700 brand-text">Oluko</span>
       </a>
 
-      <button class="navbar-toggler border-0" type="button" onClick="menuDrop()">
-        <span class="navbar-toggler-icon"></span>
+      <button class="navbar-toggler  d-block border-0" type="button" onClick="menuDrop()">
+        <i  id="icon-menu"  class="fa navbar-toggler-icon"></i>
       </button>
 
       <div class="collapse navbar-collapse" id="navMenu">
@@ -111,35 +111,6 @@ body{
       </div>
     </div>
   </nav>
-  
-<nav class="navbar d-none navbar-expand color-bg-p sticky-top shadow-sm px-3">
-  <div class="container-fluid d-flex justify-content-between align-items-center">
-    
-    <!-- Brand -->
-    <div class="navbar-brand text-white fw-bold fs-4">
-            <i class="fas fa-bars text-white fs-5 pointer" onClick="menuDrop()" id="icon-menu" title="Menu"></i>
-      Oluko
-    </div>
-
-    <!-- Icons Row (always visible, no collapse) -->
-    <div class="d-flex align-items-center gap-3 border-start px-2">
-      <!-- Menu -->
-
-
-      <!-- Add -->
-      <i class="fas d-none fa-plus-circle text-white fs-5 pointer" id="icon" onClick="showDrop()" title="Add"></i>
-
-      <!-- Profile -->
-      <a class="text-decoration-none" 
-         hx-get="{% url 'home-part' 'part' %}" 
-         hx-target="#load-area" 
-         hx-swap="innerHTML" 
-         hx-push-url="true">
-        <i class="fas fa-user rounded-circle bg-light text-primary p-2"></i>
-      </a>
-    </div>
-  </div>
-</nav>
 
 {%endblock%}
     
@@ -185,15 +156,15 @@ body{
 
       <div class="list-group">
 
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center d-none">
           ✅ <span class="ms-2">Attendance Marking</span>
         </a>
 
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center d-none">
           👨‍🏫 <span class="ms-2">My Class</span>
         </a>
 
-        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center d-none">
           📅 <span class="ms-2">Timetable</span>
         </a>
 
@@ -259,6 +230,7 @@ body{
         let icon = document.getElementById('icon-menu')
         icon.classList.toggle("fa-times-circle")
         icon.classList.toggle("text-danger")
+        icon.classList.toggle("navbar-toggler-icon")
     }
     </script>
 </body>
