@@ -233,9 +233,9 @@ def form_view(request, form_type, update_id=None):
 def search_view(request):
     """Search across all models"""
     query = request.GET.get('search', '')
-    results = SearchService.search_all(query, request.user)
-    
-    return render(request, 'search.html', results)
+    result = SearchService.search_all(query, request.user)
+    context = dict(record=result['records'],student=result["students"],school_class=result["classes"])
+    return render(request, 'search.html', context)
 
 def filter_record_view(request):
     """Filter records by various criteria"""
@@ -348,7 +348,7 @@ def add_student_to_class_view(request, id):
     if request.method == "POST":
         student_name = request.POST.get("name")
         if student_name:
-            Student.objects.create(
+            Student.objects.create_for_user(
                 user=request.user,
                 name=student_name,
                 class_name=class_obj
@@ -411,7 +411,7 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         next_url = request.POST.get("next")
-        return(login(request,username,password,url= next_url if next_url else "home"))
+        return(login(request,username,password,url= "home" if next_url == "/" else next_url))
         
     return render(request, "login.html")
     

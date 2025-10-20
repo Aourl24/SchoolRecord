@@ -3,7 +3,7 @@ from .models import Record, StudentRecord, Subject, Class, Student
 from collections import defaultdict
 
 class Report:
-    """Service for generating various reports"""
+    """Service for generating various reports with logic-aware features"""
     
     @staticmethod
     def generate_student_performance_report(subject_id, class_name, batch, term, sort_order='asc'):
@@ -132,10 +132,12 @@ class Report:
                 'success': False,
                 'error': str(e)
             }
+    
     @staticmethod    
     def generate_report(subject_id, class_name, batch, term, sort_order):
         """
         Generate academic report for students in a specific subject and class.
+        NOW WITH LOGIC SUPPORT - shows which scores are calculated vs manual
         
         Args:
             subject_id: ID of the subject
@@ -145,11 +147,12 @@ class Report:
             sort_order: "desc" for descending by score, "asc" for ascending by name
         
         Returns:
-            tuple: (total_report, subject_model, is_all, term, terms)
+            dict: Report data with success status
         """
         
         # Get class models with optimization
         class_model = Class.objects.filter(name=class_name)
+        
         if batch != "All":
             class_model = class_model.filter(batch=batch)
             is_all = False
@@ -165,8 +168,8 @@ class Report:
         # Get records with optimized queries
         record_qs = Record.objects.filter(
             class_name__in=class_model, 
-            subject=subject_model
-        ).select_related('class_name', 'subject')
+            subject__subject__name=subject_model
+        ,show_in_report=True).select_related('class_name', 'subject')
         
         if term not in ["All", "None", None]:
             record_qs = record_qs.filter(title=term)
@@ -177,7 +180,7 @@ class Report:
         # Get student records with optimization
         student_records = StudentRecord.objects.filter(
             record__class_name__in=class_model,
-            record__subject=subject_model
+            record__subject__subject=subject_model
         ).select_related('student', 'record', 'record__class_name')
     
         # Group student records by student name
@@ -199,7 +202,7 @@ class Report:
             try:
                 student_model = Student.objects.select_related('class_name').get(name=student_name)
             except Student.DoesNotExist:
-                continue  # Skip if student doesn't exist
+                continue
                 
             student_batch = student_model.class_name.batch
             student_records_filtered = record_qs.filter(class_name__batch=student_batch)
@@ -218,10 +221,14 @@ class Report:
                 score = student_scores.get(rec.id, '-')
                 term_key = rec.title
                 
+                # ✨ NEW: Add logic information to each record
                 rec_data = {
                     'type': rec.record_type,
                     'number': rec.record_number,
                     'score': score,
+                    'is_calculated': bool(rec.logic),  # Flag for calculated scores
+                    'logic_formula': rec.logic,  # The formula used (if any)
+                    'total_score': rec.total_score,  # Available points
                 }
                 term_scores[term_key].append(rec_data)
     
@@ -231,7 +238,9 @@ class Report:
                     term_record_keys[rec.title].add(record_key)
                     all_term_records[rec.title].append({
                         'type': rec.record_type,
-                        'number': rec.record_number
+                        'number': rec.record_number,
+                        'is_calculated': bool(rec.logic),  # ✨ NEW
+                        'logic_formula': rec.logic,  # ✨ NEW
                     })
     
                 # Calculate totals only for valid numeric scores
@@ -297,15 +306,14 @@ class Report:
         # Combine header and student data
         total_report = [header_structure] + students_data
         terms = term_titles
-        success = True
+        
         return {
-                'success': True,
-                'total_report': total_report,
-                'subject': subject_model,
-                'is_all': is_all,
-                'terms': terms or [],
-                'class_name': class_name,
-                'batch': batch,
-                'term': None if term in ("All", "all", None) else term,
-                #'sort_order': sort_order
-            }
+            'success': True,
+            'total_report': total_report,
+            'subject': subject_model,
+            'is_all': is_all,
+            'terms': terms or [],
+            'class_name': class_name,
+            'batch': batch,
+            'term': None if term in ("All", "all", None) else term,
+        }

@@ -13,11 +13,55 @@ class BaseForm(forms.ModelForm):
         self.add_form_styling()
     
     def add_form_styling(self):
-        """Add consistent CSS classes to all form fields"""
-        for field in self.fields.values():
-            field.widget.attrs.update({
+      for field_name, field in self.fields.items():
+        widget = field.widget
+        
+        # Check if it's a checkbox or boolean field
+        if isinstance(widget, forms.CheckboxInput):
+            # Checkboxes need different styling
+            widget.attrs.update({
+                'class': 'form-p p-2',
+                'role': 'switch'  # Optional: makes it a toggle switch in Bootstrap 5
+            })
+        
+        # Check if it's a select/dropdown
+        elif isinstance(widget, forms.Select):
+            widget.attrs.update({
+                'class': 'form-control form-select form-p',
+                'placeholder': field.label or ''
+            })
+        
+        # Check if it's a textarea
+        elif isinstance(widget, forms.Textarea):
+            widget.attrs.update({
                 'class': 'form-control form-p',
-                'plaeholder': field.label or ''
+                'placeholder': field.label or '',
+                'rows': widget.attrs.get('rows', 3)  # Default 3 rows
+            })
+        
+        # Check if it's a file input
+        elif isinstance(widget, forms.FileInput):
+            widget.attrs.update({
+                'class': 'form-control form-p',
+            })
+        
+        # Check if it's a multiple choice checkbox
+        elif isinstance(widget, forms.CheckboxSelectMultiple):
+            widget.attrs.update({
+                'class': 'form-check-input'
+            })
+        
+        # Check if it's radio buttons
+        elif isinstance(widget, forms.RadioSelect):
+            widget.attrs.update({
+                'class': 'form-check-input'
+            })
+        
+        # Default for text inputs, number inputs, etc.
+        else:
+            widget.attrs.update({
+                'class': 'form-control form-p',
+                'placeholder': field.label or ''
             })
             
 class UserForm(BaseForm):

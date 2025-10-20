@@ -4,7 +4,7 @@
 {% if error %}
     <div class="alert alert-danger">{{ error }}</div>
 {% elif total_report %}
-<div class=" d-flex overflow-auto flex-column">
+<div class="d-flex overflow-auto flex-column">
     <table class="table table-bordered table-striped table-hover mt-4">
         <thead>
             <!-- First Row: Term Headers -->
@@ -30,7 +30,17 @@
                 {% for term in terms %}
                     {% with term_header=total_report.0.term_headers|dict_get:term %}
                         {% for rec in term_header %}
-                            <th>{{ rec.type }} {{ rec.number }}</th>
+                            <th>
+                                {{ rec.type }} {{ rec.number }}
+                                {% if rec.is_calculated %}
+                                    <span class="badge badge-primary badge-sm ms-1" 
+                                          style="font-size: 0.7rem; cursor: help;"
+                                          title="Auto-calculated: {{ rec.logic_formula }}"
+                                          data-bs-toggle="tooltip">
+                                        🧮
+                                    </span>
+                                {% endif %}
+                            </th>
                         {% endfor %}
                     {% endwith %}
                     {% if total_report.0.term_totals %}
@@ -50,7 +60,17 @@
                         {% for term in terms %}
                             {% with term_records=student.record_by_term|dict_get:term %}
                                 {% for rec in term_records %}
-                                    <td>{{ rec.score|default:"-" }}</td>
+                                    <td {% if rec.is_calculated %}class="bg-light"{% endif %}>
+                                        {{ rec.score|default:"-" }}
+                                        {% if rec.is_calculated and rec.score != "-" %}
+                                            <small class="text-muted ms-1" 
+                                                   style="cursor: help; font-size: 0.75rem;"
+                                                   title="Calculated using: {{ rec.logic_formula }}"
+                                                   data-bs-toggle="tooltip">
+                                                ⓘ
+                                            </small>
+                                        {% endif %}
+                                    </td>
                                 {% endfor %}
                             {% endwith %}
 
@@ -61,14 +81,49 @@
                                 {% endwith %}
                             {% endif %}
                         {% endfor %}
-                        <td>{{ student.total_score }}</td>
-                        <td class="{%if student.percentage >= 50%} bg-success color-white {%else%} bg-danger color-white {%endif%} color-white" style="color:white">{{ student.percentage }}%</td>
+                        <td><strong>{{ student.total_score }}</strong></td>
+                        <td class="{% if student.percentage >= 50 %}bg-success{% else %}bg-danger{% endif %} text-white">
+                            {{ student.percentage }}%
+                        </td>
                     </tr>
                 {% endif %}
             {% endfor %}
         </tbody>
     </table>
-    </div>
+</div>
+
+<!-- Optional: Add this CSS for better styling -->
+<style>
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    
+    .badge-sm {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .text-muted {
+        color: #6c757d !important;
+    }
+    
+    /* Tooltip styling if using Bootstrap */
+    [data-bs-toggle="tooltip"] {
+        border-bottom: 1px dotted #999;
+    }
+</style>
+
+<!-- Optional: Initialize Bootstrap tooltips -->
+<script>
+    // Initialize tooltips if using Bootstrap 5
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
 {% else %}
     <div class="alert alert-info">No report data available. Please select criteria and generate report.</div>
 {% endif %}

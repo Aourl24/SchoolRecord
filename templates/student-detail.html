@@ -35,7 +35,7 @@
     <table class="container color-bg-white">
     <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white"><th class="border-end center">S/N</th><th class="p-2">Subject</th><th class="center border-start">Term</th><th class="center border-start p-2">Type</th><th class="center border-start p-2">Score</th></tr>
     {% for record in records%}
-    <tr class="border-bottom" hx-get="{%url 'update-form' 'student-record' record.id%}" hx-target="#addHere"hx-trigger="click"><td class="border-end center color-silver">{{forloop.counter}}</td><td class="border-end p-2"><span>{{record.record.subject}}</span> </td> <td class="center border-end p-2"> {{record.record.title}}</td> </td> <td class="center border-end p-2"> {{record.record.record_type}} {{record.record.record_number}} </td> </td> <td class="center border-end p-2"> {{record.score}}</td> </tr>
+    <tr class="border-bottom" hx-get="{%url 'update-form' 'student-record' record.id%}" hx-target="#addHere"hx-trigger="click"><td class="border-end center color-silver">{{forloop.counter}}</td><td class="border-end p-2"><span>{{record.record.subject.subject}}</span> </td> <td class="center border-end p-2"> {{record.record.title}}</td> </td> <td class="center border-end p-2"> {{record.record.record_type}} {{record.record.record_number}} </td> </td> <td class="center border-end p-2"> {{record.score}}</td> </tr>
     {%endfor%}    
   </table>
 </div>
