@@ -1,96 +1,88 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container my-4">
+
+<div class="my-4">
 
   <!-- Class Icon -->
-  <div class="row mb-3">
-    <div class="col text-center">
-      <i class="fas fa-chalkboard-teacher color-t bg-white rounded-circle p-4 shadow-sm fs-1"></i>
-    </div>
+  <div class="text-center mb-4">
+    <span class="color-bg-t inline-flex items-center justify-center w-20 h-20 rounded-full shadow-sm text-4xl">
+      <i class="fas fa-chalkboard-teacher text-white"></i>
+    </span>
   </div>
 
   <!-- Class Info -->
-  <div class="row mb-3">
-    <div class="col text-center">
-      <h4 class="fw-bold text-dark sz-24">
-        {{ class_name.name }} {{ class_name.batch }}
-      </h4>
-      <p class="text-muted small mb-0">
-        Number of students: {{ class_name.student.count }}
-      </p>
-    </div>
+  <div class="text-center mb-6">
+    <h4 class="text-2xl font-bold text-gray-900">
+      {{ class_name.name }} {{ class_name.batch }}
+    </h4>
+    <p class="text-gray-400 text-sm">Number of students: {{ class_name.student.count }}</p>
   </div>
 
-  <!-- Actions -->
-  <div class="row g-3 my-2 justify-content-center text-center sz-12">
+  <!-- Action Cards -->
+  <div class="flex flex-wrap justify-center gap-3 mb-6 text-sm text-center">
 
     <!-- Edit Class -->
-    <div hx-get="{% url 'update-form' 'class' class_name.id %}" 
-         hx-target="#addHere" 
-         class="col-3 m-1 borde rounded p-3 bg-light hover-shadow pointer-cursor">
-      <i class="fas fa-pen text-primary fs-4 mb-2"></i>
-      <div class="fw-semibold">Edit Class</div>
+    <div hx-get="{% url 'update-form' 'class' class_name.id %}"
+         hx-target="#addHere"
+         class="flex flex-col items-center gap-1 bg-white border border-gray-200 rounded-xl px-5 py-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition">
+      <i class="fas fa-pen text-primary text-xl mb-1"></i>
+      <span class="font-semibold text-gray-700">Edit Class</span>
     </div>
 
     <!-- Add Students -->
-    <div hx-get="{% url 'add-student' class_name.id %}" 
-         hx-target="#addHere" hx-swap="innerHTML" 
-         class="col-4 m-1 bg-green-light rounded shaw-sm p-3  hover-shadow pointer-cursor">
-      <i class="fas fa-user-graduate text-success fs-4 mb-2"></i>
-      <div class="fw-semibold">Add Students</div>
+    <div hx-get="{% url 'add-student' class_name.id %}"
+         hx-target="#addHere" hx-swap="innerHTML"
+         class="flex flex-col items-center gap-1 bg-green-50 rounded-xl px-5 py-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition">
+      <i class="fas fa-user-graduate text-green-500 text-xl mb-1"></i>
+      <span class="font-semibold text-gray-700">Add Students</span>
     </div>
 
     <!-- Add Record -->
-    <div hx-get="{% url 'add-record' class_name.id %}" 
-         hx-target="#addHere" 
-         class="col-3 m-1 bg-yellow-light rounded p-3 hover-shadow pointer-cursor">
-      <i class="fas fa-file-alt text-warning fs-4 mb-2"></i>
-      <div class="fw-semibold">Add Record</div>
+    <div hx-get="{% url 'add-record' class_name.id %}"
+         hx-target="#addHere"
+         class="flex flex-col items-center gap-1 bg-yellow-50 rounded-xl px-5 py-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition">
+      <i class="fas fa-file-alt text-yellow-500 text-xl mb-1"></i>
+      <span class="font-semibold text-gray-700">Add Record</span>
     </div>
+
   </div>
 
-  <!-- View Buttons -->
-  <div class="row mt-4 g-2 text-center justify-content-center">
-    <div class="col-md-3 col">
-      <button class="btn border w-100" id="view_record" onClick="swap('view_record')"
-              hx-get="{% url 'get-class-record' class_name.id %}" 
-              hx-target="#mini-load-area" hx-swap="innerHTML">
-        View Records
-      </button>
-    </div>
-    <div class="col-md-3 col">
-      <button class="btn w-100 border" id="view_student" onClick="swap('view_student')"
-              hx-get="{% url 'get-student' class_name.id %}" 
-              hx-target="#mini-load-area" hx-swap="innerHTML">
-        View Students
-      </button>
-    </div>
+  <!-- View Toggle Buttons -->
+  <div class="flex justify-center gap-3 mb-4">
+    <button id="view_record"
+            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
+            onclick="swap('view_record')"
+            hx-get="{% url 'get-class-record' class_name.id %}"
+            hx-target="#mini-load-area" hx-swap="innerHTML">
+      View Records
+    </button>
+    <button id="view_student"
+            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
+            onclick="swap('view_student')"
+            hx-get="{% url 'get-student' class_name.id %}"
+            hx-target="#mini-load-area" hx-swap="innerHTML">
+      View Students
+    </button>
   </div>
 
-  <!-- Dynamic Area -->
-  <div id="mini-load-area" class="mt-4"></div>
+  <!-- Dynamic Content Area -->
+  <div id="mini-load-area" class="mt-2"></div>
 
 </div>
+
 <script>
-  function swap(a){
-    if(a==="view_record"){
-      var first = document.getElementById("view_record")
-      var second = document.getElementById("view_student")
-      first.classList.add("color-bg-p")
-      first.classList.add("text-white")
-         second.classList.remove("color-bg-p")
-        second.classList.remove("text-white")
-   }
-   else if (a==="view_student"){
-    var first = document.getElementById("view_student")
-      var second = document.getElementById("view_record")
-      first.classList.add("color-bg-p")
-      first.classList.add("text-white")
-         second.classList.remove("color-bg-p")
-        second.classList.remove("text-white")
-   }
-   
-    //second.classList.add("border")
+  function swap(a) {
+    var rec = document.getElementById("view_record");
+    var stu = document.getElementById("view_student");
+
+    if (a === "view_record") {
+      rec.classList.add("color-bg-p", "text-white", "border-transparent");
+      stu.classList.remove("color-bg-p", "text-white", "border-transparent");
+    } else if (a === "view_student") {
+      stu.classList.add("color-bg-p", "text-white", "border-transparent");
+      rec.classList.remove("color-bg-p", "text-white", "border-transparent");
+    }
   }
 </script>
+
 {% endblock %}

@@ -1,16 +1,17 @@
- <div class="color-bg-white rounded">
- <br/>
-  {%if topics%}
-  <ol>
-  {%for topic in topics%}
-    <li class="p-1"> <a href="{{topic.get_absolute_url}}" class="no-decoration color-black">{{topic}}</a> </li>
-  {%endfor%}
+<div class="bg-white rounded-xl py-2">
+  {% if topics %}
+  <ol class="list-decimal list-inside divide-y divide-gray-100">
+    {% for topic in topics %}
+    <li class="py-2 px-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition">
+      <a href="{{ topic.get_absolute_url }}" class="no-underline text-gray-800 hover:text-primary transition">
+        {{ topic }}
+      </a>
+    </li>
+    {% endfor %}
   </ol>
-    {%else%}
-    <div class="row my-2">
-      <div class='col text-danger center'>
-        No Topic available
-      </div>
-    </div>
-    {%endif%} 
+  {% else %}
+  <div class="text-center text-red-400 text-sm py-4">
+    No Topic available
+  </div>
+  {% endif %}
 </div>

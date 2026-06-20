@@ -1,9 +1,11 @@
-{%if record%}
-{%include 'record-list.html' %}
-{%endif%}
-{%if school_class%}
-{%include "class-list.html"%}
-{%endif%}
-{%if student%}
-{%include 'student-list.html' %}
-{%endif%}
+{% if record %}
+  {% include 'record-list.html' %}
+{% endif %}
+
+{% if school_class %}
+  {% include "class-list.html" %}
+{% endif %}
+
+{% if student %}
+  {% include 'student-list.html' %}
+{% endif %}

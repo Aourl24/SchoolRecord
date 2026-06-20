@@ -1,41 +1,37 @@
-<div class="my-3 sz-12 rounded p-3 color-bg-white shadow-sm">
+<div class="bg-white rounded-2xl shadow-sm p-4 my-3 text-sm">
   <form hx-get="{% url 'filter-students' %}"
         hx-swap="innerHTML"
         hx-target="#studentTable">
 
     <!-- Filter Row -->
-    <div class="row align-items-center mb-3">
-      <div class="col fw-semibold">Score</div>
-      <div class="col">
-        <select name="sign" class="form-select sz-12 p-1">
-          <option value="">...</option>
-          <option>=</option>
-          <option>></option>
-          <option><</option>
-        </select>
-      </div>
-      <div class="col">
-        <select name="score" class="form-select sz-12 p-1">
-          <option value="">...</option>
-          {% with "1234567890203766"|slice:":10" as dummy_str %}
-            {% for i in dummy_str %}
-              <option>{{ forloop.counter0 }}</option>
-            {% endfor %}
-          {% endwith %}
-        </select>
-      </div>
+    <div class="flex items-center gap-3 mb-3">
+      <span class="font-semibold text-gray-700 w-12">Score</span>
+      <select name="sign"
+              class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="">...</option>
+        <option>=</option>
+        <option>></option>
+        <option><</option>
+      </select>
+      <select name="score"
+              class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="">...</option>
+        {% with "1234567890203766"|slice:":10" as dummy_str %}
+          {% for i in dummy_str %}
+            <option>{{ forloop.counter0 }}</option>
+          {% endfor %}
+        {% endwith %}
+      </select>
     </div>
 
     <!-- Sort Row -->
-    <div class="row align-items-center mb-3">
-      <div class="col">
-        <select class="form-select sz-12"
-                name="filter">
-          <option>Sort</option>
-          <option value="alpha">Arrange Alphabetically</option>
-          <option value="score">Arrange by Score</option>
-        </select>
-      </div>
+    <div class="mb-3">
+      <select name="filter"
+              class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option>Sort</option>
+        <option value="alpha">Arrange Alphabetically</option>
+        <option value="score">Arrange by Score</option>
+      </select>
     </div>
 
     <!-- Hidden Fields -->
@@ -51,8 +47,8 @@
     <input type="hidden" name="record" value="{{ record.id }}" />
 
     <!-- Apply Button -->
-    <div class="text-end mb-3">
-      <button class="btn color-bg-s color-white rounded sz-12 px-4 py-2 shadow-sm">
+    <div class="flex justify-end mb-3">
+      <button class="color-bg-s text-white text-xs font-semibold px-5 py-2 rounded-lg shadow-sm hover:opacity-90 transition border-0 cursor-pointer">
         Apply
       </button>
     </div>
@@ -61,5 +57,6 @@
     <div id="studentTable">
       {% include 'students-table.html' %}
     </div>
+
   </form>
 </div>

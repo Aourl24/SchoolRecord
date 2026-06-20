@@ -1,23 +1,7 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
-<div class="my-3 sz-18">
-  Records list 
-</div>
-     <div class="row d-none border-bottom p-2 sz-14 bold">
-       <div class="col">
-         Class
-       </div>
-        <div class="col">
-         Subject
-       </div>
- <div class="col">
-         Term
-       </div>
- <div class="col">
-         Type
-       </div>
-     </div>
-    {%include 'record-list.html'%}
+{% block content %}
+<div class="text-lg font-semibold text-gray-800 my-3">Records list</div>
 
- {%endblock%}
+{% include 'record-list.html' %}
+{% endblock %}

@@ -1,151 +1,214 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Markbook.com — School Records Made Simple{% endblock %}</title>
 
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   '#4f46e5',
+            secondary: '#06b6d4',
+            tertiary:  '#10b981',
+            accent:    '#f59e0b',
+          },
+          fontFamily: {
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
 
-  <!-- Google fonts -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
-
-  <!-- Font Awesome (icons) -->
+  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Your personal CSS (put file at static/css/oluko.css) -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap-5/css/bootstrap.css' %}">
-  <link href="{% static 'css/oluko.css' %}" rel="stylesheet">
-   <link rel="stylesheet" href="{% static 'css/acss/acss.css' %}">
-    <link rel="stylesheet" href="{% static 'css/fontawesome/css/all.min.css' %}">
+  <style>
+    .color-bg-p { background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(59,130,246,0.9)); }
+    .color-bg-s { background: linear-gradient(135deg, rgba(6,182,212,0.95), rgba(16,185,129,0.9)); }
+    .color-bg-t { background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(245,158,11,0.9)); }
+    .floating-icon {
+      position: absolute;
+      font-size: 4rem;
+      opacity: 0.08;
+      color: white;
+    }
+    .floating-icon.top-right   { top: 10%; right: 5%; }
+    .floating-icon.bottom-left { bottom: 10%; left: 5%; }
+    .nav-scrolled { backdrop-filter: blur(12px); box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  </style>
 </head>
-<body class="">
+
+<body class="font-sans antialiased text-gray-900">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-sticky">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-        <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle">
-          <i class="fas fa-graduation-cap"></i>
-        </span>
-        <span class="fw-700 brand-text">Mark<span class="color-s">Book.com</span></span>
-      </a>
+  <nav class="sticky top-0 z-50 bg-white/90 border-b border-gray-100 transition-all duration-300 navbar-sticky">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
 
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+        <!-- Brand -->
+        <a class="flex items-center gap-2 no-underline" href="#">
+          <span class="color-bg-p inline-flex items-center justify-center rounded-full w-9 h-9">
+            <i class="fas fa-graduation-cap text-white text-sm"></i>
+          </span>
+          <span class="font-bold text-gray-900">Mark<span class="text-secondary">Book.com</span></span>
+        </a>
 
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav ms-auto align-items-lg-center">
-          <li class="nav-item d-none"><a class="nav-link" href="#features">Features</a></li>
-          <li class="nav-item d-none"><a class="nav-link" href="#lesson">Lesson Notes</a></li>
-          <li class="nav-item d-none"><a class="nav-link" href="#reports">Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-          <li class="nav-item ms-lg-3">
-            <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Login</a>
-            <a href="{% url 'signup' %}" class="btn btn-primary ms-2 btn-sm">Get Started</a>
-          </li>
-        </ul>
+        <!-- Desktop nav -->
+        <div class="hidden md:flex items-center gap-6">
+          <a class="text-sm text-gray-600 hover:text-primary transition hidden" href="#features">Features</a>
+          <a class="text-sm text-gray-600 hover:text-primary transition hidden" href="#lesson">Lesson Notes</a>
+          <a class="text-sm text-gray-600 hover:text-primary transition hidden" href="#reports">Reports</a>
+          <a class="text-sm text-gray-600 hover:text-primary transition" href="#contact">Contact</a>
+          <div class="flex items-center gap-2">
+            <a href="{% url 'login' %}"
+               class="text-sm text-gray-700 font-medium px-4 py-1.5 border border-gray-200 rounded-full hover:border-primary hover:text-primary transition">
+              Login
+            </a>
+            <a href="{% url 'signup' %}"
+               class="text-sm text-white font-semibold px-4 py-1.5 rounded-full color-bg-p shadow hover:opacity-90 transition">
+              Get Started
+            </a>
+          </div>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded text-gray-600 hover:bg-gray-100">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile dropdown -->
+    <div id="mobile-nav" class="hidden md:hidden border-t border-gray-100 bg-white px-4 py-4 flex flex-col gap-3">
+      <a class="text-sm text-gray-700" href="#contact">Contact</a>
+      <div class="flex gap-2 pt-2">
+        <a href="{% url 'login' %}" class="flex-1 text-center text-sm border border-gray-200 rounded-full py-2">Login</a>
+        <a href="{% url 'signup' %}" class="flex-1 text-center text-sm text-white rounded-full py-2 color-bg-p">Get Started</a>
       </div>
     </div>
   </nav>
 
   <!-- Hero -->
-  <header class="hero color-bg-s text-white">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-7 text-center text-lg-start">
-          <span class="badge badge-soft mb-3"> <i class="fas fa-rocket me-2"></i>New & Improved</span>
-          <h1 class="hero-title mb-3"> Mark <span class="color-p">Book</span> — Student records, reimagined.</h1>
-          <p class="lead text-white-90 mb-4">Record attendance, manage tests & exams, store lesson notes and export reports — all from a simple, modern dashboard built for teachers.</p>
+  <header class="color-bg-s text-white relative overflow-hidden py-20">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col lg:flex-row items-center gap-10">
 
-          <div class="d-flex gap-3 flex-column flex-sm-row justify-content-center justify-content-lg-start">
-            <a href="{% url 'signup' %}" class="btn btn-xl btn-primary btn-glow">
-              <i class="fas fa-user-plus me-2"></i>Create Account
+        <!-- Left -->
+        <div class="lg:w-7/12 text-center lg:text-left">
+          <span class="inline-flex items-center gap-2 bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
+            <i class="fas fa-rocket"></i> New & Improved
+          </span>
+          <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+            Mark <span class="text-indigo-200">Book</span> — Student records, reimagined.
+          </h1>
+          <p class="text-white/90 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
+            Record attendance, manage tests & exams, store lesson notes and export reports — all from a simple, modern dashboard built for teachers.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+            <a href="{% url 'signup' %}"
+               class="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition">
+              <i class="fas fa-user-plus"></i> Create Account
             </a>
-            <a href="#features" class="btn btn-xl btn-outline-light d-none">
-              <i class="fas fa-play me-2"></i>Watch Demo
+            <a href="#features"
+               class="hidden inline-flex items-center justify-center gap-2 border border-white/50 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/10 transition">
+              <i class="fas fa-play"></i> Watch Demo
             </a>
           </div>
 
-          <!-- hero stats -->
-          <div class="d-flex gap-3 mt-5 hero-stats justify-content-center justify-content-lg-start">
-            <div class="stat">
-              <h4 class="fw-700">1,000+</h4>
-              <small>Teachers</small>
+          <!-- Stats -->
+          <div class="flex gap-8 mt-10 justify-center lg:justify-start">
+            <div>
+              <div class="text-2xl font-extrabold">1,000+</div>
+              <div class="text-white/70 text-sm">Teachers</div>
             </div>
-            <div class="stat">
-              <h4 class="fw-700">50,000+</h4>
-              <small>Students</small>
+            <div>
+              <div class="text-2xl font-extrabold">50,000+</div>
+              <div class="text-white/70 text-sm">Students</div>
             </div>
-            <div class="stat">
-              <h4 class="fw-700">99.9%</h4>
-              <small>Uptime</small>
+            <div>
+              <div class="text-2xl font-extrabold">99.9%</div>
+              <div class="text-white/70 text-sm">Uptime</div>
             </div>
           </div>
         </div>
 
-        <div class="col-lg-5 d-none d-lg-flex justify-content-center">
-          <!-- mockup / illustration container -->
-          <div class="device-mockup shadow-soft p-4 rounded-4">
-            <img src="{% static 'images/hero.png' %}" alt="Oluko dashboard mock" class="img-fluid">
+        <!-- Right (mockup) -->
+        <div class="hidden lg:flex lg:w-5/12 justify-center">
+          <div class="bg-white/10 border border-white/20 rounded-3xl p-6 shadow-2xl backdrop-blur">
+            <img src="{% static 'images/hero.png' %}" alt="Markbook dashboard" class="w-full rounded-xl">
           </div>
         </div>
       </div>
     </div>
 
-    <!-- subtle floating icons -->
+    <!-- Floating decoration icons -->
     <div class="floating-icon top-right"><i class="fas fa-graduation-cap"></i></div>
     <div class="floating-icon bottom-left"><i class="fas fa-book-open"></i></div>
   </header>
 
   <!-- Divider -->
-  <div class="section-divider" aria-hidden="true"></div>
+  <div class="h-1 bg-gradient-to-r from-primary via-secondary to-tertiary"></div>
 
   <!-- Features -->
-  <section id="features" class="section container py-6">
-    <div class="text-center mb-5">
-      <span class="badge badge-soft-primary mb-3"><i class="fas fa-magic me-2"></i>Features</span>
-      <h2 class="display-6 fw-800 color-p">Powerful features for teachers</h2>
-      <p class="text-muted col-lg-8 mx-auto">Fast record input, smart filtering, lesson note management, reports, Excel export and analytics — built with teachers in mind.</p>
-    </div>
-
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-4">
-        <article class="feature-card card-hover p-4 rounded-4 h-100">
-          <div class="feature-icon color-bg-p"><i class="fas fa-user-check"></i></div>
-          <h5 class="fw-700 color-p">Attendance & Results</h5>
-          <p class="text-muted">Quickly take attendance, add test scores and use sorting & filters to find what you need.</p>
-          <div class="mt-3">
-            <span class="badge badge-soft me-1">Smart tracking</span>
-            <span class="badge badge-soft">Bulk import</span>
-          </div>
-        </article>
+  <section id="features" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-14">
+        <span class="inline-flex items-center gap-2 bg-indigo-50 text-primary text-xs font-semibold px-3 py-1 rounded-full mb-3">
+          <i class="fas fa-magic"></i> Features
+        </span>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-primary mb-3">Powerful features for teachers</h2>
+        <p class="text-gray-500 max-w-2xl mx-auto">
+          Fast record input, smart filtering, lesson note management, reports, Excel export and analytics — built with teachers in mind.
+        </p>
       </div>
 
-      <div class="col-md-6 col-lg-4">
-        <article class="feature-card card-hover p-4 rounded-4 h-100">
-          <div class="feature-icon color-bg-s"><i class="fas fa-book-open"></i></div>
-          <h5 class="fw-700 color-s">Lesson Notes</h5>
-          <p class="text-muted">Create, save and share lesson notes with templates and cloud sync.</p>
-          <div class="mt-3">
-            <span class="badge badge-soft me-1">Auto-save</span>
-            <span class="badge badge-soft">Collaborate</span>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <article class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-shadow h-full">
+          <div class="color-bg-p inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4">
+            <i class="fas fa-user-check text-white"></i>
+          </div>
+          <h5 class="font-bold text-primary text-lg mb-2">Attendance & Results</h5>
+          <p class="text-gray-500 text-sm">Quickly take attendance, add test scores and use sorting & filters to find what you need.</p>
+          <div class="mt-4 flex gap-2 flex-wrap">
+            <span class="bg-indigo-50 text-primary text-xs font-medium px-2 py-0.5 rounded-full">Smart tracking</span>
+            <span class="bg-indigo-50 text-primary text-xs font-medium px-2 py-0.5 rounded-full">Bulk import</span>
           </div>
         </article>
-      </div>
 
-      <div class="col-md-6 col-lg-4">
-        <article class="feature-card card-hover p-4 rounded-4 h-100">
-          <div class="feature-icon color-bg-t"><i class="fas fa-file-export"></i></div>
-          <h5 class="fw-700 color-t">Reports & Export</h5>
-          <p class="text-muted">Generate student or class reports and export to Excel/PDF with one click.</p>
-          <div class="mt-3">
-            <span class="badge badge-soft me-1">Excel</span>
-            <span class="badge badge-soft">PDF</span>
+        <!-- Card 2 -->
+        <article class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-shadow h-full">
+          <div class="color-bg-s inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4">
+            <i class="fas fa-book-open text-white"></i>
+          </div>
+          <h5 class="font-bold text-secondary text-lg mb-2">Lesson Notes</h5>
+          <p class="text-gray-500 text-sm">Create, save and share lesson notes with templates and cloud sync.</p>
+          <div class="mt-4 flex gap-2 flex-wrap">
+            <span class="bg-cyan-50 text-secondary text-xs font-medium px-2 py-0.5 rounded-full">Auto-save</span>
+            <span class="bg-cyan-50 text-secondary text-xs font-medium px-2 py-0.5 rounded-full">Collaborate</span>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-shadow h-full">
+          <div class="color-bg-t inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4">
+            <i class="fas fa-file-export text-white"></i>
+          </div>
+          <h5 class="font-bold text-tertiary text-lg mb-2">Reports & Export</h5>
+          <p class="text-gray-500 text-sm">Generate student or class reports and export to Excel/PDF with one click.</p>
+          <div class="mt-4 flex gap-2 flex-wrap">
+            <span class="bg-emerald-50 text-tertiary text-xs font-medium px-2 py-0.5 rounded-full">Excel</span>
+            <span class="bg-emerald-50 text-tertiary text-xs font-medium px-2 py-0.5 rounded-full">PDF</span>
           </div>
         </article>
       </div>
@@ -153,27 +216,29 @@
   </section>
 
   <!-- Lesson Notes -->
-  <section id="lesson" class="section color-bg-t text-white py-6">
-    <div class="container">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-6">
-          <h3 class="fw-800">Lesson notes made easy</h3>
-          <p class="lead text-white-90">Plan lessons faster with templates, auto-save, and searchable notes — keep everything organized in Oluko.</p>
-
-          <ul class="list-unstyled text-white-80">
-            <li class="mb-3"><i class="fas fa-check-circle me-2"></i>Auto-save & version history</li>
-            <li class="mb-3"><i class="fas fa-check-circle me-2"></i>Templates & quick insert</li>
-            <li><i class="fas fa-check-circle me-2"></i>Share with colleagues</li>
+  <section id="lesson" class="color-bg-t text-white py-20">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col lg:flex-row items-center gap-10">
+        <div class="lg:w-1/2">
+          <h3 class="text-3xl font-extrabold mb-4">Lesson notes made easy</h3>
+          <p class="text-white/90 text-lg mb-6">
+            Plan lessons faster with templates, auto-save, and searchable notes — keep everything organized in MarkBook.
+          </p>
+          <ul class="space-y-3 text-white/80 mb-8">
+            <li class="flex items-center gap-2"><i class="fas fa-check-circle"></i> Auto-save & version history</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check-circle"></i> Templates & quick insert</li>
+            <li class="flex items-center gap-2"><i class="fas fa-check-circle"></i> Share with colleagues</li>
           </ul>
-
-          <a href="{% url 'login' %}" class="btn btn-light btn-glow mt-3">Try Lesson Notes</a>
+          <a href="{% url 'login' %}"
+             class="inline-block bg-white text-tertiary font-bold px-6 py-3 rounded-full shadow hover:shadow-lg hover:-translate-y-0.5 transition">
+            Try Lesson Notes
+          </a>
         </div>
-
-        <div class="col-lg-6">
-          <div class="notes-mockup p-4 rounded-4 bg-white bg-opacity-10">
-            <i class="fas fa-notes-medical fa-4x opacity-50"></i>
-            <h5 class="mt-3 fw-700">Smart organization</h5>
-            <p class="text-white-75">Filter by subject, date, or tag and get quick access to what you need.</p>
+        <div class="lg:w-1/2">
+          <div class="bg-white/10 border border-white/20 backdrop-blur rounded-2xl p-8 text-center">
+            <i class="fas fa-notes-medical fa-4x opacity-50 mb-4 block"></i>
+            <h5 class="font-bold text-xl mb-2">Smart organization</h5>
+            <p class="text-white/75">Filter by subject, date, or tag and get quick access to what you need.</p>
           </div>
         </div>
       </div>
@@ -181,31 +246,27 @@
   </section>
 
   <!-- Reports -->
-  <section id="reports" class="section container py-6">
-    <div class="row align-items-center g-4">
-      <div class="col-lg-6">
-        <div class="card p-4 rounded-4 shadow-soft">
-          <h4 class="fw-700 color-p">Advanced analytics & reporting</h4>
-          <p class="text-muted">See performance trends, generate student-level or class-level reports and export clean Excel sheets for meetings.</p>
-
-          <div class="mt-3">
-            <div class="d-flex gap-3">
-              <div class="icon-box color-bg-p"><i class="fas fa-file-excel"></i></div>
-              <div>
-                <h6 class="fw-700 mb-0">Excel-ready</h6>
-                <small class="text-muted">One-click export with formatting</small>
-              </div>
+  <section id="reports" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col lg:flex-row gap-6">
+        <div class="lg:w-1/2 bg-gray-50 rounded-2xl p-6 shadow-sm">
+          <h4 class="font-bold text-xl text-primary mb-3">Advanced analytics & reporting</h4>
+          <p class="text-gray-500 mb-4">See performance trends, generate student-level or class-level reports and export clean Excel sheets for meetings.</p>
+          <div class="flex items-center gap-3">
+            <div class="color-bg-p inline-flex items-center justify-center w-10 h-10 rounded-xl">
+              <i class="fas fa-file-excel text-white text-sm"></i>
+            </div>
+            <div>
+              <div class="font-bold text-sm">Excel-ready</div>
+              <div class="text-gray-400 text-xs">One-click export with formatting</div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="col-lg-6">
-        <div class="card p-4 rounded-4 shadow-soft">
-          <h4 class="fw-700 color-s">Visual analytics</h4>
-          <p class="text-muted">Interactive charts help you spot trends and intervene where students need help most.</p>
-          <div class="mt-3">
-            <div class="icon-box color-bg-s"><i class="fas fa-chart-pie"></i></div>
+        <div class="lg:w-1/2 bg-gray-50 rounded-2xl p-6 shadow-sm">
+          <h4 class="font-bold text-xl text-secondary mb-3">Visual analytics</h4>
+          <p class="text-gray-500 mb-4">Interactive charts help you spot trends and intervene where students need help most.</p>
+          <div class="color-bg-s inline-flex items-center justify-center w-10 h-10 rounded-xl">
+            <i class="fas fa-chart-pie text-white text-sm"></i>
           </div>
         </div>
       </div>
@@ -213,53 +274,58 @@
   </section>
 
   <!-- CTA -->
-  <section class="cta color-bg-p text-white py-6 text-center">
-    <div class="container">
-      <h2 class="fw-800 mb-3">Ready to simplify school records?</h2>
-      <p class="mb-4 text-white-90">Join thousands of teachers who trust Markbook.com to save time and make records simple.</p>
-
-      <div class="d-flex gap-3 justify-content-center">
-        <a href="{% url 'signup' %}" class="btn btn-xl btn-light btn-glow">Create Free Account</a>
-        <a href="#features" class="btn btn-outline-light btn-xl">Schedule Demo</a>
+  <section class="color-bg-p text-white py-20 text-center">
+    <div class="container mx-auto px-4">
+      <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Ready to simplify school records?</h2>
+      <p class="text-white/90 text-lg mb-8">Join thousands of teachers who trust Markbook.com to save time and make records simple.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="{% url 'signup' %}"
+           class="inline-block bg-white text-primary font-bold px-8 py-3 rounded-full shadow-lg hover:-translate-y-0.5 transition">
+          Create Free Account
+        </a>
+        <a href="#features"
+           class="inline-block border border-white/50 text-white font-semibold px-8 py-3 rounded-full hover:bg-white/10 transition">
+          Schedule Demo
+        </a>
       </div>
-
-      <p class="mt-4 small text-white-80"><i class="fas fa-shield-alt me-2"></i>Secure • 30-day free trial • 24/7 support</p>
+      <p class="mt-6 text-sm text-white/75">
+        <i class="fas fa-shield-alt mr-2"></i>Secure • 30-day free trial • 24/7 support
+      </p>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="footer bg-dark text-white py-5">
-    <div class="container">
-      <div class="row gy-4">
-        <div class="col-md-6">
-          <h5 class="fw-700"><i class="fas fa-graduation-cap me-2"></i>MarkBook.com</h5>
-          <p class="text-muted">Making education management simple, efficient, and effective.</p>
-        </div>
-
-        <div class="col-md-6 text-md-end">
-          <small class="text-muted">© {{ year|default:"2025" }} Awwal. All rights reserved.</small>
-        </div>
+  <footer class="bg-gray-900 text-white py-10">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <h5 class="font-bold text-lg flex items-center gap-2">
+          <i class="fas fa-graduation-cap"></i> MarkBook.com
+        </h5>
+        <p class="text-gray-400 text-sm mt-1">Making education management simple, efficient, and effective.</p>
       </div>
+      <small class="text-gray-500">© {{ year|default:"2025" }} Awwal. All rights reserved.</small>
     </div>
   </footer>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Small interactive scripts (navbar blur + smooth scroll) -->
   <script>
-    // smooth anchors
-    document.querySelectorAll('a[href^="#"]').forEach(a=>{
-      a.addEventListener('click', e=>{
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
         const target = document.querySelector(a.getAttribute('href'));
-        if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth', block:'start'}); }
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       });
     });
 
-    // navbar sticky blur on scroll
-    const nav = document.querySelector('.navbar-sticky') || document.querySelector('.navbar');
-    window.addEventListener('scroll', ()=>{
-      if(window.scrollY > 40) nav.classList.add('nav-scrolled'); else nav.classList.remove('nav-scrolled');
+    // Navbar scroll effect
+    const nav = document.querySelector('.navbar-sticky');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) nav.classList.add('nav-scrolled');
+      else nav.classList.remove('nav-scrolled');
+    });
+
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.toggle('hidden');
     });
   </script>
 </body>

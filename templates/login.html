@@ -1,73 +1,76 @@
 {% extends "base.html" %}
-{% block nav %}
-{% endblock %}
-
-{% block search %}
-{% endblock %}
+{% block nav %}{% endblock %}
+{% block search %}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <!-- Brand/Header --><div class="text-center mb-4">
-    <h1 class="fw-bold color-p display-5">         <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-1">
-          <i class="fas fa-graduation-cap"></i>
-        </span> <span class="fw-700 brand-text">Mark<span class="color-s">Book.com</span></span></h1>
-    <p class="text-muted">Welcome Back </p>
+<div class="min-h-screen bg-gradient-to-b from-slate-50 to-blue-50 py-12 px-4">
+
+  <!-- Brand -->
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-primary flex items-center justify-center gap-2">
+      <span class="color-bg-p inline-flex items-center justify-center rounded-full w-10 h-10">
+        <i class="fas fa-graduation-cap text-white text-base"></i>
+      </span>
+      Mark<span class="text-secondary">Book.com</span>
+    </h1>
+    <p class="text-gray-400 text-sm mt-2">Welcome Back</p>
   </div>
- 
-<br class="d-none d-md-block" />
 
   <!-- Login Card -->
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-body p-4">
-          <h2 class="text-center mb-4 fw-semibold">Login</h2>
+  <div class="flex justify-center">
+    <div class="w-full max-w-md">
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
 
-          <!-- Error Display -->
-          {% if form.errors or error %}
-          <div class="alert alert-danger">
-            {{ form.errors }} {{ error }}
-          </div>
-          {% endif %}
+        <h2 class="text-center text-xl font-semibold text-gray-800 mb-6">Login</h2>
 
-          <!-- Form -->
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="next" value={{request.GET.next}} />
-            <div class="mb-3">
-              <label class="form-label fw-medium">Username</label>
-              <input type="text" name="username" class="form-control form-p" placeolder="Enter your username">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label fw-medium">Password</label>
-              <input type="password" name="password" class="form-control form-p" placeholer="Enter your password">
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 form-p my-2 rounded-3 fw-semibold">
-              Login
-            </button>
-          </form>
-
-          <!-- Forgot Password -->
-          <div class="text-center mt-2">
-            <a href="" class="small text-decoration-none text-muted">Forgot your password?</a>
-          </div>
-
-          <!-- Divider -->
-          <div class="d-none text-center my-3 text-muted">OR</div>
-
-          <!-- Google Login -->
-          <a href="" class="btn d-none btn-outline-danger w-100 py-2 rounded-3">
-            <i class="bi bi-google me-2"></i> Login with Google
-          </a>
-
-          <!-- Signup Redirect -->
-          <p class="text-center mt-3 mb-0">
-            Don’t have an account? 
-            <a href="{% url 'signup' %}" class="text-decoration-none fw-semibold">Sign up</a>
-          </p>
+        <!-- Error Display -->
+        {% if form.errors or error %}
+        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
+          {{ form.errors }} {{ error }}
         </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}" />
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input type="text" name="username"
+                   placeholder="Enter your username"
+                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input type="password" name="password"
+                   placeholder="Enter your password"
+                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition" />
+          </div>
+
+          <button type="submit"
+                  class="w-full color-bg-p text-white text-sm font-semibold py-3 rounded-xl border-0 cursor-pointer hover:opacity-90 transition mt-2">
+            Login
+          </button>
+        </form>
+
+        <!-- Forgot Password -->
+        <div class="text-center mt-3">
+          <a href="" class="text-xs text-gray-400 hover:text-primary transition no-underline">Forgot your password?</a>
+        </div>
+
+        <!-- Google Login (hidden) -->
+        <a href="" class="hidden w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 text-sm font-medium py-2.5 rounded-xl mt-3 hover:bg-red-50 transition no-underline">
+          Login with Google
+        </a>
+
+        <!-- Signup redirect -->
+        <p class="text-center text-sm text-gray-500 mt-4 mb-0">
+          Don't have an account?
+          <a href="{% url 'signup' %}" class="font-semibold text-primary no-underline hover:underline">Sign up</a>
+        </p>
+
       </div>
     </div>
   </div>

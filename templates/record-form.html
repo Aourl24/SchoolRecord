@@ -1,449 +1,171 @@
-<!-- Modern Modal Overlay -->
-<div id="formBox" class="modal-overlay" 
-     style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); 
-            z-index: 100000; overflow-y: auto; padding: 20px;">
+<!-- Modal Overlay -->
+<div id="formBox"
+     class="fixed inset-0 z-[100000] overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+     style="animation: fadeIn 0.3s ease-out;">
 
   <!-- Modal Container -->
-  <div class="modal-container w-100" style="max-width: 800px; margin: 40px auto; animation: modalSlideIn 0.4s ease-out;">
-    
-    {%if not recordForm or update%}
-    <!-- Modern Tab Navigation -->
-    <div class="tabs-card">
-      <div class="tabs-wrapper">
-        <button class="tab-btn {%if form_type == 'record'%}active{%endif%}" 
-                hx-get="{% url 'form' 'record' %}" 
-                hx-target="#drop-area" 
+  <div class="w-full max-w-2xl mx-auto mt-10 mb-10"
+       style="animation: modalSlideIn 0.4s ease-out;">
+
+    <!-- Tab Navigation -->
+    {% if not recordForm or update %}
+    <div class="bg-white rounded-2xl p-2 mb-4 shadow-lg">
+      <div class="flex flex-wrap gap-1.5 justify-center">
+
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
+                       {% if form_type == 'record' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+                hx-get="{% url 'form' 'record' %}"
+                hx-target="#drop-area"
                 hx-swap="innerHTML">
           <i class="fas fa-file-alt"></i>
-          <span>Record</span>
+          <span class="hidden sm:inline">Record</span>
         </button>
-        
-        <button class="tab-btn {%if form_type == 'subject'%}active{%endif%}" 
-                hx-get="{% url 'form' 'subject' %}" 
-                hx-target="#drop-area" 
+
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
+                       {% if form_type == 'subject' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+                hx-get="{% url 'form' 'subject' %}"
+                hx-target="#drop-area"
                 hx-swap="innerHTML">
           <i class="fas fa-book"></i>
-          <span>Subject</span>
+          <span class="hidden sm:inline">Subject</span>
         </button>
-        
-        <button class="tab-btn {%if form_type == 'class'%}active{%endif%}" 
-                hx-get="{% url 'form' 'class' %}" 
-                hx-target="#drop-area" 
+
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
+                       {% if form_type == 'class' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+                hx-get="{% url 'form' 'class' %}"
+                hx-target="#drop-area"
                 hx-swap="innerHTML">
           <i class="fas fa-chalkboard"></i>
-          <span>Class</span>
+          <span class="hidden sm:inline">Class</span>
         </button>
-        
-        <button class="tab-btn {%if form_type == 'student'%}active{%endif%}" 
-                hx-get="{% url 'form' 'student' %}" 
-                hx-target="#drop-area" 
+
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
+                       {% if form_type == 'student' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+                hx-get="{% url 'form' 'student' %}"
+                hx-target="#drop-area"
                 hx-swap="innerHTML">
           <i class="fas fa-user-graduate"></i>
-          <span>Student</span>
+          <span class="hidden sm:inline">Student</span>
         </button>
-        
-        <button class="tab-btn {%if form_type == 'student-record'%}active{%endif%}" 
-                hx-get="{% url 'form' 'student-record' %}" 
-                hx-target="#drop-area" 
-                hx-swap="innerHTML" 
+
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
+                       {% if form_type == 'student-record' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+                hx-get="{% url 'form' 'student-record' %}"
+                hx-target="#drop-area"
+                hx-swap="innerHTML"
                 hx-push-url="true">
           <i class="fas fa-chart-line"></i>
-          <span>Std Rec</span>
+          <span class="hidden sm:inline">Std Rec</span>
         </button>
+
       </div>
     </div>
-    {%endif%}
+    {% endif %}
 
     <!-- Main Form Card -->
-    <div class="form-card">
-      <!-- Header with Close Button -->
-      <div class="form-header">
-        <div class="header-content">
-          <div class="header-icon">
-            <i class="fas fa-{%if update%}edit{%else%}plus-circle{%endif%}"></i>
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-gradient-to-br from-blue-500 to-green-500 px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white text-2xl">
+            <i class="fas fa-{% if update %}edit{% else %}plus-circle{% endif %}"></i>
           </div>
-          <h2 class="header-title">
-            {%if update%}Update{%else%}Add New{%endif%} {{form_type|capfirst}}
+          <h2 class="text-white text-xl font-semibold m-0">
+            {% if update %}Update{% else %}Add New{% endif %} {{ form_type|capfirst }}
           </h2>
         </div>
-        <button class="close-btn" 
-                hx-target="#formBox" 
-                hx-swap="outerHTML" 
-                hx-get="{%url 'closeRequest'%}"
+        <button class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center text-white text-lg border-0 cursor-pointer transition hover:rotate-90"
+                style="transition: all 0.3s ease;"
+                hx-target="#formBox"
+                hx-swap="outerHTML"
+                hx-get="{% url 'closeRequest' %}"
                 aria-label="Close">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
+
       <!-- Form Body -->
-      <div class="form-body">
-        <div id="saved" class="mb-3"></div>
-        
-        <form method='post' 
-              {%if update%} hx-post="{% url 'update-form' form_type model.id%}" {%else%} hx-post="{% url 'form' form_type%}" {%endif%} 
-              hx-target="#saved" 
-              hx-swap="innerHTML"
-              class="modern-form">
-          
-          {%csrf_token%}
-          
-          <div class="form-grid">
-            {% for field in form%}
-            <div class="form-group">
-              <label for="{{field.id_for_label}}" class="form-label">
-                {{field.label}}
+      <div class="p-6 sm:p-8">
+        <div id="saved" class="mb-4"></div>
+
+        <form method="post"
+              {% if update %}hx-post="{% url 'update-form' form_type model.id %}"{% else %}hx-post="{% url 'form' form_type %}"{% endif %}
+              hx-target="#saved"
+              hx-swap="innerHTML">
+          {% csrf_token %}
+
+          <!-- Fields Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+            {% for field in form %}
+            <div class="flex flex-col gap-1.5">
+              <label for="{{ field.id_for_label }}"
+                     class="text-sm font-semibold text-gray-700">
+                {{ field.label }}
               </label>
-              <div class="input-wrapper">
-                {{field}}
+              <div class="[&_input]:w-full [&_input]:border-2 [&_input]:border-gray-200 [&_input]:rounded-xl [&_input]:px-4 [&_input]:py-3 [&_input]:text-sm [&_input]:bg-gray-50 [&_input]:outline-none [&_input:focus]:border-blue-400 [&_input:focus]:bg-white [&_input:focus]:shadow-sm
+                          [&_select]:w-full [&_select]:border-2 [&_select]:border-gray-200 [&_select]:rounded-xl [&_select]:px-4 [&_select]:py-3 [&_select]:text-sm [&_select]:bg-gray-50 [&_select]:outline-none [&_select:focus]:border-blue-400 [&_select:focus]:bg-white
+                          [&_textarea]:w-full [&_textarea]:border-2 [&_textarea]:border-gray-200 [&_textarea]:rounded-xl [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:bg-gray-50 [&_textarea]:outline-none [&_textarea:focus]:border-blue-400 [&_textarea:focus]:bg-white">
+                {{ field }}
               </div>
               {% if field.help_text %}
-              <small class="form-hint">
-                <i class="fas fa-info-circle"></i> {{field.help_text}}
+              <small class="text-gray-400 text-xs flex items-center gap-1">
+                <i class="fas fa-info-circle"></i> {{ field.help_text }}
               </small>
               {% endif %}
               {% if field.errors %}
-              <div class="form-error">
+              <div class="text-red-500 text-xs flex flex-col gap-1">
                 {% for error in field.errors %}
-                <span><i class="fas fa-exclamation-circle"></i> {{error}}</span>
+                <span class="flex items-center gap-1">
+                  <i class="fas fa-exclamation-circle"></i> {{ error }}
+                </span>
                 {% endfor %}
               </div>
               {% endif %}
             </div>
-            {%endfor%}
+            {% endfor %}
           </div>
-          
+
           <!-- Action Buttons -->
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">
+          <div class="flex gap-3 flex-col sm:flex-row">
+            <button type="submit"
+                    class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-400 text-white font-semibold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 hover:-translate-y-0.5 transition shadow-md shadow-green-200">
               <i class="fas fa-save"></i>
-              <span>{%if update%}Update{%else%}Save{%endif%} {{form_type|capfirst}}</span>
+              {% if update %}Update{% else %}Save{% endif %} {{ form_type|capfirst }}
             </button>
-            
-            <button type="button" class="btn-secondary" 
-                    hx-target="#formBox" 
-                    hx-swap="outerHTML" 
-                    hx-get="{%url 'closeRequest'%}">
+            <button type="button"
+                    class="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-3.5 rounded-xl border-0 cursor-pointer transition"
+                    hx-target="#formBox"
+                    hx-swap="outerHTML"
+                    hx-get="{% url 'closeRequest' %}">
               <i class="fas fa-times"></i>
-              <span>Cancel</span>
+              Cancel
             </button>
           </div>
+
         </form>
       </div>
     </div>
+
   </div>
 </div>
 
 <style>
-/* Modern Modal Styles */
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.95);
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
-}
-
-.modal-overlay {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Tabs Card */
-.tabs-card {
-  background: white;
-  border-radius: 16px;
-  padding: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.tabs-wrapper {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.tab-btn {
-  flex: 1;
-  min-width: 120px;
-  padding: 12px 20px;
-  background: transparent;
-  border: none;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #64748b;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.tab-btn:hover {
-  background: #f1f5f9;
-  color: #4A90E2;
-  transform: translateY(-2px);
-}
-
-.tab-btn.active {
-  background: linear-gradient(135deg, #4A90E2 0%, #43A047 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-}
-
-.tab-btn i {
-  font-size: 16px;
-}
-
-@media (max-width: 768px) {
-  .tab-btn {
-    min-width: auto;
-    padding: 10px 16px;
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .tab-btn span {
-    display: none;
+  #saved .alert {
+    border-radius: 12px;
+    padding: 16px;
+    animation: slideDown 0.4s ease-out;
   }
-  .tab-btn i {
-    font-size: 18px;
-  }
-}
-
-/* Form Card */
-.form-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-}
-
-/* Header */
-.form-header {
-  background: linear-gradient(135deg, #4A90E2 0%, #43A047 100%);
-  padding: 24px 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-icon {
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: white;
-}
-
-.header-title {
-  color: white;
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.close-btn {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 10px;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
-}
-
-/* Form Body */
-.form-body {
-  padding: 30px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 30px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-label {
-  font-weight: 600;
-  color: #334155;
-  font-size: 14px;
-  margin: 0;
-}
-
-.input-wrapper {
-  position: relative;
-}
-
-.input-wrapper input,
-.input-wrapper select,
-.input-wrapper textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  background: #f8fafc;
-}
-
-.input-wrapper input:focus,
-.input-wrapper select:focus,
-.input-wrapper textarea:focus {
-  outline: none;
-  border-color: #4A90E2;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
-  transform: translateY(-1px);
-}
-
-.form-hint {
-  color: #64748b;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.form-error {
-  color: #ef4444;
-  font-size: 13px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.form-error span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Action Buttons */
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 30px;
-}
-
-.btn-primary,
-.btn-secondary {
-  flex: 1;
-  padding: 14px 24px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #43A047 0%, #66BB6A 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(67, 160, 71, 0.4);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-secondary {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-.btn-secondary:hover {
-  background: #e2e8f0;
-  color: #334155;
-}
-
-@media (max-width: 768px) {
-  .modal-container {
-    margin: 20px auto;
-  }
-  
-  .header-title {
-    font-size: 20px;
-  }
-  
-  .form-body {
-    padding: 20px;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-}
-
-/* Success Message Styling */
-#saved .alert {
-  border-radius: 12px;
-  padding: 16px;
-  animation: slideDown 0.4s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 </style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

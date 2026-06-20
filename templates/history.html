@@ -1,8 +1,9 @@
-<div class="container">
-{%for hist in history%}
-<div class="row my-2">
-	<div class="col border-bottom p-2">  <a href='{{hist.url}}' class="no-decoration color-black sz-12">{{hist.title}} </a> </div>
-</div>
-{%endfor%}
-
+<div class="divide-y divide-gray-100">
+  {% for hist in history %}
+  <div class="py-2.5 px-1">
+    <a href="{{ hist.url }}" class="text-sm text-gray-700 no-underline hover:text-primary transition">
+      {{ hist.title }}
+    </a>
+  </div>
+  {% endfor %}
 </div>

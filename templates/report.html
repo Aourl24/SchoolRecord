@@ -1,38 +1,45 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="sz-18 my-2">
-    Report for {{ class }} {{batch}} {%if term%} {{term}} {%endif%}<br />
-    Subject: {{ subject.name }}<br />
-    <span class="sz-12 color-grey">View on desktop to view more clearly</span>
-    <br />
-    <a class="sz-15" href="{% url 'export_report_excel' %}?subject={{ subject.id }}&class={{ class }}&batch={{ batch }}&term={{ term }}&sort={{ sort }}">Download Excel</a>
-</div>
-<br />
 
-<!-- Sort Button -->
-<form hx-post="{% url 'generateReport' %}" hx-target="#report-table" hx-swap="outerHTML">
-    {%csrf_token%}
-    <input type="hidden" name="subject" value="{{ subject.id }}">
-    <input type="hidden" name="class" value="{{ class }}">
-    <input type="hidden" name="batch" value="{{batch}}">
-     <input type="hidden" name="term" value="{{term}}">
-    
-
- <div class="row m-1 align-items-center">
- <select class="col sz-12 form-control no-order bg-lght"
-        name="sort" style="background-color:white" >
-  <option value="asc"> Arrange Alphabetically </option>
-  <option value="desc"> Arrange by Score </option>
-</select>
+<!-- Report Header -->
+<div class="my-4">
+  <div class="text-base font-semibold text-gray-800 mb-1">
+    Report for {{ class }} {{ batch }} {% if term %} — {{ term }}{% endif %}
+  </div>
+  <div class="text-sm text-gray-600 mb-1">Subject: {{ subject.name }}</div>
+  <div class="text-xs text-gray-400 mb-2">View on desktop to see more clearly</div>
+  <a href="{% url 'export_report_excel' %}?subject={{ subject.id }}&class={{ class }}&batch={{ batch }}&term={{ term }}&sort={{ sort }}"
+     class="inline-flex items-center gap-2 text-sm font-semibold text-tertiary hover:text-green-700 no-underline transition">
+    <i class="fas fa-file-excel"></i> Download Excel
+  </a>
 </div>
-    <button class="btn btn-sm my-2 w-100 color-bg-grey color-white" type="submit">
-        Apply
+
+<!-- Sort Form -->
+<form hx-post="{% url 'generateReport' %}" hx-target="#report-table" hx-swap="outerHTML"
+      class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+  {% csrf_token %}
+  <input type="hidden" name="subject" value="{{ subject.id }}">
+  <input type="hidden" name="class"   value="{{ class }}">
+  <input type="hidden" name="batch"   value="{{ batch }}">
+  <input type="hidden" name="term"    value="{{ term }}">
+
+  <div class="flex gap-3 items-center">
+    <select name="sort"
+            class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+      <option value="asc">Arrange Alphabetically</option>
+      <option value="desc">Arrange by Score</option>
+    </select>
+    <button type="submit"
+            class="color-bg-p text-white text-sm font-semibold px-5 py-2 rounded-xl border-0 cursor-pointer hover:opacity-90 transition whitespace-nowrap">
+      Apply
     </button>
+  </div>
 </form>
 
-<br />
+<!-- Report Table -->
 <div id="report-table">
-{%include 'report-table.html'%}
+  {% include 'report-table.html' %}
 </div>
+
 {% endblock %}

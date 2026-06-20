@@ -1,64 +1,66 @@
 {% extends "base.html" %}
-{% block nav %}
-{% endblock %}
-
-{% block search %}
-{% endblock %}
+{% block nav %}{% endblock %}
+{% block search %}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <!-- Brand/Header -->
-  <div class="text-center mb-4">
-    <h1 class="fw-bold color-p display-5">         <span class="brand-mark color-bg-p d-inline-flex align-items-center justify-content-center rounded-circle p-1">
-          <i class="fas fa-graduation-cap"></i>
-        </span> <span class="fw-700 brand-text">Mark<span class="color-s">Book.com</span></span></h1>
-    <p class="text-muted">Your journey of learning starts here</p>
+<div class="min-h-screen bg-gradient-to-b from-slate-50 to-blue-50 py-12 px-4">
+
+  <!-- Brand -->
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-primary flex items-center justify-center gap-2">
+      <span class="color-bg-p inline-flex items-center justify-center rounded-full w-10 h-10">
+        <i class="fas fa-graduation-cap text-white text-base"></i>
+      </span>
+      Mark<span class="text-secondary">Book.com</span>
+    </h1>
+    <p class="text-gray-400 text-sm mt-2">Your journey of learning starts here</p>
   </div>
 
-<br class="d-none d-md-block" />
   <!-- Signup Card -->
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-body p-4">
-          <h2 class="text-center mb-4 sz-20 fw-semibold">Sign Up</h2>
+  <div class="flex justify-center">
+    <div class="w-full max-w-md">
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
 
-          <!-- Error Display -->
-          {% if form.errors or errors %}
-          <div class="alert alert-danger">
-            {{ form.errors }} {{ errors }}
-          </div>
-          {% endif %}
+        <h2 class="text-center text-xl font-semibold text-gray-800 mb-6">Sign Up</h2>
 
-          <!-- Form -->
-          <form method="post">
-            {% csrf_token %}
-            {% for field in form %}
-              <div class="mb-3">
-                <label class="form-label fw-medium">{{ field.label }}</label>
-                {{ field }}
-              </div>
-            {% endfor %}
-
-            <button type="submit" class="btn btn-primary my-2 no-border color-bg-p w-100 py2 form-p rounded-3 fw-semibold">
-              Sign Up
-            </button>
-          </form>
-
-          <!-- Divider -->
-          <div class="d-none text-center my-3 text-muted">OR</div>
-
-          <!-- Google Signup -->
-          <a href="" class="d-none btn btn-outline-danger w-100 py-2 rounded-3">
-            <i class="bi bi-google me-2"></i> Sign up with Google
-          </a>
-
-          <!-- Login Redirect -->
-          <p class="text-center mt-3 mb-0">
-            Already have an account? 
-            <a href="{% url 'login' %}" class="text-decoration-none fw-semibold">Login here</a>
-          </p>
+        <!-- Error Display -->
+        {% if form.errors or errors %}
+        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
+          {{ form.errors }} {{ errors }}
         </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+
+          {% for field in form %}
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+            <div class="[&_input]:w-full [&_input]:border [&_input]:border-gray-200 [&_input]:rounded-xl [&_input]:px-4 [&_input]:py-2.5 [&_input]:text-sm [&_input]:bg-gray-50 [&_input]:outline-none [&_input:focus]:ring-2 [&_input:focus]:ring-primary/30 [&_input:focus]:bg-white
+                        [&_select]:w-full [&_select]:border [&_select]:border-gray-200 [&_select]:rounded-xl [&_select]:px-4 [&_select]:py-2.5 [&_select]:text-sm [&_select]:bg-gray-50 [&_select]:outline-none">
+              {{ field }}
+            </div>
+          </div>
+          {% endfor %}
+
+          <button type="submit"
+                  class="w-full color-bg-p text-white text-sm font-semibold py-3 rounded-xl border-0 cursor-pointer hover:opacity-90 transition mt-2">
+            Sign Up
+          </button>
+        </form>
+
+        <!-- Google Signup (hidden) -->
+        <a href="" class="hidden w-full flex items-center justify-center gap-2 border border-red-200 text-red-500 text-sm font-medium py-2.5 rounded-xl mt-3 hover:bg-red-50 transition no-underline">
+          Sign up with Google
+        </a>
+
+        <!-- Login redirect -->
+        <p class="text-center text-sm text-gray-500 mt-4 mb-0">
+          Already have an account?
+          <a href="{% url 'login' %}" class="font-semibold text-primary no-underline hover:underline">Login here</a>
+        </p>
+
       </div>
     </div>
   </div>

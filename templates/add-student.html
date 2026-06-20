@@ -1,23 +1,90 @@
- <div id="formBox" class="container-fluid position-fixed vh-100 p-2 color-black" style="top:10%;left:0;background-color:rgba(250, 250, 250, 1);overflow: auto;z-index: 100000;">
-<form class="container" hx-post="{%url 'add-student' class.id %}" hx-target="#saved" hx-swap="innerHTML">
-  {%csrf_token%}
-  	<h3 class="my-2 color-p sz-20">Add Student</h3>
-  	<br/>
-  	<div id="saved"></div>
-    <div class="row my-2">
-      <div class="col">
-      <input placeholder="Enter Student Name" class="form-control" name="name" />
+<div id="formBox" class="fixed inset-0 bg-gray-50/98 overflow-y-auto z-[100000] p-4" style="top:10%;">
+
+  <!-- Tab Switcher -->
+  <div class="flex gap-3 justify-center mt-6 mb-6">
+    <button id="student-create"
+            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
+            onclick="swap('student-create')">
+      Create Student
+    </button>
+    <button id="bulk-upload"
+            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
+            onclick="swap('bulk-upload')">
+      Bulk Upload
+    </button>
+  </div>
+
+  <!-- Create Single Student Form -->
+  <form class="max-w-md mx-auto hidden" id="create-student-box"
+        hx-post="{% url 'add-student' class.id %}" hx-target="#saved" hx-swap="innerHTML">
+    {% csrf_token %}
+    <h3 class="text-xl font-bold text-primary mb-4">Add Student</h3>
+    <div id="saved" class="mb-2"></div>
+
+    <div class="mb-4">
+      <input placeholder="Enter Student Name"
+             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+             name="name" />
     </div>
+
+    <div class="mb-3">
+      <button class="w-full py-2.5 rounded-xl text-white text-sm font-semibold color-bg-p">Save</button>
     </div>
-  
-    <div class="row my-2 mt-3">
-      <div class="col">
-        <button class="button p-2 color-white w-100 color-bg-p rounded-3">Save</button>
-      </div>
+
+    <div>
+      <button class="w-full py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold"
+              hx-target="#formBox" hx-swap="outerHTML"
+              hx-get="{% url 'closeRequest' %}">
+        Close window
+      </button>
     </div>
-    
-    	<div class="my-2">
-	  <button class="form-control btn-danger color-white bg-danger no-border" hx-target="#formBox" hx-swap="outerHTML" style="padding:10px" hx-get="{%url 'closeRequest'%}">Close window </button>
-	</div>
-</form>
+  </form>
+
+  <!-- Bulk Upload Form -->
+  <form class="max-w-md mx-auto hidden" id="bulk-create-box"
+        hx-post="{% url 'bulk-create-student' class.id %}" hx-target="#saved-bulk" hx-swap="innerHTML">
+    {% csrf_token %}
+    <h3 class="text-xl font-bold text-primary mb-4">Bulk Add Students</h3>
+    <div id="saved-bulk" class="mb-2"></div>
+
+    <div class="mb-4">
+      <textarea placeholder="Enter Student(s) Name"
+                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[120px]"
+                name="body"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <button class="w-full py-2.5 rounded-xl text-white text-sm font-semibold color-bg-p">Save</button>
+    </div>
+
+    <div>
+      <button class="w-full py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold"
+              hx-target="#formBox" hx-swap="outerHTML"
+              hx-get="{% url 'closeRequest' %}">
+        Close window
+      </button>
+    </div>
+  </form>
+
 </div>
+
+<script>
+  function swap(a) {
+    var studentBtn  = document.getElementById("student-create");
+    var bulkBtn     = document.getElementById("bulk-upload");
+    var studentForm = document.getElementById("create-student-box");
+    var bulkForm    = document.getElementById("bulk-create-box");
+
+    if (a === "student-create") {
+      studentForm.classList.remove("hidden");
+      bulkForm.classList.add("hidden");
+      studentBtn.classList.add("color-bg-p", "text-white", "border-transparent");
+      bulkBtn.classList.remove("color-bg-p", "text-white", "border-transparent");
+    } else if (a === "bulk-upload") {
+      bulkForm.classList.remove("hidden");
+      studentForm.classList.add("hidden");
+      bulkBtn.classList.add("color-bg-p", "text-white", "border-transparent");
+      studentBtn.classList.remove("color-bg-p", "text-white", "border-transparent");
+    }
+  }
+</script>

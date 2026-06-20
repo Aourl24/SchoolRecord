@@ -1,37 +1,35 @@
-<div class="container">
-    {% for s in student %}
-        <div class="row my-2 mb-3 align-items-center" style="min-height: 50px;">
-            <!-- Counter -->
-            <div class="col-1 d-flex align-items-center justify-content-center">
-                <span class="rounded color-grey p-2">
-                    {{ forloop.counter }}
-                </span>
-            </div>
+<div class="divide-y divide-gray-100">
+  {% for s in student %}
+  <div class="flex items-center gap-3 py-3 min-h-[52px]">
 
-            <!-- Student Info -->
-            <div class="col">
-                <!-- Student Name -->
-                <div class="row align-items-center">
-                    <div class="col sz-16 text-truncate" hx-get="{% url 'get-student-detail' s.id %}"  hx-target="body" hx-swap="outerHTML" hx-push-url="true"
-                         
-                         style="cursor: pointer;">
-                        {{ s.name }}
-                    </div>
-                </div>
+    <!-- Counter -->
+    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-medium">
+      {{ forloop.counter }}
+    </div>
 
-                <!-- Class Name -->
-                <div class="row align-items-center">
-                    <div class="col color-grey sz-12 text-truncate">
-                        {{ s.class_name }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% empty %}
-        <div class="text-center text-muted my-4">
-            No students found.
-        </div>
-    {% endfor %}
+    <!-- Student Info -->
+    <div class="flex-1 min-w-0 cursor-pointer"
+         hx-get="{% url 'get-student-detail' s.id %}"
+         hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+      <div class="text-sm font-semibold text-gray-900 truncate hover:text-primary transition">
+        {{ s.name }}
+      </div>
+      <div class="text-xs text-gray-400 truncate">
+        {{ s.class_name }}
+      </div>
+    </div>
+
+    <!-- Arrow -->
+    <div class="text-gray-300 flex-shrink-0">
+      <i class="fas fa-chevron-right text-xs"></i>
+    </div>
+
+  </div>
+  {% empty %}
+  <div class="text-center text-gray-400 py-8 text-sm">
+    No students found.
+  </div>
+  {% endfor %}
 </div>
 
 <!-- HTMX Target Container (for details) -->

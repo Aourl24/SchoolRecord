@@ -705,8 +705,6 @@ def report_view(request):
 
     return render(request, 'get_report.html', context)
 
-
-
 def logout_view(request):
     """User logout"""
     response = redirect('login')
@@ -744,3 +742,15 @@ def user_detail(request,form="role"):
       
   context = {"form":form,"schools":schools}
   return render(request,"details.html",context)
+
+@login_require
+def bulk_create_student(request,id):
+  class_name = Class.objects.get(id=id)
+  body = request.POST.get("body")
+  if body:
+    seperate_body = body.split("\n")
+    for std in seperate_body:
+      Student.objects.create_for_user(request.user,name=std,class_name=class_name)
+    return HttpResponse(f"{len(seperate_body)}) students have been added to {class_name.name} ")
+  else:
+    return HttpResponse(f"Body is empty")

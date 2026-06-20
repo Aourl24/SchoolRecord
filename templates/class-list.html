@@ -1,37 +1,34 @@
-<div class="row">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
   {% for c in school_class %}
-  <div class="col-12 col-md-6 col-lg-4 mb-4">
-    <div class="p-3 rounded-3 shadow-sm bg-green-light">
-      
-      <!-- Class Name -->
-      <h5 class="mb-2 color-black sz-20 fw-semibold">
-        {{ c.name }} {{ c.batch }}
-      </h5>
+  <div class="bg-green-50 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
 
-      <!-- Students -->
-      <p class="mb-1 color-grey sz-14">
-        <span class="fw-semibold">Students:</span> {{ c.student.all.count }}
-      </p>
+    <!-- Class Name -->
+    <h5 class="text-lg font-bold text-gray-900 mb-2">
+      {{ c.name }} {{ c.batch }}
+    </h5>
 
-      <!-- Subjects (optional, only show if available) -->
-      {% if c.record.subject %}
-      <p class="mb-1 color-grey sz-14">
-        <span class="fw-semibold">Subject:</span> {{ c.record.subject }}
-      </p>
-      {% endif %}
+    <!-- Stats -->
+    <p class="text-sm text-gray-500 mb-1">
+      <span class="font-semibold text-gray-700">Students:</span> {{ c.student.all.count }}
+    </p>
 
-      <!-- Records -->
-      <p class="mb-3 color-grey sz-14">
-        <span class="fw-semibold">Records:</span> {{ c.record.all.count }}
-      </p>
+    {% if c.record.subject %}
+    <p class="text-sm text-gray-500 mb-1">
+      <span class="font-semibold text-gray-700">Subject:</span> {{ c.record.subject }}
+    </p>
+    {% endif %}
 
-      <!-- CTA Button -->
-      <a hx-get="{% url 'get-class' c.id %}" 
-         class="btn w-100 color-bg-p color-white rounded-3 shadow-sm" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-        Go to Class
-      </a>
+    <p class="text-sm text-gray-500 mb-4">
+      <span class="font-semibold text-gray-700">Records:</span> {{ c.record.all.count }}
+    </p>
 
-    </div>
+    <!-- CTA -->
+    <a hx-get="{% url 'get-class' c.id %}"
+       hx-target="body" hx-swap="outerHTML" hx-push-url="true"
+       class="block text-center w-full py-2 rounded-xl text-white text-sm font-semibold color-bg-p cursor-pointer shadow-sm hover:opacity-90 transition">
+      Go to Class
+    </a>
+
   </div>
   {% endfor %}
 </div>

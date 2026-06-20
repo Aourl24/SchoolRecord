@@ -1,44 +1,59 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
-<div>
+{% block content %}
+<div class="my-4">
 
-    <!-- Student Icon -->
-  <div class="row mb-3">
-    <div class="col text-center">
-      <i class="fas fa-user-graduate color-t bg-white rounded-circle p-4 shadow-sm fs-1"></i>
-    </div>
+  <!-- Student Icon -->
+  <div class="text-center mb-4">
+    <span class="color-bg-t inline-flex items-center justify-center w-20 h-20 rounded-full shadow-sm text-4xl">
+      <i class="fas fa-user-graduate text-white"></i>
+    </span>
   </div>
 
   <!-- Student Info -->
-  <div class="row mb-3">
-    <div class="col text-center">
-      <h4 class="fw-bold text-dark sz-24">
-        {{ student.name }} 
-      </h4>
-      <p class="text-muted small mb-0">
-        class {{ student.class_name }}
-      </p>
-    </div>
+  <div class="text-center mb-4">
+    <h4 class="text-2xl font-bold text-gray-900">{{ student.name }}</h4>
+    <p class="text-gray-400 text-sm">Class {{ student.class_name }}</p>
   </div>
 
-    <div class="row justify-content-center my-2">
-    <div class="col text-center">
-      <div class="color-s"><a hx-get="{%url 'update-form' 'student' student.id%}" hx-target="#addHere"hx-trigger="click" class="no-decoration bg-danger color-white rounded p-2" target="_blank"> edit student </a> </div>  
-    </div>    
+  <!-- Edit Link -->
+  <div class="flex justify-center mb-6">
+    <a hx-get="{% url 'update-form' 'student' student.id %}"
+       hx-target="#addHere" hx-trigger="click"
+       class="bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer no-underline hover:bg-red-600 transition">
+      Edit Student
+    </a>
   </div>
-  
-  
-    
-  <br />
-  <div class="my-2 color-p bold"> Records </div>
-    <table class="container color-bg-white">
-    <tr class="p-2 py-4 sz-14 border-bottom color-bg-p color-white"><th class="border-end center">S/N</th><th class="p-2">Subject</th><th class="center border-start">Term</th><th class="center border-start p-2">Type</th><th class="center border-start p-2">Score</th></tr>
-    {% for record in records%}
-    <tr class="border-bottom" hx-get="{%url 'update-form' 'student-record' record.id%}" hx-target="#addHere"hx-trigger="click"><td class="border-end center color-silver">{{forloop.counter}}</td><td class="border-end p-2"><span>{{record.record.subject.subject}}</span> </td> <td class="center border-end p-2"> {{record.record.title}}</td> </td> <td class="center border-end p-2"> {{record.record.record_type}} {{record.record.record_number}} </td> </td> <td class="center border-end p-2"> {{record.score}}</td> </tr>
-    {%endfor%}    
-  </table>
+
+  <!-- Records -->
+  <div class="mb-2 font-bold text-primary text-base">Records</div>
+
+  <div class="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="color-bg-p text-white text-xs">
+          <th class="px-3 py-2 text-center border-r border-white/20">S/N</th>
+          <th class="px-3 py-2 text-left border-r border-white/20">Subject</th>
+          <th class="px-3 py-2 text-center border-r border-white/20">Term</th>
+          <th class="px-3 py-2 text-center border-r border-white/20">Type</th>
+          <th class="px-3 py-2 text-center">Score</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for record in records %}
+        <tr class="hover:bg-gray-50 cursor-pointer transition"
+            hx-get="{% url 'update-form' 'student-record' record.id %}"
+            hx-target="#addHere" hx-trigger="click">
+          <td class="px-3 py-2 text-center text-gray-400 border-r border-gray-100">{{ forloop.counter }}</td>
+          <td class="px-3 py-2 text-gray-800 border-r border-gray-100">{{ record.record.subject.subject }}</td>
+          <td class="px-3 py-2 text-center text-gray-600 border-r border-gray-100">{{ record.record.title }}</td>
+          <td class="px-3 py-2 text-center text-gray-600 border-r border-gray-100">{{ record.record.record_type }} {{ record.record.record_number }}</td>
+          <td class="px-3 py-2 text-center font-semibold text-gray-900">{{ record.score }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
 </div>
-
-
-{%endblock%}
+{% endblock %}

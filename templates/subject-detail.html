@@ -1,56 +1,60 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
+{% block content %}
 <div>
-  <div class="row mb-2">
-    <div class="col-3 d-none">
-    <i class="fas fa-user-graduate sz-24 sz-24  rounded-4 p-3 color-bg-white color-s"></i>
+
+  <!-- Subject Title -->
+  <div class="mb-2">
+    <div class="text-2xl font-bold text-primary">{{ subject.name }}</div>
   </div>
-  <div class="col">
-    <div class="sz-24 color-p bold"> {{subject.name}}</div>
+
+  <!-- Edit Link -->
+  <div class="mb-4 text-sm">
+    <a href="/admin/record/subject/{{ subject.id }}/change/"
+       class="text-red-500 font-semibold px-3 py-1 rounded-lg border border-red-200 hover:bg-red-50 transition no-underline"
+       target="_blank">
+      Edit Subject
+    </a>
   </div>
+
+  <!-- Class Filter Pills -->
+  <div class="flex flex-wrap gap-2 my-3">
+    {% for class in classes %}
+    <span class="bg-blue-50 text-blue-700 text-sm font-medium px-3 py-1 rounded-full cursor-pointer hover:bg-blue-100 transition className"
+          hx-get="{% url 'class-topic' subject.id class.name %}"
+          onclick="highlight(this)"
+          hx-target="#topic" hx-swap="innerHTML">
+      {{ class.name }}
+    </span>
+    {% endfor %}
+  </div>
+
+  <hr class="border-gray-100 my-4" />
+
+  <!-- Topics Header -->
+  <div class="flex items-center justify-between my-3">
+    <div class="text-lg font-semibold text-gray-800">Topics</div>
+    <span class="color-bg-t text-white text-sm font-semibold px-4 py-1.5 rounded-full cursor-pointer hover:opacity-90 transition"
+          hx-get="{% url 'add-topic' subject.id %}"
+          hx-trigger="click"
+          hx-target="#topic" hx-swap="innerHTML">
+      + Add Topic
+    </span>
+  </div>
+
+  <!-- Topics Content -->
+  <div id="topic" class="mt-2"></div>
+
 </div>
- <div class="row sz-12">
-    <div class="col">
-      <div class="color-s"><a href="/admin/record/subject/{{subject.id}}/change/" class="no-decoration text-danger rounded p-2" target="_blank"> edit subject </a> </div>  
-    </div>    
-  </div>
-  
-      <div class="row my-2 p-2">
-      {%for class in classes%}
-     <div class="col-6 col-md p-1">
-     <span class="p-2 bg-blue-light col-10 rounded-2 inline-block pointer-cursor className" hx-get="{%url 'class-topic' subject.id class.name%}" onClick="hightlight()" hx-target="#topic" hx-swap="innerHTML">{{class.name}}</span>
-     </div>
-      {%endfor%}
-  </div>
 
-  <div class="row">
-    <div class="col">
-      
-    </div>    
-  </div>
-
-   
-  <hr />
-  <div class="row my-2 align-items-center">
-    <div class="col sz-20">
-      Topics
-    </div>
-      <div class="col right">
-        <span class="color-bg-t color-white p-2 rounded cursor-pointer pointer" hx-get="{%url 'add-topic' subject.id %}" hx-trigger="click" hx-target="#topic" hx-swap="innerHTML">add Topic</span>
-      </div>
-  </div>
-
-  <div id="topic" class="">
-
-  </div>
-
-
-</div>
-<script type="text/javascript">
-  function hightlight(){
-    var all_class = document.getQuerySelector('.className')
-    all_class.forEach((x)=>x.classList.add('color-p'))
+<script>
+  function highlight(el) {
+    document.querySelectorAll('.className').forEach(x => {
+      x.classList.remove('bg-indigo-600', 'text-white');
+      x.classList.add('bg-blue-50', 'text-blue-700');
+    });
+    el.classList.remove('bg-blue-50', 'text-blue-700');
+    el.classList.add('bg-indigo-600', 'text-white');
   }
 </script>
-{%endblock%}
+{% endblock %}

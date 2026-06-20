@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+#CSRF_TRUSTED_ORIGINS = ["http://10.252.147.180:8000"]
+
 
 # Application definition
 

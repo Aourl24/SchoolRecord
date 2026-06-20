@@ -39,6 +39,7 @@ urlpatterns = [
     path('add-topic/<int:id>/', views.add_topic_view, name='add-topic'),
     path('add-record/<int:id>/', views.add_record_to_class_view, name='add-record'),
     path('update-record/<int:id>/', views.update_record_view, name='update-record'),
+    path('bulk-create-student/<int:id>/',views.bulk_create_student,name='bulk-create-student'),
     
     # Filter and search
     path('search/', views.search_view, name='search'),

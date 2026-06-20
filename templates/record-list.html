@@ -1,52 +1,39 @@
-<br />
-<div class="row g-3">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
 
   {% for rec in record %}
-  <div class="col-md-6">  
-    <div class="row p-3 color-bg-white {% if partial %} border {% endif %} rounded-3 shadow-sm hover-shadow pointer-cursor transition"
-         hx-get="{% url 'get-record' rec.id %}" 
-         hx-target="body" 
-         hx-swap="outerHTML" 
-         hx-push-url="true">
+  <div class="bg-white {% if partial %}border border-gray-200{% endif %} rounded-2xl shadow-sm p-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition"
+       hx-get="{% url 'get-record' rec.id %}"
+       hx-target="body"
+       hx-swap="outerHTML"
+       hx-push-url="true">
 
-      {% if not partial %}
-      <div class="col-12 mb-3">
-        <span class=" color-t">Class</span>
-        <div class="mt-1 sz-16 fw-semibold color-p">
-          {{ rec.class_name }}
-        </div>
-      </div>
-      {% endif %}
-
-      <div class="col-12 mb-3">
-        <span class="color-t">Subject</span>
-        <div class="mt-1 sz-16 fw-semibold color-p">
-          {{ rec.subject }}
-        </div>
-      </div>
-
-      <div class="col-12 mb-3">
-        <span class=" color-t">Term</span>
-        <div class="mt-1 sz-16 fw-semibold color-p">
-          {{ rec.title }}
-        </div>
-      </div>
-
-      <div class="col-12 mb-3">
-        <span class=" color-t">Type</span>
-        <div class="mt-1 sz-16 fw-semibold color-p">
-          {{ rec.record_type }} {{ rec.record_number }}
-        </div>
-      </div>
-
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center color-grey rounded p-2 sz-14 shadow-sm">
-          <span class="color-grey d-none">Record {{ forloop.counter }}</span>
-          <span class="color-grey">Created {{ rec.date_created }}</span>
-        </div>
-      </div>
-
+    {% if not partial %}
+    <div class="mb-3">
+      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Class</span>
+      <div class="text-base font-bold text-primary mt-0.5">{{ rec.class_name }}</div>
     </div>
+    {% endif %}
+
+    <div class="mb-3">
+      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Subject</span>
+      <div class="text-base font-bold text-primary mt-0.5">{{ rec.subject }}</div>
+    </div>
+
+    <div class="mb-3">
+      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Term</span>
+      <div class="text-base font-semibold text-primary mt-0.5">{{ rec.title }}</div>
+    </div>
+
+    <div class="mb-3">
+      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Type</span>
+      <div class="text-base font-semibold text-primary mt-0.5">{{ rec.record_type }} {{ rec.record_number }}</div>
+    </div>
+
+    <div class="flex justify-between items-center text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2 mt-2">
+      <span class="hidden">Record {{ forloop.counter }}</span>
+      <span>Created {{ rec.date_created }}</span>
+    </div>
+
   </div>
   {% endfor %}
 
