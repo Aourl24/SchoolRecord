@@ -1,73 +1,95 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="my-4">
+<!-- Breadcrumb -->
+<div class="hidden lg:flex items-center gap-2 text-on-surface-variant text-label-sm font-label-sm mb-6">
+  <a class="hover:text-primary transition-colors cursor-pointer"
+     hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">Classes</a>
+  <i class="fas fa-chevron-right text-[10px]"></i>
+  <span class="text-primary font-bold">{{ class_name.name }} {{ class_name.batch }}</span>
+</div>
 
-  <!-- Class Icon -->
-  <div class="text-center mb-4">
-    <span class="color-bg-t inline-flex items-center justify-center w-20 h-20 rounded-full shadow-sm text-4xl">
-      <i class="fas fa-chalkboard-teacher text-white"></i>
-    </span>
-  </div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
 
-  <!-- Class Info -->
-  <div class="text-center mb-6">
-    <h4 class="text-2xl font-bold text-gray-900">
+  <!-- Hero Card -->
+  <div class="lg:col-span-4 bg-surface-container-lowest p-8 rounded-3xl border border-outline-variant scholar-shadow flex flex-col items-center text-center relative overflow-hidden">
+    <div class="absolute inset-0 opacity-5 pointer-events-none bg-gradient-to-br from-primary to-secondary"></div>
+
+    <div class="w-28 h-28 lg:w-32 lg:h-32 rounded-full bg-gradient-to-tr from-tertiary to-secondary flex items-center justify-center mb-6 shadow-lg relative z-10">
+      <i class="fas fa-people-group text-white text-4xl lg:text-5xl"></i>
+    </div>
+
+    <h3 class="text-headline-lg-mobile lg:text-display-lg font-display-lg text-on-surface mb-1 relative z-10">
       {{ class_name.name }} {{ class_name.batch }}
-    </h4>
-    <p class="text-gray-400 text-sm">Number of students: {{ class_name.student.count }}</p>
-  </div>
-
-  <!-- Action Cards -->
-  <div class="flex flex-wrap justify-center gap-3 mb-6 text-sm text-center">
-
-    <!-- Edit Class -->
-    <div hx-get="{% url 'update-form' 'class' class_name.id %}"
-         hx-target="#addHere"
-         class="flex flex-col items-center gap-1 bg-white border border-gray-200 rounded-xl px-5 py-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition">
-      <i class="fas fa-pen text-primary text-xl mb-1"></i>
-      <span class="font-semibold text-gray-700">Edit Class</span>
-    </div>
-
-    <!-- Add Students -->
-    <div hx-get="{% url 'add-student' class_name.id %}"
-         hx-target="#addHere" hx-swap="innerHTML"
-         class="flex flex-col items-center gap-1 bg-green-50 rounded-xl px-5 py-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition">
-      <i class="fas fa-user-graduate text-green-500 text-xl mb-1"></i>
-      <span class="font-semibold text-gray-700">Add Students</span>
-    </div>
-
-    <!-- Add Record -->
-    <div hx-get="{% url 'add-record' class_name.id %}"
-         hx-target="#addHere"
-         class="flex flex-col items-center gap-1 bg-yellow-50 rounded-xl px-5 py-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition">
-      <i class="fas fa-file-alt text-yellow-500 text-xl mb-1"></i>
-      <span class="font-semibold text-gray-700">Add Record</span>
-    </div>
+    </h3>
+    <p class="text-title-md font-title-md text-on-surface-variant relative z-10">
+      {{ class_name.student.count }} Students Enrolled
+    </p>
 
   </div>
 
-  <!-- View Toggle Buttons -->
-  <div class="flex justify-center gap-3 mb-4">
-    <button id="view_record"
-            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
-            onclick="swap('view_record')"
-            hx-get="{% url 'get-class-record' class_name.id %}"
-            hx-target="#mini-load-area" hx-swap="innerHTML">
-      View Records
-    </button>
-    <button id="view_student"
-            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
-            onclick="swap('view_student')"
-            hx-get="{% url 'get-student' class_name.id %}"
-            hx-target="#mini-load-area" hx-swap="innerHTML">
-      View Students
-    </button>
+  <!-- Actions + Students/Records -->
+  <div class="lg:col-span-8 flex flex-col gap-gutter-desktop">
+
+    <!-- Action Tiles -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+      <!-- Edit Class -->
+      <div hx-get="{% url 'update-form' 'class' class_name.id %}"
+           hx-target="#addHere"
+           class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
+        <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed group-hover:scale-110 transition-transform">
+          <i class="fas fa-pen"></i>
+        </div>
+        <span class="font-title-md text-on-surface text-sm font-semibold">Edit Class</span>
+      </div>
+
+      <!-- Add Students -->
+      <div hx-get="{% url 'add-student' class_name.id %}"
+           hx-target="#addHere" hx-swap="innerHTML"
+           class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
+        <div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed group-hover:scale-110 transition-transform">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+        <span class="font-title-md text-on-surface text-sm font-semibold">Add Students</span>
+      </div>
+
+      <!-- Add Record -->
+      <div hx-get="{% url 'add-record' class_name.id %}"
+           hx-target="#addHere"
+           class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
+        <div class="w-12 h-12 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed group-hover:scale-110 transition-transform">
+          <i class="fas fa-file"></i>
+        </div>
+        <span class="font-title-md text-on-surface text-sm font-semibold">Add Record</span>
+      </div>
+
+    </div>
+
+    <!-- View Toggle -->
+    <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant scholar-shadow overflow-hidden">
+      <div class="flex border-b border-outline-variant">
+        <button id="view_record"
+                class="flex-1 py-4 text-body-md font-bold transition-colors text-on-surface-variant hover:bg-surface-container-low"
+                onclick="swap('view_record')"
+                hx-get="{% url 'get-class-record' class_name.id %}"
+                hx-target="#mini-load-area" hx-swap="innerHTML">
+          <i class="fas fa-chart-line mr-2"></i>View Records
+        </button>
+        <button id="view_student"
+                class="flex-1 py-4 text-body-md font-bold transition-colors text-on-surface-variant hover:bg-surface-container-low"
+                onclick="swap('view_student')"
+                hx-get="{% url 'get-student' class_name.id %}"
+                hx-target="#mini-load-area" hx-swap="innerHTML">
+          <i class="fas fa-user-group mr-2"></i>View Students
+        </button>
+      </div>
+
+      <!-- Dynamic Content Area -->
+      <div id="mini-load-area" class="p-2"></div>
+    </div>
+
   </div>
-
-  <!-- Dynamic Content Area -->
-  <div id="mini-load-area" class="mt-2"></div>
-
 </div>
 
 <script>
@@ -76,11 +98,11 @@
     var stu = document.getElementById("view_student");
 
     if (a === "view_record") {
-      rec.classList.add("color-bg-p", "text-white", "border-transparent");
-      stu.classList.remove("color-bg-p", "text-white", "border-transparent");
+      rec.classList.add("bg-primary-container", "text-on-primary-container");
+      stu.classList.remove("bg-primary-container", "text-on-primary-container");
     } else if (a === "view_student") {
-      stu.classList.add("color-bg-p", "text-white", "border-transparent");
-      rec.classList.remove("color-bg-p", "text-white", "border-transparent");
+      stu.classList.add("bg-primary-container", "text-on-primary-container");
+      rec.classList.remove("bg-primary-container", "text-on-primary-container");
     }
   }
 </script>

@@ -1,72 +1,103 @@
-<div id="formBox" class="fixed inset-0 bg-gray-50/98 overflow-y-auto z-[100000] p-4" style="top:10%;">
+<div id="formBox" class="fixed inset-0 z-[100000] overflow-y-auto bg-on-surface/50 backdrop-blur-sm p-4" style="animation: fadeIn 0.3s ease-out;">
+  <div class="w-full max-w-md mx-auto mt-10 mb-10" style="animation: modalSlideIn 0.4s ease-out;">
 
-  <!-- Tab Switcher -->
-  <div class="flex gap-3 justify-center mt-6 mb-6">
-    <button id="student-create"
-            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
-            onclick="swap('student-create')">
-      Create Student
-    </button>
-    <button id="bulk-upload"
-            class="flex-1 max-w-[160px] border border-gray-200 rounded-xl py-2 text-sm font-semibold transition"
-            onclick="swap('bulk-upload')">
-      Bulk Upload
-    </button>
+    <!-- Tab Switcher -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-2 mb-4 scholar-shadow flex gap-1.5">
+      <button id="student-create"
+              class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-label-sm font-bold transition text-on-surface-variant hover:bg-surface-container-low"
+              onclick="swap('student-create')">
+        <i class="fas fa-user-plus"></i> Create Student
+      </button>
+      <button id="bulk-upload"
+              class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-label-sm font-bold transition text-on-surface-variant hover:bg-surface-container-low"
+              onclick="swap('bulk-upload')">
+        <i class="fas fa-users"></i> Bulk Upload
+      </button>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-primary px-6 py-5 flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+        <h2 class="text-on-primary text-title-md font-headline-lg m-0">Add Students</h2>
+      </div>
+
+      <div class="p-6 sm:p-8">
+
+        <!-- Create Single Student Form -->
+        <form id="create-student-box"
+              hx-post="{% url 'add-student' class.id %}" hx-target="#saved" hx-swap="innerHTML">
+          {% csrf_token %}
+          <div id="saved" class="mb-4"></div>
+
+          <div class="flex flex-col gap-1.5 mb-6">
+            <label class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">Student Name</label>
+            <input placeholder="Enter Student Name"
+                   class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container-low outline-none transition-all focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20"
+                   name="name" />
+          </div>
+
+          <div class="flex gap-3">
+            <button class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md">
+              <i class="fas fa-floppy-disk"></i> Save
+            </button>
+            <button type="button"
+                    class="flex-1 flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant cursor-pointer transition"
+                    hx-target="#formBox" hx-swap="outerHTML"
+                    hx-get="{% url 'closeRequest' %}">
+              <i class="fas fa-xmark"></i> Close
+            </button>
+          </div>
+        </form>
+
+        <!-- Bulk Upload Form -->
+        <form id="bulk-create-box" class="hidden"
+              hx-post="{% url 'bulk-create-student' class.id %}" hx-target="#saved-bulk" hx-swap="innerHTML">
+          {% csrf_token %}
+          <div id="saved-bulk" class="mb-4"></div>
+
+          <div class="flex flex-col gap-1.5 mb-2">
+            <label class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">Student Name(s)</label>
+            <textarea placeholder="Enter Student(s) Name"
+                      class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container-low outline-none transition-all focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 min-h-[120px]"
+                      name="body"></textarea>
+          </div>
+          <small class="text-on-surface-variant text-xs flex items-center gap-1.5 opacity-80 mb-6">
+            <i class="fas fa-circle-info"></i> One name per line
+          </small>
+
+          <div class="flex gap-3">
+            <button class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md">
+              <i class="fas fa-floppy-disk"></i> Save
+            </button>
+            <button type="button"
+                    class="flex-1 flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant cursor-pointer transition"
+                    hx-target="#formBox" hx-swap="outerHTML"
+                    hx-get="{% url 'closeRequest' %}">
+              <i class="fas fa-xmark"></i> Close
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
   </div>
-
-  <!-- Create Single Student Form -->
-  <form class="max-w-md mx-auto hidden" id="create-student-box"
-        hx-post="{% url 'add-student' class.id %}" hx-target="#saved" hx-swap="innerHTML">
-    {% csrf_token %}
-    <h3 class="text-xl font-bold text-primary mb-4">Add Student</h3>
-    <div id="saved" class="mb-2"></div>
-
-    <div class="mb-4">
-      <input placeholder="Enter Student Name"
-             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-             name="name" />
-    </div>
-
-    <div class="mb-3">
-      <button class="w-full py-2.5 rounded-xl text-white text-sm font-semibold color-bg-p">Save</button>
-    </div>
-
-    <div>
-      <button class="w-full py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold"
-              hx-target="#formBox" hx-swap="outerHTML"
-              hx-get="{% url 'closeRequest' %}">
-        Close window
-      </button>
-    </div>
-  </form>
-
-  <!-- Bulk Upload Form -->
-  <form class="max-w-md mx-auto hidden" id="bulk-create-box"
-        hx-post="{% url 'bulk-create-student' class.id %}" hx-target="#saved-bulk" hx-swap="innerHTML">
-    {% csrf_token %}
-    <h3 class="text-xl font-bold text-primary mb-4">Bulk Add Students</h3>
-    <div id="saved-bulk" class="mb-2"></div>
-
-    <div class="mb-4">
-      <textarea placeholder="Enter Student(s) Name"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[120px]"
-                name="body"></textarea>
-    </div>
-
-    <div class="mb-3">
-      <button class="w-full py-2.5 rounded-xl text-white text-sm font-semibold color-bg-p">Save</button>
-    </div>
-
-    <div>
-      <button class="w-full py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold"
-              hx-target="#formBox" hx-swap="outerHTML"
-              hx-get="{% url 'closeRequest' %}">
-        Close window
-      </button>
-    </div>
-  </form>
-
 </div>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+</style>
 
 <script>
   function swap(a) {
@@ -78,13 +109,19 @@
     if (a === "student-create") {
       studentForm.classList.remove("hidden");
       bulkForm.classList.add("hidden");
-      studentBtn.classList.add("color-bg-p", "text-white", "border-transparent");
-      bulkBtn.classList.remove("color-bg-p", "text-white", "border-transparent");
+      studentBtn.classList.add("bg-primary", "text-on-primary");
+      studentBtn.classList.remove("text-on-surface-variant");
+      bulkBtn.classList.remove("bg-primary", "text-on-primary");
+      bulkBtn.classList.add("text-on-surface-variant");
     } else if (a === "bulk-upload") {
       bulkForm.classList.remove("hidden");
       studentForm.classList.add("hidden");
-      bulkBtn.classList.add("color-bg-p", "text-white", "border-transparent");
-      studentBtn.classList.remove("color-bg-p", "text-white", "border-transparent");
+      bulkBtn.classList.add("bg-primary", "text-on-primary");
+      bulkBtn.classList.remove("text-on-surface-variant");
+      studentBtn.classList.remove("bg-primary", "text-on-primary");
+      studentBtn.classList.add("text-on-surface-variant");
     }
   }
+  // Initialize default tab state
+  swap('student-create');
 </script>

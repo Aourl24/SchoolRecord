@@ -411,7 +411,8 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         next_url = request.POST.get("next")
-        return(login(request,username,password,url= "home" if next_url == "/" else next_url))
+        url = "home" if not next_url or next_url == "/" else next_url
+        return(login(request,username,password,url=url))
         
     return render(request, "login.html")
     

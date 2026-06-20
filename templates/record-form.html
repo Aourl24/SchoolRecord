@@ -1,6 +1,6 @@
 <!-- Modal Overlay -->
 <div id="formBox"
-     class="fixed inset-0 z-[100000] overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+     class="fixed inset-0 z-[100000] overflow-y-auto bg-on-surface/50 backdrop-blur-sm p-4"
      style="animation: fadeIn 0.3s ease-out;">
 
   <!-- Modal Container -->
@@ -9,20 +9,20 @@
 
     <!-- Tab Navigation -->
     {% if not recordForm or update %}
-    <div class="bg-white rounded-2xl p-2 mb-4 shadow-lg">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-2 mb-4 scholar-shadow">
       <div class="flex flex-wrap gap-1.5 justify-center">
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
-                       {% if form_type == 'record' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+                       {% if form_type == 'record' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'record' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
-          <i class="fas fa-file-alt"></i>
+          <i class="fas fa-file"></i>
           <span class="hidden sm:inline">Record</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
-                       {% if form_type == 'subject' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+                       {% if form_type == 'subject' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'subject' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
@@ -30,17 +30,17 @@
           <span class="hidden sm:inline">Subject</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
-                       {% if form_type == 'class' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+                       {% if form_type == 'class' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'class' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
-          <i class="fas fa-chalkboard"></i>
+          <i class="fas fa-school"></i>
           <span class="hidden sm:inline">Class</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
-                       {% if form_type == 'student' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+                       {% if form_type == 'student' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'student' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
@@ -48,8 +48,8 @@
           <span class="hidden sm:inline">Student</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition
-                       {% if form_type == 'student-record' %}bg-gradient-to-br from-primary to-blue-400 text-white shadow-md{% else %}text-gray-500 hover:bg-gray-100 hover:text-primary{% endif %}"
+        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+                       {% if form_type == 'student-record' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'student-record' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML"
@@ -63,25 +63,25 @@
     {% endif %}
 
     <!-- Main Form Card -->
-    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow overflow-hidden">
 
       <!-- Header -->
-      <div class="bg-gradient-to-br from-blue-500 to-green-500 px-6 py-5 flex items-center justify-between">
+      <div class="bg-primary px-6 py-5 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white text-2xl">
-            <i class="fas fa-{% if update %}edit{% else %}plus-circle{% endif %}"></i>
+          <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl">
+            <i class="fas fa-{% if update %}pen{% else %}circle-plus{% endif %}"></i>
           </div>
-          <h2 class="text-white text-xl font-semibold m-0">
+          <h2 class="text-on-primary text-title-md font-headline-lg m-0">
             {% if update %}Update{% else %}Add New{% endif %} {{ form_type|capfirst }}
           </h2>
         </div>
-        <button class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center text-white text-lg border-0 cursor-pointer transition hover:rotate-90"
+        <button class="w-10 h-10 bg-white/15 hover:bg-white/25 rounded-xl flex items-center justify-center text-on-primary text-lg border-0 cursor-pointer transition hover:rotate-90"
                 style="transition: all 0.3s ease;"
                 hx-target="#formBox"
                 hx-swap="outerHTML"
                 hx-get="{% url 'closeRequest' %}"
                 aria-label="Close">
-          <i class="fas fa-times"></i>
+          <i class="fas fa-xmark"></i>
         </button>
       </div>
 
@@ -100,24 +100,24 @@
             {% for field in form %}
             <div class="flex flex-col gap-1.5">
               <label for="{{ field.id_for_label }}"
-                     class="text-sm font-semibold text-gray-700">
+                     class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">
                 {{ field.label }}
               </label>
-              <div class="[&_input]:w-full [&_input]:border-2 [&_input]:border-gray-200 [&_input]:rounded-xl [&_input]:px-4 [&_input]:py-3 [&_input]:text-sm [&_input]:bg-gray-50 [&_input]:outline-none [&_input:focus]:border-blue-400 [&_input:focus]:bg-white [&_input:focus]:shadow-sm
-                          [&_select]:w-full [&_select]:border-2 [&_select]:border-gray-200 [&_select]:rounded-xl [&_select]:px-4 [&_select]:py-3 [&_select]:text-sm [&_select]:bg-gray-50 [&_select]:outline-none [&_select:focus]:border-blue-400 [&_select:focus]:bg-white
-                          [&_textarea]:w-full [&_textarea]:border-2 [&_textarea]:border-gray-200 [&_textarea]:rounded-xl [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:bg-gray-50 [&_textarea]:outline-none [&_textarea:focus]:border-blue-400 [&_textarea:focus]:bg-white">
+              <div class="[&_input]:w-full [&_input]:border [&_input]:border-outline-variant [&_input]:rounded-lg [&_input]:px-4 [&_input]:py-3 [&_input]:text-sm [&_input]:bg-surface-container-low [&_input]:outline-none [&_input]:transition-all [&_input:focus]:border-primary [&_input:focus]:bg-surface-container-lowest [&_input:focus]:ring-2 [&_input:focus]:ring-primary/20
+                          [&_select]:w-full [&_select]:border [&_select]:border-outline-variant [&_select]:rounded-lg [&_select]:px-4 [&_select]:py-3 [&_select]:text-sm [&_select]:bg-surface-container-low [&_select]:outline-none [&_select]:transition-all [&_select:focus]:border-primary [&_select:focus]:bg-surface-container-lowest [&_select:focus]:ring-2 [&_select:focus]:ring-primary/20
+                          [&_textarea]:w-full [&_textarea]:border [&_textarea]:border-outline-variant [&_textarea]:rounded-lg [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:bg-surface-container-low [&_textarea]:outline-none [&_textarea]:transition-all [&_textarea:focus]:border-primary [&_textarea:focus]:bg-surface-container-lowest [&_textarea:focus]:ring-2 [&_textarea:focus]:ring-primary/20">
                 {{ field }}
               </div>
               {% if field.help_text %}
-              <small class="text-gray-400 text-xs flex items-center gap-1">
-                <i class="fas fa-info-circle"></i> {{ field.help_text }}
+              <small class="text-on-surface-variant text-xs flex items-center gap-1.5 opacity-80">
+                <i class="fas fa-circle-info"></i> {{ field.help_text }}
               </small>
               {% endif %}
               {% if field.errors %}
-              <div class="text-red-500 text-xs flex flex-col gap-1">
+              <div class="text-error text-xs flex flex-col gap-1">
                 {% for error in field.errors %}
-                <span class="flex items-center gap-1">
-                  <i class="fas fa-exclamation-circle"></i> {{ error }}
+                <span class="flex items-center gap-1.5">
+                  <i class="fas fa-circle-exclamation"></i> {{ error }}
                 </span>
                 {% endfor %}
               </div>
@@ -129,16 +129,16 @@
           <!-- Action Buttons -->
           <div class="flex gap-3 flex-col sm:flex-row">
             <button type="submit"
-                    class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-green-500 to-green-400 text-white font-semibold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 hover:-translate-y-0.5 transition shadow-md shadow-green-200">
-              <i class="fas fa-save"></i>
+                    class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md">
+              <i class="fas fa-floppy-disk"></i>
               {% if update %}Update{% else %}Save{% endif %} {{ form_type|capfirst }}
             </button>
             <button type="button"
-                    class="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-3.5 rounded-xl border-0 cursor-pointer transition"
+                    class="flex-1 flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant cursor-pointer transition"
                     hx-target="#formBox"
                     hx-swap="outerHTML"
                     hx-get="{% url 'closeRequest' %}">
-              <i class="fas fa-times"></i>
+              <i class="fas fa-xmark"></i>
               Cancel
             </button>
           </div>

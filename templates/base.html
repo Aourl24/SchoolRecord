@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Student Record System{% endblock %}</title>
+    <title>{% block title %}MarkBook.com | Educator Workspace{% endblock %}</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,14 +13,86 @@
         theme: {
           extend: {
             colors: {
-              primary:   '#4f46e5',
-              secondary: '#06b6d4',
-              tertiary:  '#10b981',
-              accent:    '#f59e0b',
-              dark:      '#0f172a',
+              'on-primary-fixed':            '#00174b',
+              'surface-container-low':       '#f2f4f6',
+              'on-secondary-fixed':          '#00201d',
+              'on-tertiary-fixed-variant':   '#2f2ebe',
+              'on-tertiary-fixed':           '#07006c',
+              'on-secondary-fixed-variant':  '#005049',
+              'surface-container-high':      '#e6e8ea',
+              outline:                       '#737686',
+              'surface-tint':                '#0053db',
+              'on-tertiary-container':       '#f1eeff',
+              background:                    '#f7f9fb',
+              'surface-variant':             '#e0e3e5',
+              'on-tertiary':                 '#ffffff',
+              'on-error-container':          '#93000a',
+              'on-secondary-container':      '#006f66',
+              'on-surface-variant':          '#434655',
+              'secondary-container':         '#86f2e4',
+              'on-primary-fixed-variant':    '#003ea8',
+              'surface-dim':                 '#d8dadc',
+              primary:                       '#004ac6',
+              'error-container':             '#ffdad6',
+              'primary-fixed':               '#dbe1ff',
+              'surface-container-highest':   '#e0e3e5',
+              'on-surface':                  '#191c1e',
+              surface:                       '#f7f9fb',
+              'surface-container-lowest':    '#ffffff',
+              'tertiary-fixed':              '#e1e0ff',
+              'primary-container':           '#2563eb',
+              'outline-variant':             '#c3c6d7',
+              'secondary-fixed-dim':         '#6bd8cb',
+              'on-primary-container':        '#eeefff',
+              'primary-fixed-dim':           '#b4c5ff',
+              'inverse-primary':             '#b4c5ff',
+              'tertiary-fixed-dim':          '#c0c1ff',
+              'inverse-surface':             '#2d3133',
+              error:                         '#ba1a1a',
+              'on-error':                    '#ffffff',
+              'inverse-on-surface':          '#eff1f3',
+              'surface-container':           '#eceef0',
+              'on-background':               '#191c1e',
+              'on-secondary':                '#ffffff',
+              'secondary-fixed':             '#89f5e7',
+              secondary:                     '#006a61',
+              'surface-bright':              '#f7f9fb',
+              tertiary:                      '#3e3fcc',
+              'on-primary':                  '#ffffff',
+              'tertiary-container':          '#585be6',
+            },
+            borderRadius: {
+              DEFAULT: '0.5rem',
+              lg: '0.75rem',
+              xl: '1rem',
+              full: '9999px',
+            },
+            spacing: {
+              'gutter-desktop': '24px',
+              'margin-desktop': '40px',
+              'margin-mobile':  '16px',
+              unit:             '4px',
+              'gutter-mobile':  '16px',
+              'container-max':  '1280px',
             },
             fontFamily: {
-              sans: ['Poppins', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+              sans:         ['Hanken Grotesk', 'system-ui', 'sans-serif'],
+              'body-md':    ['Hanken Grotesk'],
+              'title-md':   ['Hanken Grotesk'],
+              'label-sm':   ['Hanken Grotesk'],
+              'body-lg':    ['Hanken Grotesk'],
+              'headline-lg':        ['Source Serif 4'],
+              'headline-lg-mobile': ['Source Serif 4'],
+              'display-lg':         ['Source Serif 4'],
+            },
+            fontSize: {
+              'body-md':  ['16px', { lineHeight: '24px', fontWeight: '400' }],
+              'title-md': ['20px', { lineHeight: '28px', fontWeight: '600' }],
+              'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.05em', fontWeight: '600' }],
+              'body-lg':  ['18px', { lineHeight: '28px', fontWeight: '400' }],
+              'headline-lg':        ['32px', { lineHeight: '40px', fontWeight: '600' }],
+              'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+              'display-lg':         ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '700' }],
             },
           }
         }
@@ -29,17 +101,31 @@
 
     <!-- Font Awesome -->
     <link href="{% static 'css/fontawesome/css/all.min.css' %}" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Hanken Grotesk + Source Serif 4 -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet">
 
     <style>
+      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+      /* Academic Modernist elevation */
+      .scholar-shadow { box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05); }
+      .scholar-shadow-hover:hover { box-shadow: 0px 6px 24px rgba(15, 23, 42, 0.08); transform: translateY(-2px); }
+      .active-lift { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease; }
+      .active-lift:hover { transform: translateY(-4px); box-shadow: 0px 10px 25px rgba(15, 23, 42, 0.08); }
+      .active-tap:active { transform: scale(0.96); opacity: 0.9; transition: all 0.15s ease; }
+
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
       /* HTMX progress bar */
       #htmx-global-indicator { pointer-events: none; }
-
       .htmx-progress {
         position: fixed; top: 0; left: 0;
         height: 3px; width: 0%;
-        background: linear-gradient(90deg, #ff5a5f, #ffbd2e);
+        background: linear-gradient(90deg, #004ac6, #3e3fcc);
         box-shadow: 0 0 8px rgba(0,0,0,0.15);
         z-index: 9999;
         transition: width 200ms ease;
@@ -62,24 +148,26 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
       }
       @keyframes spin { to { transform: rotate(360deg); } }
-      .htmx-progress.error { background: linear-gradient(90deg,#ff4d4f,#d9363e); }
+      .htmx-progress.error { background: linear-gradient(90deg,#ba1a1a,#93000a); }
 
-      /* Gradient helpers (used by Django template logic) */
-      .color-bg-p { background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(59,130,246,0.9)); color: white; }
-      .color-bg-s { background: linear-gradient(135deg, rgba(6,182,212,0.95), rgba(16,185,129,0.9)); color: white; }
-      .color-bg-t { background: linear-gradient(135deg, rgba(16,185,129,0.95), rgba(245,158,11,0.9)); color: white; }
-      .color-p { color: #4f46e5; }
-      .color-s { color: #06b6d4; }
-      .color-t { color: #10b981; }
+      /* Legacy gradient helpers — still used by some child templates */
+      .color-bg-p { background: linear-gradient(135deg, rgba(0,74,198,0.95), rgba(37,99,235,0.9)); color: white; }
+      .color-bg-s { background: linear-gradient(135deg, rgba(0,106,97,0.95), rgba(16,185,129,0.9)); color: white; }
+      .color-bg-t { background: linear-gradient(135deg, rgba(62,63,204,0.95), rgba(88,91,230,0.9)); color: white; }
+      .color-p { color: #004ac6; }
+      .color-s { color: #006a61; }
+      .color-t { color: #3e3fcc; }
       .color-grey { color: #6b7280; }
       .color-silver { color: #9ca3af; }
       .no-decoration { text-decoration: none; }
       .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
       .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
     </style>
+
+    {% block extra_head %}{% endblock %}
   </head>
 
-  <body class="font-sans antialiased text-gray-900 bg-gradient-to-b from-slate-50 to-blue-50 min-h-screen">
+  <body class="bg-background text-on-background font-body-md antialiased min-h-screen pb-20 lg:pb-0 lg:pl-64">
 
     <!-- HTMX Global Indicator -->
     <div id="htmx-global-indicator" aria-hidden="true">
@@ -90,152 +178,255 @@
     </div>
 
     {% block nav %}
-    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div class="container mx-auto px-4">
-        <div class="flex items-center justify-between h-14">
-
-          <!-- Brand -->
-          <a class="flex items-center gap-2 no-underline"
-             href=""
-             hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-            <span class="color-bg-p inline-flex items-center justify-center rounded-full p-2 w-9 h-9">
-              <i class="fas fa-graduation-cap text-white text-sm"></i>
-            </span>
-            <span class="font-bold text-gray-900 text-base">Mark<span class="color-s">Book.com</span></span>
-          </a>
-
-          <!-- Back button -->
-          <div class="flex-1 flex justify-center">
-            <button onclick="history.back()"
-                    class="text-gray-500 hover:text-primary text-sm flex items-center gap-1 transition-colors">
-              <i class="fas fa-arrow-left"></i>
-              <span class="hidden md:inline">back</span>
-            </button>
-          </div>
-
-          <!-- Mobile menu toggle -->
-          <button class="md:hidden p-2 rounded text-gray-600 hover:bg-gray-100 transition"
-                  onclick="menuDrop()" type="button">
-            <i class="fa navbar-toggler-icon" id="icon-menu"></i>
-          </button>
-
-          <!-- Desktop nav -->
-          <ul class="hidden md:flex items-center gap-1 text-sm">
-            <li>
-              <a class="flex items-center px-3 py-1.5 rounded hover:bg-indigo-50 text-gray-700 hover:text-primary transition cursor-pointer border-r border-gray-200"
-                 hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area">
-                Add Record
-              </a>
-            </li>
-            <li>
-              <a class="flex items-center px-3 py-1.5 rounded hover:bg-indigo-50 text-gray-700 hover:text-primary transition cursor-pointer border-r border-gray-200"
-                 hx-get="{% url 'form' 'subject' %}" hx-swap="innerHTML" hx-target="#drop-area">
-                Add Subject
-              </a>
-            </li>
-            <li>
-              <a class="flex items-center px-3 py-1.5 rounded hover:bg-indigo-50 text-gray-700 hover:text-primary transition cursor-pointer border-r border-gray-200"
-                 hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area">
-                Add Class
-              </a>
-            </li>
-            <li>
-              <a class="flex items-center px-3 py-1.5 rounded hover:bg-indigo-50 text-gray-700 hover:text-primary transition cursor-pointer border-r border-gray-200"
-                 hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area">
-                Add Student
-              </a>
-            </li>
-            <li>
-              <a class="flex items-center px-3 py-1.5 rounded hover:bg-indigo-50 text-gray-700 hover:text-primary transition cursor-pointer border-r border-gray-200"
-                 hx-get="{% url 'form' 'student-record' %}" hx-swap="innerHTML" hx-target="#drop-area">
-                Add Student Record
-              </a>
-            </li>
-            <li class="ml-2">
-              <a class="color-bg-p text-white text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer"
-                 hx-get="{{request.get_full_path}}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-                {{ request.user.username }}
-              </a>
-            </li>
-          </ul>
-
+    <!-- ============ Desktop Side Navigation ============ -->
+    <aside class="hidden lg:flex flex-col py-6 gap-2 bg-surface-container-low h-screen w-64 fixed left-0 top-0 border-r border-outline-variant z-50">
+      <a class="px-6 mb-8 flex items-center gap-3 no-underline"
+         href=""
+         hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+          <i class="fas fa-graduation-cap"></i>
         </div>
+        <div>
+          <h1 class="text-title-md font-bold text-primary leading-tight">MarkBook</h1>
+          <p class="text-label-sm text-on-surface-variant">Educator Workspace</p>
+        </div>
+      </a>
+
+      <nav class="flex-grow flex flex-col gap-1 px-2">
+        <a class="flex items-center gap-3 py-3 px-4 {% if request.resolver_match.url_name == 'home' %}bg-primary-container text-on-primary-container font-semibold{% else %}text-on-surface-variant hover:bg-surface-variant{% endif %} rounded-lg transition-all cursor-pointer"
+           hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+          <i class="fas fa-table-columns w-5 text-center"></i>
+          <span class="font-body-md">Overview</span>
+        </a>
+        <a class="flex items-center gap-3 py-3 px-4 {% if request.resolver_match.url_name == 'class-list' %}bg-primary-container text-on-primary-container font-semibold{% else %}text-on-surface-variant hover:bg-surface-variant{% endif %} rounded-lg transition-all cursor-pointer"
+           hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+          <i class="fas fa-school w-5 text-center"></i>
+          <span class="font-body-md">My Classes</span>
+        </a>
+        <a class="hidden flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" href="#">
+          <i class="fas fa-book-open w-5 text-center"></i>
+          <span class="font-body-md">Gradebook</span>
+        </a>
+        <a class="hidden flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" href="#">
+          <i class="fas fa-calendar-day w-5 text-center"></i>
+          <span class="font-body-md">Attendance</span>
+        </a>
+        <a class="hidden flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" href="#">
+          <i class="fas fa-gear w-5 text-center"></i>
+          <span class="font-body-md">Settings</span>
+        </a>
+      </nav>
+
+      <div class="mt-2 px-4">
+        <a class="w-full bg-primary text-on-primary py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-md cursor-pointer no-underline"
+           hx-get="{% url 'form' 'class' %}" hx-target="#drop-area" hx-swap="innerHTML">
+          <i class="fas fa-circle-plus"></i>
+          <span>Add New Class</span>
+        </a>
       </div>
-    </nav>
+
+      <div class="mt-4 flex flex-col gap-1 border-t border-outline-variant pt-4 px-2">
+        <a class="hidden flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" href="#">
+          <i class="fas fa-circle-question w-5 text-center"></i>
+          <span class="font-body-md">Help Center</span>
+        </a>
+        <a class="hidden flex items-center gap-3 py-3 px-4 text-error hover:bg-error-container rounded-lg transition-all cursor-pointer" href="#">
+          <i class="fas fa-arrow-right-from-bracket w-5 text-center"></i>
+          <span class="font-body-md">Log Out</span>
+        </a>
+      </div>
+
+      <!-- User Profile Row -->
+      <a class="mt-3 mx-2 flex items-center gap-3 px-3 py-3 rounded-lg border-t border-outline-variant pt-4 hover:bg-surface-variant transition-all cursor-pointer no-underline"
+         hx-get="{{ request.get_full_path }}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-sm flex-shrink-0">
+          {{ request.user.username|first|upper }}
+        </div>
+        <div class="min-w-0">
+          <p class="text-label-sm font-bold text-on-surface leading-none truncate">{{ request.user.username }}</p>
+          <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mt-1">Educator</p>
+        </div>
+      </a>
+    </aside>
+
+    <!-- ============ Mobile Top Navigation ============ -->
+    <header class="lg:hidden bg-surface-container-lowest border-b border-outline-variant shadow-sm flex justify-between items-center w-full px-margin-mobile h-16 sticky top-0 z-50">
+      <a class="flex items-center gap-3 no-underline"
+         href=""
+         hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
+          <i class="fas fa-graduation-cap text-sm"></i>
+        </div>
+        <span class="text-title-md font-bold text-primary">MarkBook.com</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <button onclick="history.back()" class="text-on-surface-variant active-tap">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <button class="text-on-surface-variant active-tap" onclick="menuDrop()" type="button">
+          <i class="fas fa-bars" id="icon-menu"></i>
+        </button>
+      </div>
+    </header>
     {% endblock %}
 
     <!-- HTMX drop area (forms injected here) -->
     <div id="drop-area" style="z-index:999"></div>
 
     <!-- Mobile slide-down menu -->
-    <div class="fixed inset-0 bg-white/95 hidden overflow-y-auto z-[99]" id="menu-drop" style="top:10%;">
-      <div class="container mx-auto px-4 py-6">
-        <h5 class="text-center font-bold text-lg mb-4">📋 Teacher Menu</h5>
-        <div class="flex flex-col divide-y divide-gray-100 rounded-xl overflow-hidden border border-gray-200">
-          <a class="hidden flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition" href="#">
-            ✅ <span>Attendance Marking</span>
-          </a>
-          <a class="hidden flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition" href="#">
-            👨‍🏫 <span>My Class</span>
-          </a>
-          <a class="hidden flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition" href="#">
-            📅 <span>Timetable</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
-             hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area">
-            ➕ <span>Add Record</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
-             hx-get="{% url 'form' 'subject' %}" hx-swap="innerHTML" hx-target="#drop-area">
-            📘 <span>Add Subject</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
-             hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area">
-            🏫 <span>Add Class</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
-             hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area">
-            👨‍🎓 <span>Add Student</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
-             hx-get="{% url 'form' 'student-record' %}" hx-swap="innerHTML" hx-target="#drop-area">
-            📑 <span>Add Student Record</span>
-          </a>
-          <a class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition" href="#">
-            ⚙️ <span>Settings</span>
-          </a>
+    <div class="fixed inset-0 bg-on-surface/40 backdrop-blur-sm hidden z-[99] lg:hidden" id="menu-drop">
+      <div class="absolute top-0 left-0 w-full bg-surface-container-lowest rounded-b-3xl scholar-shadow overflow-y-auto" style="max-height: 90vh;">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-margin-mobile h-16 border-b border-outline-variant">
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-sm">
+              {{ request.user.username|first|upper }}
+            </div>
+            <div>
+              <p class="text-label-sm font-bold text-on-surface leading-none">{{ request.user.username }}</p>
+              <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mt-1">Teacher Menu</p>
+            </div>
+          </div>
+          <button onclick="menuDrop()" class="text-on-surface-variant active-tap p-2">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+
+        <div class="px-margin-mobile py-6">
+          <h6 class="text-label-sm font-label-sm uppercase tracking-widest text-outline mb-4">Quick Actions</h6>
+
+          <div class="grid grid-cols-2 gap-3">
+
+            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fas fa-clipboard-check"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Attendance Marking</span>
+            </a>
+
+            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fas fa-chalkboard-user"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">My Class</span>
+            </a>
+
+            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fas fa-calendar-days"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Timetable</span>
+            </a>
+
+            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-primary/30 transition-colors cursor-pointer"
+               hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fas fa-file"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Add Record</span>
+            </a>
+
+            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-secondary/30 transition-colors cursor-pointer"
+               hx-get="{% url 'form' 'subject' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
+              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                <i class="fas fa-book"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Add Subject</span>
+            </a>
+
+            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-tertiary/30 transition-colors cursor-pointer"
+               hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
+              <div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
+                <i class="fas fa-school"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Add Class</span>
+            </a>
+
+            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-primary/30 transition-colors cursor-pointer"
+               hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Add Student</span>
+            </a>
+
+            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-secondary/30 transition-colors cursor-pointer"
+               hx-get="{% url 'form' 'student-record' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
+              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                <i class="fas fa-file"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Add Student Record</span>
+            </a>
+
+            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
+              <div class="w-10 h-10 rounded-full bg-on-surface-variant/10 flex items-center justify-center text-on-surface-variant">
+                <i class="fas fa-gear"></i>
+              </div>
+              <span class="text-label-sm font-bold text-on-surface text-center">Settings</span>
+            </a>
+
+          </div>
         </div>
       </div>
     </div>
 
     <!-- addHere target (modals/forms) -->
-    <div class="container mx-auto px-4">
-      <div id="addHere"></div>
+    <div id="addHere"></div>
 
-      {% block search %}
-      <div class="my-4">
-        <div class="flex items-center bg-white rounded-xl shadow-sm border border-gray-200 px-3 py-2">
-          <i class="fas fa-search text-gray-400 mr-2"></i>
-          <form class="flex-1"
-                hx-get="{% url 'search' %}"
+    <main class="max-w-container-max mx-auto">
+      <div class="px-margin-mobile md:px-margin-desktop py-6" id="load-area">
+
+        {% block search %}
+        <div class="relative w-full max-w-2xl mx-auto mb-8">
+          <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <i class="fas fa-magnifying-glass text-outline"></i>
+          </div>
+          <form hx-get="{% url 'search' %}"
                 hx-swap="innerHTML"
                 hx-target="#load-area"
                 hx-trigger="input changed delay:300ms">
-            <input class="w-full border-none outline-none text-sm text-gray-700 placeholder-gray-400 bg-transparent"
+            <input class="w-full pl-12 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-2xl font-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all scholar-shadow text-sm"
                    name="search"
                    placeholder="Search students, records, classes..."
                    type="text" />
           </form>
         </div>
-      </div>
-      {% endblock %}
-    </div>
+        {% endblock %}
 
-    <main>
-      <div class="container mx-auto px-4" id="load-area">
         {% block content %}{% endblock %}
       </div>
     </main>
+
+    <!-- ============ Mobile Bottom Navigation ============ -->
+    {%block navBottom%}
+    <nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest flex justify-around items-center px-4 py-3 border-t border-outline-variant shadow-lg rounded-t-xl">
+      <a class="flex flex-col items-center justify-center {% if request.resolver_match.url_name == 'home' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant{% endif %} rounded-xl px-5 py-2 cursor-pointer"
+         hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <i class="fas fa-house"></i>
+        <span class="text-label-sm">Home</span>
+      </a>
+      <a class="flex flex-col items-center justify-center {% if request.resolver_match.url_name == 'class-list' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant{% endif %} rounded-xl px-5 py-2 cursor-pointer"
+         hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <i class="fas fa-people-group"></i>
+        <span class="text-label-sm">Classes</span>
+      </a>
+      <a class="flex flex-col items-center justify-center {% if request.resolver_match.url_name == 'record-list' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant{% endif %} rounded-xl px-5 py-2 cursor-pointer"
+         hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <i class="fas fa-file-lines"></i>
+        <span class="text-label-sm">Records</span>
+      </a>
+      <a class="hidden flex flex-col items-center justify-center text-on-surface-variant px-5 py-2" href="#">
+        <i class="fas fa-user"></i>
+        <span class="text-label-sm">Profile</span>
+      </a>
+    </nav>
+{%endblock%}
+    <!-- Contextual FAB -->
+    <button class="hidden lg:flex fixed bottom-12 right-12 w-16 h-16 bg-primary text-on-primary rounded-full shadow-2xl items-center justify-center active:scale-95 transition-transform z-40 group"
+            hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">
+      <i class="fas fa-plus text-xl group-hover:rotate-90 transition-transform duration-300"></i>
+    </button>
 
     <footer class="hidden">
       <p>© {{ now|date:"Y" }} Student Records</p>
@@ -246,9 +437,9 @@
       function menuDrop() {
         document.getElementById('menu-drop').classList.toggle('hidden');
         let icon = document.getElementById('icon-menu');
-        icon.classList.toggle('fa-times-circle');
-        icon.classList.toggle('text-red-500');
-        icon.classList.toggle('navbar-toggler-icon');
+        icon.classList.toggle('fa-bars');
+        icon.classList.toggle('fa-xmark');
+        icon.classList.toggle('text-error');
       }
 
       (function () {

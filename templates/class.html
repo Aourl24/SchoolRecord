@@ -1,7 +1,12 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
-<h2 class="py-3 color-p sz-24 fw-bold">All Classes</h2>
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+  <div>
+    <h2 class="text-display-lg font-display-lg text-on-surface mb-2">Classroom Dashboard</h2>
+    <p class="text-body-lg font-body-lg text-on-surface-variant">All your classes in one place.</p>
+  </div>
+</div>
 
-{%include "class-list.html"%}
-{%endblock%}
+{% include "class-list.html" %}
+{% endblock %}

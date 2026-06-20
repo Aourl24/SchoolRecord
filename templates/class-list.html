@@ -1,34 +1,59 @@
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter-desktop">
   {% for c in school_class %}
-  <div class="bg-green-50 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl scholar-shadow scholar-shadow-hover transition-all p-6 flex flex-col h-full group">
 
-    <!-- Class Name -->
-    <h5 class="text-lg font-bold text-gray-900 mb-2">
-      {{ c.name }} {{ c.batch }}
-    </h5>
+    <div class="flex justify-between items-start mb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center text-on-primary-fixed flex-shrink-0">
+          <i class="fas fa-school text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-title-md font-bold text-on-surface leading-tight">{{ c.name }} {{ c.batch }}</h3>
+          {% if c.record.subject %}
+          <p class="text-label-sm text-outline uppercase tracking-wider">{{ c.record.subject }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
 
-    <!-- Stats -->
-    <p class="text-sm text-gray-500 mb-1">
-      <span class="font-semibold text-gray-700">Students:</span> {{ c.student.all.count }}
-    </p>
+    <div class="space-y-3 mb-8 flex-grow">
+      <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface-variant flex items-center gap-2">
+          <i class="fas fa-user-group text-sm"></i> Students
+        </span>
+        <span class="font-semibold text-on-surface">{{ c.student.all.count }}</span>
+      </div>
+      <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface-variant flex items-center gap-2">
+          <i class="fas fa-file-lines text-sm"></i> Records
+        </span>
+        <span class="font-semibold text-on-surface">{{ c.record.all.count }}</span>
+      </div>
 
-    {% if c.record.subject %}
-    <p class="text-sm text-gray-500 mb-1">
-      <span class="font-semibold text-gray-700">Subject:</span> {{ c.record.subject }}
-    </p>
-    {% endif %}
+      <!-- Placeholder: grading-progress indicator, ready for future real data -->
+      <div class="hidden">
+        <div class="w-full bg-outline-variant h-1.5 rounded-full mt-4">
+          <div class="bg-secondary h-full rounded-full" style="width: 0%;"></div>
+        </div>
+        <p class="text-[10px] text-on-surface-variant text-right mt-1">Grading progress</p>
+      </div>
+    </div>
 
-    <p class="text-sm text-gray-500 mb-4">
-      <span class="font-semibold text-gray-700">Records:</span> {{ c.record.all.count }}
-    </p>
-
-    <!-- CTA -->
     <a hx-get="{% url 'get-class' c.id %}"
        hx-target="body" hx-swap="outerHTML" hx-push-url="true"
-       class="block text-center w-full py-2 rounded-xl text-white text-sm font-semibold color-bg-p cursor-pointer shadow-sm hover:opacity-90 transition">
+       class="mt-auto w-full text-center border border-primary text-primary hover:bg-primary hover:text-on-primary py-3 rounded-xl font-semibold transition-colors cursor-pointer no-underline flex items-center justify-center gap-2">
       Go to Class
+      <i class="fas fa-arrow-right text-xs"></i>
     </a>
 
+  </div>
+  {% empty %}
+  <div class="col-span-full flex flex-col items-center justify-center bg-surface border-2 border-dashed border-outline-variant rounded-xl p-10 text-center">
+    <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant mb-4">
+      <i class="fas fa-circle-plus text-2xl"></i>
+    </div>
+    <h3 class="text-title-md font-bold text-on-surface">No classes yet</h3>
+    <p class="text-body-md text-on-surface-variant mt-2">Create your first class to get started.</p>
   </div>
   {% endfor %}
 </div>
