@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block nav %}{% endblock %}
+{% block search %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-lg">
+
+    <!-- Progress -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between text-label-sm text-on-surface-variant mb-2">
+        <span>Setting up your workspace</span>
+        <span>Final step</span>
+      </div>
+      <div class="h-1.5 w-full bg-outline-variant rounded-full overflow-hidden">
+        <div class="h-full bg-primary rounded-full transition-all" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl scholar-shadow overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-primary px-6 py-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl flex-shrink-0">
+          <i class="fas fa-file-circle-plus"></i>
+        </div>
+        <div>
+          <h2 class="text-on-primary text-title-md font-headline-lg m-0">Starter Record</h2>
+          <p class="text-on-primary/80 text-xs mt-0.5">
+            For {{ class_obj.name }} {{ class_obj.batch }}
+            {% if remaining > 1 %} · {{ remaining }} classes to go{% elif remaining == 1 %} · last one{% endif %}
+          </p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 sm:p-8">
+
+        <p class="text-on-surface-variant text-sm mb-5">
+          Create your first record for this class — a test, exam, or assignment you can score students against. You can always add more from the class page later.
+        </p>
+
+        <form hx-post="{% url 'onboarding-records' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+          {% csrf_token %}
+          <input type="hidden" name="class_id" value="{{ class_obj.id }}" />
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {% for field in form %}
+            {% if field.name != 'class_name' %}
+            <div class="flex flex-col gap-1.5">
+              <label for="{{ field.id_for_label }}"
+                     class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">
+                {{ field.label }}
+              </label>
+              <div class="[&_input]:w-full [&_input]:border [&_input]:border-outline-variant [&_input]:rounded-lg [&_input]:px-4 [&_input]:py-3 [&_input]:text-sm [&_input]:bg-surface-container-low [&_input]:outline-none [&_input:focus]:border-primary [&_input:focus]:bg-surface-container-lowest [&_input:focus]:ring-2 [&_input:focus]:ring-primary/20
+                          [&_select]:w-full [&_select]:border [&_select]:border-outline-variant [&_select]:rounded-lg [&_select]:px-4 [&_select]:py-3 [&_select]:text-sm [&_select]:bg-surface-container-low [&_select]:outline-none [&_select:focus]:border-primary [&_select:focus]:bg-surface-container-lowest [&_select:focus]:ring-2 [&_select:focus]:ring-primary/20">
+                {{ field }}
+              </div>
+              {% if field.errors %}
+              <div class="text-error text-xs flex flex-col gap-1">
+                {% for error in field.errors %}
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle-exclamation"></i> {{ error }}</span>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            {% else %}
+              {{ field }}
+            {% endif %}
+            {% endfor %}
+          </div>
+
+          <button type="submit" name="action" value="save"
+                  class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md mb-3">
+            <i class="fas fa-floppy-disk"></i> Save & Continue
+          </button>
+          <button type="submit" name="action" value="skip_class"
+                  class="w-full text-center text-sm font-semibold text-on-surface-variant py-2 cursor-pointer bg-transparent border-0">
+            Skip this class
+          </button>
+          <button type="submit" name="action" value="skip_all"
+                  class="w-full text-center text-xs text-on-surface-variant/70 py-1 cursor-pointer bg-transparent border-0">
+            Skip the rest, take me to my dashboard
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+ {%block navBottom%}
+ 
+ {%endblock%}

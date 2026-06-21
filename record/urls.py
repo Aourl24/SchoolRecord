@@ -28,6 +28,7 @@ urlpatterns = [
     path('class/<int:id>/records/', views.get_class_records_view, name='get-class-record'),
     path('class/<int:id>/students/', views.get_class_students_view, name='get-student'),
     path('class/<int:id>/topics/<str:name>/', views.class_topics_view, name='class-topics'),
+    path('class/<int:id>/promote/', views.promote_class_view, name='promote-class'),
     
     # Form views
     path('form/<str:form_type>/', views.form_view, name='form'),
@@ -66,5 +67,11 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('userdetail',views.user_detail,name="new_user_detail"),
     path('userdetail/<str:form>',views.user_detail,name="user_detail"),
+
+    # Onboarding wizard — classes/subjects/matching/starter records
+    path('onboarding/classes/', views.onboarding_classes_view, name='onboarding-classes'),
+    path('onboarding/subjects/', views.onboarding_subjects_view, name='onboarding-subjects'),
+    path('onboarding/match/', views.onboarding_subject_match_view, name='onboarding-subject-match'),
+    path('onboarding/records/', views.onboarding_records_view, name='onboarding-records'),
     
 ]

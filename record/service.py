@@ -140,7 +140,151 @@ class UserService:
             return {'success': True, 'user': user}
         except Exception as e:
             return {'success': False, 'error': str(e)}
-            
+
+
+CLASS_PROGRESSION = ["JSS1", "JSS2", "JSS3", "SS1", "SS2", "SS3"]
+
+class OnboardingService:
+    """Helpers for the post-signup onboarding wizard (bulk classes/subjects/matching)."""
+
+    VALID_CLASS_NAMES = {c[0] for c in CLASSES}
+    VALID_BATCHES = {"A", "B", "C", "D"}
+
+    @staticmethod
+    def parse_and_create_classes(text, user):
+        """
+        Parse one 'Name Batch' pair per line (e.g. 'JSS1 A') and create
+        Class rows for the current academic session. Invalid lines are
+        skipped, not fatal. Returns (created_count, errors).
+        """
+        created = 0
+        errors = []
+        for line_number, raw_line in enumerate(text.splitlines(), start=1):
+            line = raw_line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) != 2:
+                errors.append(f"Line {line_number}: '{line}' — expected 'Name Batch', e.g. 'JSS1 A'")
+                continue
+            name, batch = parts[0].upper(), parts[1].upper()
+            if name not in OnboardingService.VALID_CLASS_NAMES:
+                errors.append(f"Line {line_number}: '{name}' isn't a recognized class (JSS1-3, SS1-3)")
+                continue
+            if batch not in OnboardingService.VALID_BATCHES:
+                errors.append(f"Line {line_number}: '{batch}' isn't a recognized batch (A-D)")
+                continue
+            _, was_created = Class.objects.get_or_create(
+                user=user, name=name, batch=batch, session=current_academic_session()
+            )
+            if was_created:
+                created += 1
+        return created, errors
+
+    @staticmethod
+    def parse_and_create_subjects(text):
+        """
+        One subject name per line. Subjects are shared/global, so this
+        reuses an existing row (case-insensitively, via Subject.save()
+        normalization) rather than creating duplicates.
+        Returns (created_count, all_subjects_referenced).
+        """
+        created = 0
+        subjects = []
+        for raw_line in text.splitlines():
+            name = raw_line.strip()
+            if not name:
+                continue
+            normalized = name.strip().title()
+            subject, was_created = Subject.objects.get_or_create(name=normalized)
+            subjects.append(subject)
+            if was_created:
+                created += 1
+        return created, subjects
+
+    @staticmethod
+    def save_subject_class_matches(post_data, user):
+        """
+        post_data contains checkbox fields named 'match_<subject_id>_<class_id>'
+        for every checked cell in the matching matrix. Create a SubjectTeacher
+        for each one. Returns the number created.
+        """
+        created = 0
+        for key in post_data:
+            if not key.startswith("match_"):
+                continue
+            try:
+                _, subject_id, class_id = key.split("_")
+                subject = Subject.objects.get(id=subject_id)
+                class_obj = Class.objects.get(id=class_id, user=user)
+            except (ValueError, Subject.DoesNotExist, Class.DoesNotExist):
+                continue
+            _, was_created = SubjectTeacher.objects.get_or_create(
+                user=user, subject=subject, class_name=class_obj
+            )
+            if was_created:
+                created += 1
+        return created
+
+
+class PromotionService:
+    """
+    End-of-session bulk class promotion.
+
+    Moves students from one Class into the next Class in the progression,
+    creating that target Class (name/batch/session) if it doesn't exist
+    yet. Historical Records and StudentRecords stay attached to the OLD
+    Class instance, so past report data is untouched — only each
+    student's current class_name FK changes.
+    """
+
+    @staticmethod
+    def next_class_name(current_name):
+        """Next name in the progression, or None if this is the final class (SS3)."""
+        try:
+            idx = CLASS_PROGRESSION.index(current_name)
+        except ValueError:
+            return None
+        if idx + 1 < len(CLASS_PROGRESSION):
+            return CLASS_PROGRESSION[idx + 1]
+        return None
+
+    @staticmethod
+    def next_session(current_session):
+        """'2025/2026' -> '2026/2027'. Falls back to the same string if it can't be parsed."""
+        try:
+            start, end = current_session.split('/')
+            return f"{int(start) + 1}/{int(end) + 1}"
+        except (ValueError, AttributeError):
+            return current_session
+
+    @staticmethod
+    def promote_students(source_class, student_ids, target_batch, target_session, user):
+        """
+        Move the given students into (next class name, target_batch, target_session),
+        creating that Class if needed. Returns (target_class, moved_count).
+        Raises ValueError if source_class has no next class to promote into.
+        """
+        next_name = PromotionService.next_class_name(source_class.name)
+        if not next_name:
+            raise ValueError(
+                f"{source_class.name} is the final class — there's no next class to promote into."
+            )
+
+        target_class, _ = Class.objects.get_or_create(
+            user=user,
+            name=next_name,
+            batch=target_batch,
+            session=target_session,
+        )
+
+        moved_count = Student.objects.filter(
+            id__in=student_ids,
+            class_name=source_class
+        ).update(class_name=target_class)
+
+        return target_class, moved_count
+
 from collections import defaultdict
 from django.db.models import Avg, Max, Min, Q
 from .models import Record, StudentRecord, Subject, Class, Student

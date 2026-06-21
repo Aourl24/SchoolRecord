@@ -1,39 +1,73 @@
 {% extends "base.html" %}
-{% block nav %}
-{% endblock %}
-
-{% block search %}
-{% endblock %}
+{% block nav %}{% endblock %}
+{% block search %}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-b from-slate-50 to-blue-50 py-12 px-4">
+<div class="min-h-screen bg-background flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-lg">
 
-  <!-- Brand Header -->
-  <div class="text-center mb-8">
-    <h1 class="text-3xl font-extrabold text-primary flex items-center justify-center gap-2">
-      <span class="color-bg-p inline-flex items-center justify-center rounded-full w-10 h-10">
-        <i class="fas fa-graduation-cap text-white text-base"></i>
-      </span>
-      Mark<span class="text-secondary">Book.com</span>
-    </h1>
-    <p class="text-gray-400 text-sm mt-2">Let's know more about you to personalize your experience</p>
-  </div>
+    <!-- Progress -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between text-label-sm text-on-surface-variant mb-2">
+        <span>Setting up your workspace</span>
+        <span>
+          {% if form == "role" %}Step 1 of 8
+          {% elif form == "full_name" %}Step 2 of 8
+          {% elif form == "email" %}Step 3 of 8
+          {% elif form == "school" %}Step 4 of 8
+          {% endif %}
+        </span>
+      </div>
+      <div class="h-1.5 w-full bg-outline-variant rounded-full overflow-hidden">
+        <div class="h-full bg-primary rounded-full transition-all"
+             style="width:
+               {% if form == 'role' %}12%
+               {% elif form == 'full_name' %}25%
+               {% elif form == 'email' %}37%
+               {% elif form == 'school' %}50%
+               {% endif %};"></div>
+      </div>
+    </div>
 
-  <!-- Details Card -->
-  <div class="flex justify-center">
-    <div class="w-full max-w-md">
-      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl scholar-shadow overflow-hidden">
 
-        <h2 class="text-center text-xl font-semibold text-gray-800 mb-6">Input {{ form }}</h2>
+      <!-- Header -->
+      <div class="bg-primary px-6 py-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl flex-shrink-0">
+          <i class="fas
+            {% if form == 'role' %}fa-user-tag
+            {% elif form == 'full_name' %}fa-id-card
+            {% elif form == 'email' %}fa-envelope
+            {% elif form == 'school' %}fa-building-columns
+            {% endif %}"></i>
+        </div>
+        <div>
+          <h2 class="text-on-primary text-title-md font-headline-lg m-0">
+            {% if form == "role" %}What's your role?
+            {% elif form == "full_name" %}What's your name?
+            {% elif form == "email" %}Your email
+            {% elif form == "school" %}Your school
+            {% endif %}
+          </h2>
+          <p class="text-on-primary/80 text-xs mt-0.5">
+            {% if form == "role" %}Helps us tailor MarkBook to how you work
+            {% elif form == "full_name" %}Shown on reports and report cards
+            {% elif form == "email" %}Used for account recovery — never shared
+            {% elif form == "school" %}We'll attach your classes and students to it
+            {% endif %}
+          </p>
+        </div>
+      </div>
 
-        <!-- Error Display -->
-        {% if form.error %}
-        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
-          {{ form.error }}
+      <!-- Body -->
+      <div class="p-6 sm:p-8">
+
+        {% if form.errors or errors %}
+        <div class="bg-error-container/40 border border-error/30 text-error text-sm rounded-xl px-4 py-3 mb-4">
+          {{ form.errors }} {{ errors }}
         </div>
         {% endif %}
 
-        <!-- Form -->
         <form method="post"
               hx-post="{% url 'user_detail' form %}"
               hx-swap="outerHTML"
@@ -42,10 +76,10 @@
           {% csrf_token %}
 
           {% if form == "role" %}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Select your role</label>
+          <div class="mb-6">
+            <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wide mb-2">Select your role</label>
             <select name="role"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                    class="w-full border border-outline-variant rounded-xl px-4 py-3 text-sm bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all">
               <option value="" disabled selected>Choose your role</option>
               <option value="Teacher">Teacher</option>
               <option value="School Administration">School Administration</option>
@@ -54,34 +88,45 @@
           </div>
 
           {% elif schools %}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Select your school</label>
+          <div class="mb-6">
+            <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wide mb-2">Select your school</label>
             <select name="school"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                    class="w-full border border-outline-variant rounded-xl px-4 py-3 text-sm bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all">
               {% for school in schools %}
-              <option value="{{ school.id }}">{{ school }}</option>
+              <option value="{{ school.name }}">{{ school }}</option>
               {% endfor %}
             </select>
+            <p class="text-xs text-on-surface-variant mt-3 mb-1.5 opacity-80">Don't see it? Type a new one instead:</p>
+            <input type="text" name="new_school" placeholder="Or type a new school name"
+                   class="w-full border border-outline-variant rounded-xl px-4 py-3 text-sm bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" />
           </div>
 
           {% else %}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{ form|title }}</label>
+          <div class="mb-6">
+            <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wide mb-2">{{ form|title }}</label>
             <input type="text"
                    name="{{ form }}"
                    placeholder="{{ form|title }}"
-                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                   class="w-full border border-outline-variant rounded-xl px-4 py-3 text-sm bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" />
           </div>
           {% endif %}
 
-          <button type="submit"
-                  class="w-full color-bg-p text-white text-sm font-semibold py-3 rounded-xl border-0 cursor-pointer hover:opacity-90 transition mt-2">
-            Next
+          <button type="submit" name="action" value="save"
+                  class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md mb-3">
+            Continue <i class="fas fa-arrow-right"></i>
+          </button>
+          <button type="submit" name="action" value="skip"
+                  class="w-full text-center text-sm font-semibold text-on-surface-variant py-2 cursor-pointer bg-transparent border-0">
+            Skip for now
           </button>
         </form>
-
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}
+
+ {%block navBottom%}
+ 
+ {%endblock%}

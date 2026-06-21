@@ -2,6 +2,7 @@ from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
+from django import forms
 from django.views.generic import CreateView, UpdateView, ListView, DetailView
 from django.utils.decorators import method_decorator
 from django.contrib import messages
@@ -590,12 +591,65 @@ def update_record_view(request, id):
     return render(request, "record-form.html", context)
 
 @login_require
+def promote_class_view(request, id):
+    """
+    Bulk-promote selected students from this class into the next class in
+    the progression (e.g. JSS1 -> JSS2), creating that target Class for the
+    chosen session if it doesn't already exist. Historical Records and
+    StudentRecords stay attached to THIS class, so past report data is
+    untouched — only each promoted student's current class_name changes.
+    """
+    source_class = get_object_or_404(Class, id=id, user=request.user)
+    next_name = PromotionService.next_class_name(source_class.name)
+    students = Student.objects.filter(class_name=source_class).order_by('name')
+
+    if request.method == "POST":
+        if not next_name:
+            return render(request, 'promote-class-result.html', {
+                'error': f"{source_class.name} is the final class — there's no next class to promote into."
+            })
+
+        target_batch = request.POST.get('target_batch', source_class.batch)
+        target_session = request.POST.get('target_session') or PromotionService.next_session(source_class.session)
+        selected_ids = request.POST.getlist('students')
+
+        if not selected_ids:
+            return render(request, 'promote-class-result.html', {
+                'error': "Select at least one student to promote."
+            })
+
+        target_class, moved_count = PromotionService.promote_students(
+            source_class, selected_ids, target_batch, target_session, request.user
+        )
+
+        HistoryService.log_user_activity(
+            request.user,
+            f"Promoted {moved_count} students: {source_class} -> {target_class}",
+            request.path
+        )
+
+        context = {
+            'source_class': source_class,
+            'target_class': target_class,
+            'moved_count': moved_count,
+        }
+        return render(request, 'promote-class-result.html', context)
+
+    context = {
+        'source_class': source_class,
+        'next_name': next_name,
+        'suggested_batch': source_class.batch,
+        'suggested_session': PromotionService.next_session(source_class.session) if next_name else None,
+        'students': students,
+        'final_class': not bool(next_name),
+    }
+    return render(request, 'promote-class.html', context)
+
+@login_require
 def add_record_to_class_view(request, id):
     """Add record to specific class"""
     class_obj = get_object_or_404(Class, id=id)
-    subjects = SubjectTeacher.objects.filter(class_name=class_obj)
     form = RecordForm(initial={'class_name': class_obj},user=request.user)
-    form.fields['subject'].queryset = subjects
     
     context = {
         'class': class_obj,
@@ -798,31 +852,170 @@ def user_detail(request,form="role"):
   schools = None   
   if request.method == "POST":
     user = request.user
+    skip = request.POST.get("action") == "skip"
+
     if form == "role":
-      role = request.POST.get("role")
-      user.role = role
-      user.save()
+      if not skip:
+        role = request.POST.get("role")
+        if role:
+          user.role = role
+          user.save()
       form = "full_name"
     elif form == "school":
-      school = request.POST.get("school")
-      check_school = School.objects.get_or_create(name=school)
-      user.school = check_school[0]
-      user.save()
-      return redirect("home")
+      if not skip:
+        new_school = request.POST.get("new_school", "").strip()
+        school = new_school or request.POST.get("school")
+        if school:
+          check_school = School.objects.get_or_create(name=school)
+          user.school = check_school[0]
+          user.save()
+      return redirect("onboarding-classes")
     elif form == "full_name":
-      full_name = request.POST.get("full_name")
-      user.full_name = full_name
-      user.save()
+      if not skip:
+        full_name = request.POST.get("full_name")
+        if full_name:
+          user.full_name = full_name
+          user.save()
       form = "email"
     elif form == "email":
-      email = request.POST.get("email")
-      user.email = email
-      user.save()
+      if not skip:
+        email = request.POST.get("email")
+        if email:
+          user.email = email
+          user.save()
       form = "school"
       schools = School.objects.all()
       
   context = {"form":form,"schools":schools}
   return render(request,"details.html",context)
+
+
+def _classes_needing_records(request):
+    """
+    Classes that have at least one matched subject but still have zero
+    records, minus any the teacher explicitly skipped this session
+    (tracked in the session so 'skip' doesn't just re-show the same class).
+    """
+    skipped = request.session.get('onboarding_skipped_classes', [])
+    return Class.objects.for_user(request.user).filter(
+        subjectTeacher__isnull=False
+    ).exclude(
+        record__isnull=False
+    ).exclude(
+        id__in=skipped
+    ).distinct().order_by('id')
+
+
+@login_require
+def onboarding_classes_view(request):
+    """Onboarding step: bulk-create every class the teacher lists, one per line ('JSS1 A')."""
+    context = {'current_session': current_academic_session()}
+
+    if request.method == "POST":
+        if request.POST.get("action") == "skip":
+            return redirect('onboarding-subjects')
+
+        text = request.POST.get("body", "")
+        created, errors = OnboardingService.parse_and_create_classes(text, request.user)
+        context.update({'created': created, 'errors': errors})
+
+        if created and not errors:
+            return redirect('onboarding-subjects')
+
+    return render(request, 'onboarding-classes.html', context)
+
+
+@login_require
+def onboarding_subjects_view(request):
+    """Onboarding step: bulk-create/reuse every subject the teacher lists, one per line."""
+    if request.method == "POST":
+        if request.POST.get("action") == "skip":
+            return redirect('home')
+
+        text = request.POST.get("body", "")
+        created, subjects = OnboardingService.parse_and_create_subjects(text)
+
+        if Class.objects.for_user(request.user).exists() and subjects:
+            return redirect('onboarding-subject-match')
+        return redirect('home')
+
+    return render(request, 'onboarding-subjects.html', {})
+
+
+@login_require
+def onboarding_subject_match_view(request):
+    """Onboarding step: tick which subjects apply to which class — creates SubjectTeacher rows."""
+    classes = Class.objects.for_user(request.user).order_by('name', 'batch')
+    subjects = Subject.objects.all().order_by('name')
+
+    if not classes.exists() or not subjects.exists():
+        return redirect('home')
+
+    if request.method == "POST":
+        if request.POST.get("action") == "skip":
+            return redirect('home')
+
+        OnboardingService.save_subject_class_matches(request.POST, request.user)
+        return redirect('onboarding-records')
+
+    context = {'classes': classes, 'subjects': subjects}
+    return render(request, 'onboarding-subject-match.html', context)
+
+
+@login_require
+def onboarding_records_view(request):
+    """
+    Onboarding step: create one starter Record per class that has a
+    matched subject. Auto-advances to the next class needing a record
+    after each save or skip; redirects home once none remain.
+    """
+    if request.method == "POST":
+        action = request.POST.get("action")
+        class_id = request.POST.get("class_id")
+
+        if action == "skip_all":
+            request.session.pop('onboarding_skipped_classes', None)
+            return redirect('home')
+
+        if action == "skip_class" and class_id:
+            skipped = request.session.get('onboarding_skipped_classes', [])
+            skipped.append(int(class_id))
+            request.session['onboarding_skipped_classes'] = skipped
+            return redirect('onboarding-records')
+
+        # action == "save"
+        class_obj = get_object_or_404(Class, id=class_id, user=request.user)
+        form = RecordForm(request.POST, user=request.user)
+        form.fields['class_name'].widget = forms.HiddenInput()
+        form.fields['subject'].queryset = SubjectTeacher.objects.filter(
+            user=request.user, class_name=class_obj
+        )
+
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.user = request.user
+            record.class_name = class_obj
+            record.save()
+            return redirect('onboarding-records')
+
+        remaining = _classes_needing_records(request).count()
+        context = {'form': form, 'class_obj': class_obj, 'remaining': remaining}
+        return render(request, 'onboarding-records.html', context)
+
+    next_class = _classes_needing_records(request).first()
+    if not next_class:
+        request.session.pop('onboarding_skipped_classes', None)
+        return redirect('home')
+
+    form = RecordForm(initial={'class_name': next_class}, user=request.user)
+    form.fields['class_name'].widget = forms.HiddenInput()
+    form.fields['subject'].queryset = SubjectTeacher.objects.filter(
+        user=request.user, class_name=next_class
+    )
+
+    remaining = _classes_needing_records(request).count()
+    context = {'form': form, 'class_obj': next_class, 'remaining': remaining}
+    return render(request, 'onboarding-records.html', context)
 
 @login_require
 def bulk_create_student(request,id):
@@ -830,11 +1023,8 @@ def bulk_create_student(request,id):
   body = request.POST.get("body")
   if body:
     seperate_body = body.split("\n")
-    save_count = 0
     for std in seperate_body:
-      if std and len(std) > 1 :
-        Student.objects.create_for_user(request.user,name=std,class_name=class_name)
-        save_count += 1
-    return HttpResponse(f"{save_count} students have been added to {class_name.name} ")
+      Student.objects.create_for_user(request.user,name=std,class_name=class_name)
+    return HttpResponse(f"{len(seperate_body)}) students have been added to {class_name.name} ")
   else:
     return HttpResponse(f"Body is empty")

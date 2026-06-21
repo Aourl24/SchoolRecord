@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block nav %}{% endblock %}
+{% block search %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-2xl">
+
+    <!-- Progress -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between text-label-sm text-on-surface-variant mb-2">
+        <span>Setting up your workspace</span>
+        <span>Step 7 of 8</span>
+      </div>
+      <div class="h-1.5 w-full bg-outline-variant rounded-full overflow-hidden">
+        <div class="h-full bg-primary rounded-full transition-all" style="width: 87%;"></div>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl scholar-shadow overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-primary px-6 py-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl flex-shrink-0">
+          <i class="fas fa-diagram-project"></i>
+        </div>
+        <div>
+          <h2 class="text-on-primary text-title-md font-headline-lg m-0">Match Subjects to Classes</h2>
+          <p class="text-on-primary/80 text-xs mt-0.5">Tick which subjects you teach in which class</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 sm:p-8">
+
+        <p class="text-on-surface-variant text-sm mb-5">
+          Leave a box unchecked if you don't teach that subject in that class — you can always change this later from each subject's page.
+        </p>
+
+        <form hx-post="{% url 'onboarding-subject-match' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+          {% csrf_token %}
+
+          <div class="overflow-x-auto rounded-xl border border-outline-variant mb-6">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low">
+                  <th class="px-3 py-2.5 text-left text-xs font-bold text-on-surface-variant uppercase tracking-wide sticky left-0 bg-surface-container-low z-10">
+                    Subject
+                  </th>
+                  {% for class in classes %}
+                  <th class="px-3 py-2.5 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wide whitespace-nowrap">
+                    {{ class.name }} {{ class.batch }}
+                  </th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant">
+                {% for subject in subjects %}
+                <tr>
+                  <td class="px-3 py-2.5 text-on-surface font-medium whitespace-nowrap sticky left-0 bg-surface-container-lowest z-10">
+                    {{ subject.name }}
+                  </td>
+                  {% for class in classes %}
+                  <td class="px-3 py-2.5 text-center">
+                    <input type="checkbox" name="match_{{ subject.id }}_{{ class.id }}"
+                           class="w-4 h-4 accent-primary cursor-pointer" />
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="{{ classes|length|add:1 }}" class="px-3 py-6 text-center text-on-surface-variant text-sm">
+                    No subjects yet.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <button type="submit" name="action" value="save"
+                  class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md mb-3">
+            <i class="fas fa-arrow-right"></i> Save & Continue
+          </button>
+          <button type="submit" name="action" value="skip"
+                  class="w-full text-center text-sm font-semibold text-on-surface-variant py-2 cursor-pointer bg-transparent border-0">
+            Skip for now
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a class="text-xs text-on-surface-variant hover:text-primary transition cursor-pointer"
+         hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        Skip the rest, take me to my dashboard
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+ {%block navBottom%}
+ 
+ {%endblock%}
