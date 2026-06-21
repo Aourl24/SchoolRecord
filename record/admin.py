@@ -18,8 +18,7 @@ class ClassAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ['name', 'user']
-    list_filter = ['user']
+    list_display = ['name']
     search_fields = ['name']
 
 @admin.register(Student)

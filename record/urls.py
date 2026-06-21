@@ -35,6 +35,7 @@ urlpatterns = [
     
     # Specific form actions
     path('add-to-record/<int:id>/', views.add_to_record_view, name='add-to-record'),
+    path('record/<int:id>/bulk-scores/', views.bulk_score_entry_view, name='bulk-score-entry'),
     path('add-student/<int:id>/', views.add_student_to_class_view, name='add-student'),
     path('add-topic/<int:id>/', views.add_topic_view, name='add-topic'),
     path('add-record/<int:id>/', views.add_record_to_class_view, name='add-record'),

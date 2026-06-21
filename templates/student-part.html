@@ -1,37 +1,48 @@
-<div class="bg-white rounded-2xl shadow-sm p-4 my-3 text-sm">
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 md:p-5 mb-6">
   <form hx-get="{% url 'filter-students' %}"
         hx-swap="innerHTML"
         hx-target="#studentTable">
 
-    <!-- Filter Row -->
-    <div class="flex items-center gap-3 mb-3">
-      <span class="font-semibold text-gray-700 w-12">Score</span>
-      <select name="sign"
-              class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-        <option value="">...</option>
-        <option>=</option>
-        <option>></option>
-        <option><</option>
-      </select>
-      <select name="score"
-              class="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-        <option value="">...</option>
-        {% with "1234567890203766"|slice:":10" as dummy_str %}
-          {% for i in dummy_str %}
-            <option>{{ forloop.counter0 }}</option>
-          {% endfor %}
-        {% endwith %}
-      </select>
-    </div>
+    <div class="grid grid-cols-2 md:flex md:flex-wrap md:items-end gap-3 md:gap-4 mb-4">
 
-    <!-- Sort Row -->
-    <div class="mb-3">
-      <select name="filter"
-              class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-        <option>Sort</option>
-        <option value="alpha">Arrange Alphabetically</option>
-        <option value="score">Arrange by Score</option>
-      </select>
+      <!-- Score Filter -->
+      <div class="flex flex-col gap-1 col-span-2 md:col-span-1">
+        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Score</label>
+        <div class="flex gap-2">
+          <select name="sign"
+                  class="flex-1 border border-outline-variant rounded-lg bg-surface-container-lowest px-2 py-2 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent min-w-[64px]">
+            <option value="">...</option>
+            <option>=</option>
+            <option>&gt;</option>
+            <option>&lt;</option>
+          </select>
+          <select name="score"
+                  class="flex-1 border border-outline-variant rounded-lg bg-surface-container-lowest px-2 py-2 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent min-w-[80px]">
+            <option value="">...</option>
+            {% with "1234567890203766"|slice:":10" as dummy_str %}
+              {% for i in dummy_str %}
+                <option>{{ forloop.counter0 }}</option>
+              {% endfor %}
+            {% endwith %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Sort -->
+      <div class="flex flex-col gap-1 col-span-2 md:col-span-1 md:min-w-[200px]">
+        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sort</label>
+        <select name="filter"
+                class="w-full border border-outline-variant rounded-lg bg-surface-container-lowest px-3 py-2 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent">
+          <option>Sort</option>
+          <option value="alpha">Arrange Alphabetically</option>
+          <option value="score">Arrange by Score</option>
+        </select>
+      </div>
+
+      <!-- Apply Button -->
+      <button class="col-span-2 md:col-span-1 md:ml-auto bg-secondary text-on-secondary text-sm font-semibold px-6 py-2.5 rounded-lg scholar-shadow hover:opacity-90 transition border-0 cursor-pointer">
+        Apply Filters
+      </button>
     </div>
 
     <!-- Hidden Fields -->
@@ -46,15 +57,8 @@
     <input type="hidden" name="edit" value="{{ edit }}" />
     <input type="hidden" name="record" value="{{ record.id }}" />
 
-    <!-- Apply Button -->
-    <div class="flex justify-end mb-3">
-      <button class="color-bg-s text-white text-xs font-semibold px-5 py-2 rounded-lg shadow-sm hover:opacity-90 transition border-0 cursor-pointer">
-        Apply
-      </button>
-    </div>
-
     <!-- Student Table -->
-    <div id="studentTable">
+    <div id="studentTable" class="rounded-xl overflow-hidden border border-outline-variant">
       {% include 'students-table.html' %}
     </div>
 

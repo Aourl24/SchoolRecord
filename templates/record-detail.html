@@ -1,65 +1,88 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="mt-4">
+<div class="mt-4 md:mt-6">
 
   <!-- Record Info Card -->
-  <div class="bg-white rounded-2xl shadow-sm p-5 mb-5">
-    <div class="flex items-start justify-between mb-3">
-      <div class="text-2xl font-bold text-primary">{{ record.class_name }}</div>
-      <div class="text-sm font-semibold text-red-500">{{ record.title }}</div>
+  <section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 md:p-8 scholar-shadow mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+
+      <!-- Details -->
+      <div class="space-y-1">
+        <div class="flex items-center gap-3 flex-wrap mb-1">
+          <h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">
+            {{ record.class_name }}
+          </h2>
+          <span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm">
+            {{ record.title }}
+          </span>
+        </div>
+        <p class="font-title-md text-title-md text-on-surface-variant">{{ record.subject }}</p>
+        <p class="font-body-md text-body-md text-primary font-semibold">{{ record.record_type }} {{ record.record_number }}</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 pt-4 mt-4 border-t border-outline-variant">
+          <div>
+            <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Date &amp; Time</p>
+            <p class="font-body-md text-body-md font-semibold text-on-surface">{{ record.date_created }}</p>
+          </div>
+          <div>
+            <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total Students</p>
+            <p class="font-body-md text-body-md font-semibold text-on-surface">{{ students.count }}</p>
+          </div>
+          <div>
+            <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Maximum Mark</p>
+            <p class="font-body-md text-body-md font-semibold text-on-surface">{{ record.total_score }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      {% if edit %}
+      <div class="grid grid-cols-2 lg:flex lg:flex-col gap-3 lg:min-w-[220px]">
+        <a hx-get="{% url 'update-form' 'record' record.id %}"
+           hx-target="#addHere" hx-trigger="click"
+           class="flex items-center justify-center gap-2 py-3 px-5 rounded-lg bg-secondary text-on-secondary font-semibold transition-transform active:scale-95 scholar-shadow no-underline cursor-pointer">
+          <i class="fas fa-pen"></i> Edit Record
+        </a>
+        <button id="addStudent"
+                hx-get="{% url 'add-to-record' record.id %}"
+                hx-target="#addHere"
+                class="flex items-center justify-center gap-2 py-3 px-5 rounded-lg bg-primary text-on-primary font-semibold transition-transform active:scale-95 scholar-shadow border-0 cursor-pointer">
+          <i class="fas fa-user"></i> Add Student Record
+        </button>
+        <button id="bulkScores"
+                hx-get="{% url 'bulk-score-entry' record.id %}"
+                hx-target="#addHere"
+                class="col-span-2 lg:col-span-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg bg-tertiary text-on-tertiary font-semibold transition-transform active:scale-95 scholar-shadow border-0 cursor-pointer">
+          <i class="fas fa-users"></i> Bulk Enter Scores
+        </button>
+      </div>
+      {% endif %}
     </div>
-
-    <div class="text-lg font-bold text-gray-800 mb-1">{{ record.subject }}</div>
-    <div class="text-base text-primary mb-4">{{ record.record_type }} {{ record.record_number }}</div>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">Date & Time</div>
-        <div class="text-gray-700">{{ record.date_created }}</div>
-      </div>
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">Total Students</div>
-        <div class="font-semibold text-gray-800">{{ students.count }}</div>
-      </div>
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">Maximum Mark</div>
-        <div class="font-semibold text-gray-800">{{ record.total_score }}</div>
-      </div>
-    </div>
-  </div>
-
-  {% if edit %}
-  <!-- Action Buttons -->
-  <div class="grid grid-cols-2 gap-3 mb-5">
-    <a hx-get="{% url 'update-form' 'record' record.id %}"
-       hx-target="#addHere" hx-trigger="click"
-       class="block text-center text-sm font-semibold border border-gray-200 rounded-xl py-2.5 text-gray-700 cursor-pointer hover:bg-gray-50 transition no-underline color-bg-s text-white">
-      Edit Record
-    </a>
-    <button id="addStudent"
-            class="text-sm font-semibold w-full color-bg-p text-white rounded-xl py-2.5 border-0 cursor-pointer shadow-sm hover:opacity-90 transition"
-            hx-get="{% url 'add-to-record' record.id %}"
-            hx-target="#addHere">
-      Add Student Record
-    </button>
-  </div>
-  {% endif %}
+  </section>
 
   <!-- Student Filter + Table -->
   {% include 'student-part.html' %}
 
   <!-- Students Without Record -->
-  <div class="bg-white rounded-2xl shadow-sm p-4 my-5">
-    <div class="text-sm text-red-500 font-semibold text-center mb-3">
-      Students in Class without record
-    </div>
-    <div class="divide-y divide-gray-100">
+  <section class="bg-error-container/30 border border-error/20 rounded-xl p-5 my-6">
+    <h3 class="font-title-md text-title-md text-error flex items-center gap-2 mb-4">
+      <i class="fas fa-danger"></i>
+      Students in Class without Record
+    </h3>
+    <div class="space-y-2">
       {% for student in students_without_record %}
-      <div class="py-2 text-sm text-gray-700">{{ forloop.counter }}. {{ student.name }}</div>
+      <div class="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30">
+        <span class="font-body-md text-outline">{{ forloop.counter }}.</span>
+        <span class="font-body-md font-semibold text-on-surface">{{ student.name }}</span>
+      </div>
+      {% empty %}
+      <p class="font-body-md text-body-md text-on-surface-variant text-center py-2">
+        Every student in this class has a record for this assessment.
+      </p>
       {% endfor %}
     </div>
-  </div>
+  </section>
 
 </div>
 {% endblock %}

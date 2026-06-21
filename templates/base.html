@@ -8,6 +8,7 @@
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{% static 'js/tailwindcss.js' %}"></script>
     <script>
       tailwind.config = {
         theme: {
@@ -433,6 +434,7 @@
     </footer>
 
     <script src="{% static 'js/htmx.min.js' %}"></script>
+        
     <script>
       function menuDrop() {
         document.getElementById('menu-drop').classList.toggle('hidden');

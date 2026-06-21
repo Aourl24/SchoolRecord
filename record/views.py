@@ -1,6 +1,7 @@
 from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.hashers import check_password
+from django.core.exceptions import ValidationError
 from django.views.generic import CreateView, UpdateView, ListView, DetailView
 from django.utils.decorators import method_decorator
 from django.contrib import messages
@@ -181,7 +182,7 @@ class BaseFormView:
     
     model_classes = {
         'record': Record,
-        'subject': Subject,
+        'subject': SubjectTeacher,
         'class': Class,
         'student': Student,
         'student-record': StudentRecord,
@@ -341,6 +342,83 @@ def add_to_record_view(request, id):
     return render(request, 'record-form.html', context)
 
 @login_require
+def bulk_score_entry_view(request, id):
+    """
+    Bulk score entry/edit for every student in a record's class.
+
+    GET  -> render a table with one row per student, score input pre-filled
+            with their existing StudentRecord.score if one exists.
+    POST -> for each non-empty score_<student_id> field, create a new
+            StudentRecord or update the existing one. Blank fields are
+            skipped (lets a teacher save a partial pass without wiping
+            scores for students they haven't gotten to yet).
+    """
+    record = get_object_or_404(Record, id=id)
+    students = Student.objects.filter(class_name=record.class_name).order_by('name')
+
+    if request.method == "POST":
+        existing = {sr.student_id: sr for sr in StudentRecord.objects.filter(record=record)}
+        created, updated, errors = 0, 0, []
+
+        for student in students:
+            raw_score = request.POST.get(f"score_{student.id}", "").strip()
+            if raw_score == "":
+                continue
+
+            try:
+                score = int(raw_score)
+            except ValueError:
+                errors.append(f"{student.name}: '{raw_score}' is not a whole number")
+                continue
+
+            student_record = existing.get(student.id)
+            try:
+                if student_record:
+                    student_record.score = score
+                    student_record.save()
+                    updated += 1
+                else:
+                    StudentRecord.objects.create(
+                        user=request.user,
+                        student=student,
+                        record=record,
+                        score=score
+                    )
+                    created += 1
+            except ValidationError as e:
+                errors.append(f"{student.name}: {'; '.join(e.messages) if hasattr(e, 'messages') else str(e)}")
+
+        HistoryService.log_user_activity(
+            request.user,
+            f"Bulk scores — {record}",
+            request.path
+        )
+
+        context = {
+            'record': record,
+            'created': created,
+            'updated': updated,
+            'errors': errors,
+        }
+        return render(request, 'bulk-score-result.html', context)
+
+    # GET: build rows, pre-filling any score the student already has
+    existing_scores = {
+        sr.student_id: sr.score
+        for sr in StudentRecord.objects.filter(record=record)
+    }
+    student_rows = [
+        {'student': s, 'score': existing_scores.get(s.id, '')}
+        for s in students
+    ]
+
+    context = {
+        'record': record,
+        'student_rows': student_rows,
+    }
+    return render(request, 'bulk-score-form.html', context)
+
+@login_require
 def add_student_to_class_view(request, id):
     """Add student to specific class"""
     class_obj = get_object_or_404(Class, id=id)
@@ -419,8 +497,8 @@ def login_view(request):
 # Other Views (subjects, topics, history, reports)
 @login_require
 def subject_list_view(request):
-    """List all subjects"""
-    subjects = Subject.objects.for_user(request.user)
+    """List all subjects (shared across every teacher — not per-user)"""
+    subjects = Subject.objects.all().order_by('name')
     return render(request, 'subject.html', {'subjects': subjects})
 
 @login_require
@@ -444,7 +522,7 @@ def topic_list_view(request):
 def subject_detail_view(request, id):
     """Subject detail with related topics"""
     subject = get_object_or_404(Subject, id=id)
-    classes = Class.objects.values('name').distinct()
+    classes = Class.objects.for_user(request.user).values('name').distinct()
     
     HistoryService.log_user_activity(
         request.user,
@@ -515,7 +593,9 @@ def update_record_view(request, id):
 def add_record_to_class_view(request, id):
     """Add record to specific class"""
     class_obj = get_object_or_404(Class, id=id)
+    subjects = SubjectTeacher.objects.filter(class_name=class_obj)
     form = RecordForm(initial={'class_name': class_obj},user=request.user)
+    form.fields['subject'].queryset = subjects
     
     context = {
         'class': class_obj,
@@ -725,8 +805,8 @@ def user_detail(request,form="role"):
       form = "full_name"
     elif form == "school":
       school = request.POST.get("school")
-      check_school = School.objects.get(id=school)
-      user.school = check_school
+      check_school = School.objects.get_or_create(name=school)
+      user.school = check_school[0]
       user.save()
       return redirect("home")
     elif form == "full_name":
@@ -750,8 +830,11 @@ def bulk_create_student(request,id):
   body = request.POST.get("body")
   if body:
     seperate_body = body.split("\n")
+    save_count = 0
     for std in seperate_body:
-      Student.objects.create_for_user(request.user,name=std,class_name=class_name)
-    return HttpResponse(f"{len(seperate_body)}) students have been added to {class_name.name} ")
+      if std and len(std) > 1 :
+        Student.objects.create_for_user(request.user,name=std,class_name=class_name)
+        save_count += 1
+    return HttpResponse(f"{save_count} students have been added to {class_name.name} ")
   else:
     return HttpResponse(f"Body is empty")

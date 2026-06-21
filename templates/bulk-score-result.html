@@ -1,0 +1,13 @@
+<div class="rounded-xl p-4 {% if errors %}bg-amber-50 border border-amber-200{% else %}bg-emerald-50 border border-emerald-200{% endif %}">
+  <p class="text-sm font-semibold {% if errors %}text-amber-700{% else %}text-emerald-700{% endif %} mb-1 flex items-center gap-2">
+    <i class="fas {% if errors %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+    {{ created }} created, {{ updated }} updated.
+  </p>
+  {% if errors %}
+  <ul class="text-xs text-amber-700 list-disc list-inside space-y-0.5 mt-2">
+    {% for e in errors %}
+    <li>{{ e }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>

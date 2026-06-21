@@ -7,6 +7,20 @@ from itsdangerous import TimestampSigner, BadSignature
 from django.contrib.auth.hashers import make_password, check_password
 from uuid import uuid4
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+
+
+def current_academic_session():
+    """
+    Best-guess default for a new Class's session, based on today's date.
+    Most school years run roughly September-July, so September onward
+    counts as the start of a new session (e.g. "2026/2027").
+    Purely a default — teachers can override it on the class form.
+    """
+    today = timezone.now()
+    if today.month >= 9:
+        return f"{today.year}/{today.year + 1}"
+    return f"{today.year - 1}/{today.year}"
 
 class UserQuerySet(models.QuerySet):
     def for_user(self, user):
@@ -105,13 +119,14 @@ TERM_CHOICES = [
 class Class(UserModel):
   name = models.CharField(max_length=100000,choices=CLASSES)
   batch = models.CharField(max_length=100000,choices=[("A","A"),("B","B"),("C","C"),("D","D")])
+  session = models.CharField(max_length=20, default=current_academic_session, help_text="Academic session, e.g. 2025/2026")
   class_teacher = models.ForeignKey(User,related_name="class_name",on_delete=models.CASCADE,null=True,blank=True)
   
   class Meta:
-    unique_together = ("user","name","batch")
+    unique_together = ("user","name","batch","session")
   
   def __str__(self):
-    return f"{self.name} {self.batch}"
+    return f"{self.name} {self.batch} ({self.session})"
 
 class Student(UserModel):
   name = models.CharField(max_length=100000)
@@ -133,8 +148,30 @@ class Student(UserModel):
     self.school = self.user.school
     super().save(**kwargs)
 
-class Subject(UserModel):
-  name = models.CharField(max_length=1000000,unique=True)
+
+class Subject(models.Model):
+  """
+  Subjects are a SHARED list across every teacher — "Mathematics" is the
+  same row no matter who teaches it. This used to inherit UserModel and be
+  filtered with .for_user(), which meant each teacher silently got their
+  own private, isolated copy of every subject name (and a unique=True
+  constraint that fought that at the same time). Per-teacher assignment of
+  a subject to a class now lives entirely on SubjectTeacher, which still
+  has its own `user` field.
+
+  NOTE: if you already have duplicate Subject rows per teacher in your
+  database (e.g. several "Mathematics" rows owned by different users),
+  merge them — repoint any SubjectTeacher.subject FKs to one canonical
+  Subject row and delete the rest — BEFORE running migrations, or the new
+  unique constraint will fail to apply cleanly.
+  """
+  name = models.CharField(max_length=255, unique=True)
+
+  def save(self, *args, **kwargs):
+    # Normalize so "math", "Math", "MATH" all collapse to one row instead
+    # of slipping past the unique constraint as separate subjects.
+    self.name = self.name.strip().title()
+    super().save(*args, **kwargs)
 
   def __str__(self):
     return self.name
@@ -150,7 +187,7 @@ class SubjectTeacher(UserModel):
     unique_together = ("subject","class_name")
 
   def __str__(self):
-    return self.subject.name
+    return self.subject.name if self.subject else "Unassigned Subject"
 
 import re
 from django.core.exceptions import ValidationError
@@ -423,74 +460,6 @@ def bulk_create_student_records_for_record(record_id):
         }
 
 
-# EXAMPLE USAGE:
-"""
-# Scenario 1: Create Record with auto-create enabled (default)
-record = Record.objects.create(
-    title="FirstTerm",
-    subject=math_subject,
-    record_type="Assignment",
-    record_number=2,
-    total_score=105,
-    class_name=my_class,
-    logic="@1 + 5",
-    auto_create_records=True  # This is default
-)
-# StudentRecords automatically created for all students!
-
-# Scenario 2: Create Record without auto-create
-record = Record.objects.create(
-    title="FirstTerm",
-    subject=math_subject,
-    record_type="Test",
-    record_number=1,
-    total_score=100,
-    class_name=my_class,
-    auto_create_records=False  # Manual creation
-)
-# Teacher adds students manually later
-
-# Scenario 3: Manually trigger creation later
-record.create_student_records_with_logic()
-
-# Scenario 4: Recalculate all scores after logic change
-record.logic = "@1 + 10"  # Changed from +5 to +10
-record.save()
-record.recalculate_all_student_scores()  # Update all existing StudentRecords
-"""
-
-
-# Example usage and test cases:
-"""
-EXAMPLE LOGIC STRINGS:
-
-1. Simple reference:
-   logic = "@1"  # Use score from record_number 1
-
-2. Addition:
-   logic = "@1 + @2 + @3"  # Sum of three records
-
-3. Weighted average:
-   logic = "@1 * 0.4 + @2 * 0.6"  # 40% of record 1 + 60% of record 2
-
-4. Cross-type reference:
-   logic = "@Test:1 + @Assignment:1"  # Test 1 + Assignment 1
-
-5. Average function:
-   logic = "avg(@1, @2, @3, @4)"  # Average of four records
-
-6. Complex calculation:
-   logic = "(avg(@Test:1, @Test:2, @Test:3) * 0.7) + (@Exam:1 * 0.3)"
-   # 70% average of tests + 30% exam
-
-7. Cross-term reference:
-   logic = "@FirstTerm:Test:1 + @SecondTerm:Test:1"  # Sum across terms
-
-8. Maximum score:
-   logic = "max(@1, @2, @3)"  # Best of three attempts
-"""
-    
-  
 class History(UserModel):
   title = models.CharField(max_length=1000000,null=True,blank=True)
   url = models.URLField(null=True,blank=True)
