@@ -1,7 +1,21 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="text-lg font-semibold text-gray-800 my-3">Records list</div>
+
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h2 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg text-on-surface mb-1">
+      Records
+    </h2>
+    <p class="text-body-md text-on-surface-variant">All your assessment records in one place.</p>
+  </div>
+  <div class="hidden lg:flex items-center gap-2 bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-2 scholar-shadow">
+    <i class="fas fa-file-lines text-primary text-sm"></i>
+    <span class="text-label-sm font-bold text-on-surface">{{ record.count }} Records</span>
+  </div>
+</div>
 
 {% include 'record-list.html' %}
+
 {% endblock %}

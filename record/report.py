@@ -134,51 +134,44 @@ class Report:
             }
     
     @staticmethod    
-    def generate_report(subject_id, class_name, batch, term, sort_order):
+    def generate_report(subject_id, class_name, batch, term, sort_order, user=None):
         """
         Generate academic report for students in a specific subject and class.
         NOW WITH LOGIC SUPPORT - shows which scores are calculated vs manual
-        
-        Args:
-            subject_id: ID of the subject
-            class_name: Name of the class
-            batch: Batch name or "All" for all batches
-            term: Term name or "All" for all terms
-            sort_order: "desc" for descending by score, "asc" for ascending by name
-        
-        Returns:
-            dict: Report data with success status
         """
         
-        # Get class models with optimization
-        class_model = Class.objects.filter(name=class_name)
-        
+        # Get class models — scoped to this teacher
+        class_model = Class.objects.filter(name=class_name, user=user)   # ← user added
+
         if batch != "All":
             class_model = class_model.filter(batch=batch)
             is_all = False
         else:
             is_all = True
     
-        # Get subject model with error handling
+        # Get subject model
         try:
             subject_model = Subject.objects.get(id=int(subject_id))
         except (Subject.DoesNotExist, ValueError):
             raise ValueError(f"Subject with id {subject_id} not found")
     
-        # Get records with optimized queries
+        # Get records — scoped to this teacher
         record_qs = Record.objects.filter(
+            user=user,                               # ← user added
             class_name__in=class_model, 
-            subject__subject__name=subject_model
-        ,show_in_report=True).select_related('class_name', 'subject')
+            subject__subject=subject_model,          # ← fixed: was subject__subject__name=subject_model (object vs string)
+            show_in_report=True
+        ).select_related('class_name', 'subject')
         
-        if term not in ["All", "None", None]:
+        if term not in ["All", "None", None, "all"]:
             record_qs = record_qs.filter(title=term)
         
-        # Set term to None if "All" is selected for consistent handling
-        term = None if term == "All" else term
+        # Set term to None if "All" is selected
+        term = None if term in ("All", "all") else term
     
-        # Get student records with optimization
+        # Get student records — scoped to this teacher
         student_records = StudentRecord.objects.filter(
+            user=user,                               # ← user added
             record__class_name__in=class_model,
             record__subject__subject=subject_model
         ).select_related('student', 'record', 'record__class_name')
@@ -194,67 +187,61 @@ class Report:
         students_data = []
         term_titles = ["First Term", "Second Term", "Third Term"]
         all_term_records = defaultdict(list)
-        
-        # Track unique record types per term to avoid duplicates
         term_record_keys = defaultdict(set)
     
         for student_name in sorted(student_objects.keys()):
             try:
-                student_model = Student.objects.select_related('class_name').get(name=student_name)
+                # ← user added: prevents grabbing a same-named student from another teacher
+                student_model = Student.objects.select_related('class_name').get(
+                    name=student_name, user=user
+                )
             except Student.DoesNotExist:
                 continue
                 
             student_batch = student_model.class_name.batch
             student_records_filtered = record_qs.filter(class_name__batch=student_batch)
     
-            # Initialize term data structures
             term_scores = {title: [] for title in term_titles}
             term_test_totals = {title: 0 for title in term_titles}
             term_total_scores = {title: 0 for title in term_titles}
             student_total_score = 0
             student_total_available_score = 0
             
-            # Create mapping of record ID to score for this student
             student_scores = {r.record.id: r.score for r in student_objects[student_name]}
     
             for rec in student_records_filtered:
                 score = student_scores.get(rec.id, '-')
                 term_key = rec.title
                 
-                # ✨ NEW: Add logic information to each record
                 rec_data = {
                     'type': rec.record_type,
                     'number': rec.record_number,
                     'score': score,
-                    'is_calculated': bool(rec.logic),  # Flag for calculated scores
-                    'logic_formula': rec.logic,  # The formula used (if any)
-                    'total_score': rec.total_score,  # Available points
+                    'is_calculated': bool(rec.logic),
+                    'logic_formula': rec.logic,
+                    'total_score': rec.total_score,
                 }
                 term_scores[term_key].append(rec_data)
     
-                # Create unique key for record type to avoid duplicates
                 record_key = f"{rec.record_type}_{rec.record_number}"
                 if record_key not in term_record_keys[rec.title]:
                     term_record_keys[rec.title].add(record_key)
                     all_term_records[rec.title].append({
                         'type': rec.record_type,
                         'number': rec.record_number,
-                        'is_calculated': bool(rec.logic),  # ✨ NEW
-                        'logic_formula': rec.logic,  # ✨ NEW
+                        'is_calculated': bool(rec.logic),
+                        'logic_formula': rec.logic,
                     })
     
-                # Calculate totals only for valid numeric scores
                 if isinstance(score, (int, float)) and score != '-':
                     student_total_score += score
                     student_total_available_score += rec.total_score
     
-                    # Calculate term totals only if not filtering by specific term
                     if not term:
                         if rec.record_type != "Exam":
                             term_test_totals[term_key] += score
                         term_total_scores[term_key] += score
     
-            # Calculate percentage with safe division
             percentage = round((student_total_score / student_total_available_score) * 100, 2) if student_total_available_score > 0 else 0
     
             student_data = {
@@ -267,7 +254,6 @@ class Report:
                 'class_name': str(student_batch),
             }
             
-            # Add term totals only if not filtering by specific term
             if not term:
                 student_data['term_totals'] = {
                     title: {
@@ -278,13 +264,11 @@ class Report:
     
             students_data.append(student_data)
     
-        # Sort students based on sort_order
         if sort_order == 'desc':
             students_data.sort(key=lambda x: x['total_score'], reverse=True)
         else:
             students_data.sort(key=lambda x: x['name'])
     
-        # Create header structure
         header_structure = {
             'header': True,
             'count': 'S/N',
@@ -294,7 +278,6 @@ class Report:
             'Percentage': '100%',
         }
     
-        # Add term totals to header only if not filtering by specific term
         if not term:
             header_structure['term_totals'] = {
                 title: {
@@ -303,7 +286,6 @@ class Report:
                 } for title in term_titles
             }
     
-        # Combine header and student data
         total_report = [header_structure] + students_data
         terms = term_titles
         

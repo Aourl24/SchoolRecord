@@ -26,42 +26,52 @@
         </div>
         <div>
           <h2 class="text-on-primary text-title-md font-headline-lg m-0">Your Classes</h2>
-          <p class="text-on-primary/80 text-xs mt-0.5">List every class you teach — one per line</p>
+          <p class="text-on-primary/80 text-xs mt-0.5">Tick every class + batch you teach</p>
         </div>
       </div>
 
       <!-- Body -->
       <div class="p-6 sm:p-8">
 
-        <p class="text-on-surface-variant text-sm mb-4">
+        <p class="text-on-surface-variant text-sm mb-5">
           We'll create each one for the current academic session
           (<span class="font-semibold text-on-surface">{{ current_session }}</span>).
-          Use the format <span class="font-semibold text-on-surface">Name Batch</span>, for example:
         </p>
-        <div class="bg-surface-container-low rounded-xl px-4 py-3 mb-5 text-xs font-mono text-on-surface-variant leading-relaxed">
-          JSS1 A<br>JSS2 B<br>SS1 A
-        </div>
 
-        {% if errors %}
+        {% if error %}
         <div class="bg-error-container/40 border border-error/30 text-error text-xs rounded-xl px-4 py-3 mb-4">
-          <p class="font-semibold mb-1">Some lines were skipped — fix and resubmit, or continue without them:</p>
-          <ul class="list-disc list-inside space-y-0.5">
-            {% for e in errors %}<li>{{ e }}</li>{% endfor %}
-          </ul>
-        </div>
-        {% endif %}
-        {% if created %}
-        <div class="bg-secondary-container/40 border border-secondary/30 text-secondary text-xs rounded-xl px-4 py-3 mb-4">
-          <i class="fas fa-circle-check"></i> {{ created }} class{{ created|pluralize:"es" }} added.
+          {{ error }}
         </div>
         {% endif %}
 
         <form hx-post="{% url 'onboarding-classes' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
           {% csrf_token %}
-          <textarea name="body"
-                    rows="6"
-                    placeholder="JSS1 A&#10;JSS2 B"
-                    class="w-full border border-outline-variant rounded-xl px-4 py-3 text-sm bg-surface-container-low outline-none transition-all focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 font-mono mb-6"></textarea>
+
+          <div class="overflow-x-auto rounded-xl border border-outline-variant mb-6">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low">
+                  <th class="px-3 py-2.5 text-left text-xs font-bold text-on-surface-variant uppercase tracking-wide">Class</th>
+                  {% for b in "ABCD" %}
+                  <th class="px-3 py-2.5 text-center text-xs font-bold text-on-surface-variant uppercase tracking-wide">{{ b }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant">
+                {% for name in class_names %}
+                <tr>
+                  <td class="px-3 py-2.5 text-on-surface font-medium whitespace-nowrap">{{ name }}</td>
+                  {% for b in "ABCD" %}
+                  <td class="px-3 py-2.5 text-center">
+                    <input type="checkbox" name="classes" value="{{ name }}|{{ b }}"
+                           class="w-4 h-4 accent-primary cursor-pointer" />
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
 
           <button type="submit" name="action" value="save"
                   class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md mb-3">
@@ -85,7 +95,3 @@
   </div>
 </div>
 {% endblock %}
-
- {%block navBottom%}
- 
- {%endblock%}

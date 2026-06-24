@@ -1,52 +1,31 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{%block content%}
-<div class="my-2 sz-18 color-p mb-3">All Students</div>
- <div class="row sz-12 border d-none hide">
-   <div  class="my-3 sz-16 center"> Get students record </div>
-   <form hx-get="{%url 'filterRecord' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-   <select name='class' class="form-control col m-1 sz-12">
-     {%for class in classes %}
-     <option value={{class.name}} >{{class.name}}</option>
-     {%endfor%}
-   </select>
-   
-    <select name='subject' class="form-control col m-1 sz-12">
-     {%for subject in subjects%}
-     <option value={{subject.id}} > {{subject.name}} </option>
-     {%endfor%}
-   </select>
-   
-   <select name='term' class="form-control col m-1 sz-12">
-     <option> Term </option>
-      <option value="First Term"> First Term </option>
-        <option value="Second Term"> Second Term </option>
-      <option value="Third Term"> Third Term </option>
-   </select>
-   
-   <select name='r_type' class="form-control col m-1 sz-12">
-      <option value="Test"> Test </option>
-      <option value="Exam"> Exam </option>
-   </select>
-   
-    <select name='number' class="form-control col m-1 sz-12">
-     <option value=1 > 1 </option>
-     <option value=2 > 2 </option>
-     <option value=3 > 3 </option>
-    <option value=4 > 4 </option>
-    <option value=5 > 5 </option>
-     
-   </select>
+{% block content %}
 
-   <div class="my-2">
-    <button class="button rounded-4 w-100 sz-12 p-2 color-bg-s"> Apply </button>
-   </div>
-      <br />
-   </form>
+{% if classes %}
+<div class="flex flex-wrap gap-2 mb-6">
+  <span class="text-label-sm text-on-surface-variant self-center mr-1">Filter:</span>
 
- </div>
- <br />
-{%include "student-list.html" %}
+  <a class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary border border-primary rounded-full text-label-sm font-bold cursor-pointer"
+     hx-get="{% url 'student-list' %}"
+     hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    All
+  </a>
 
+  {% for class in classes %}
+  <a class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-full text-label-sm font-semibold text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5 transition-all cursor-pointer"
+     hx-get="{% url 'get-student' class.id %}"
+     hx-target="#student-list-area"
+     hx-swap="innerHTML">
+    <i class="fas fa-school text-[10px]"></i>
+    {{ class.name }} {{ class.batch }}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
 
-{%endblock%}
+<!-- Student list area (HTMX target for filtering) -->
+<div id="student-list-area">
+  {% include "student-list.html" %}
+</div>
+{% endblock %}

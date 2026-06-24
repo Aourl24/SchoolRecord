@@ -1,0 +1,187 @@
+<!-- Quick Setup Modal -->
+<div id="formBox"
+     class="fixed inset-0 z-[100000] overflow-y-auto bg-on-surface/50 backdrop-blur-sm p-4"
+     style="animation: fadeIn 0.3s ease-out;">
+
+  <div class="w-full max-w-md mx-auto mt-16 mb-10"
+       style="animation: modalSlideIn 0.4s ease-out;">
+
+    <!-- Card -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-primary px-6 py-5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <div>
+            <h2 class="text-on-primary text-title-md font-headline-lg m-0">Quick Setup</h2>
+            <p class="text-on-primary/70 text-xs mt-0.5">{{ class.name }} {{ class.batch }}</p>
+          </div>
+        </div>
+        <button class="w-10 h-10 bg-white/15 hover:bg-white/25 rounded-xl flex items-center justify-center text-on-primary text-lg border-0 cursor-pointer transition"
+                hx-get="{% url 'closeRequest' %}"
+                hx-target="#formBox"
+                hx-swap="outerHTML"
+                aria-label="Close">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6">
+
+        <!-- Active Term badge -->
+        <div class="flex items-center gap-2 border border-primary/20 rounded-xl px-4 py-3 mb-6"
+             style="background: rgba(0,74,198,0.06);">
+          <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0" style="animation: pulse 2s infinite;"></span>
+          <span class="text-sm text-on-surface">
+            Term: <strong class="text-primary">{{ active_term|default:"Not set — change in sidebar" }}</strong>
+          </span>
+        </div>
+
+        <!-- What will be created -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 text-center">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                 style="background: rgba(0,106,97,0.1);">
+              <i class="fas fa-file-pen text-secondary"></i>
+            </div>
+            <p class="text-label-sm font-bold text-on-surface">Test</p>
+            <p class="font-headline-lg text-secondary leading-tight" style="font-size: 2rem;">30</p>
+            <p class="text-xs text-on-surface-variant">marks</p>
+          </div>
+          <div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 text-center">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                 style="background: rgba(62,63,204,0.1);">
+              <i class="fas fa-graduation-cap text-tertiary"></i>
+            </div>
+            <p class="text-label-sm font-bold text-on-surface">Exam</p>
+            <p class="font-headline-lg text-tertiary leading-tight" style="font-size: 2rem;">70</p>
+            <p class="text-xs text-on-surface-variant">marks</p>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form hx-post="{% url 'quick-setup' class.id %}"
+              hx-target="#quick-setup-result"
+              hx-swap="innerHTML">
+          {% csrf_token %}
+
+          <!-- Subject -->
+          <div class="flex flex-col gap-1.5 mb-4">
+            <label class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">
+              Subject
+            </label>
+            {% if subjects %}
+            <select name="subject_id"
+                    class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container-low outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+              {% for s in subjects %}
+              <option value="{{ s.id }}">{{ s.subject.name }}</option>
+              {% endfor %}
+            </select>
+            {% else %}
+            <div class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container-low text-on-surface-variant">
+              No subjects linked to this class yet
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Record Number -->
+          <div class="flex flex-col gap-1.5 mb-6">
+            <label class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">
+              Record Number
+            </label>
+            <select name="record_number"
+                    class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container-low outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+            <small class="text-on-surface-variant text-xs flex items-center gap-1.5 opacity-80">
+              <i class="fas fa-circle-info"></i>
+              e.g. Number 1 creates Test 1 + Exam 1 for {{ active_term }}
+            </small>
+          </div>
+
+          <!-- Result area -->
+          <div id="quick-setup-result" class="mb-4"></div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3">
+            {% if subjects %}
+            <button type="submit"
+                    class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md">
+              <i class="fas fa-bolt"></i>
+              Create Both Records
+            </button>
+            {% else %}
+            <div class="flex-1 flex items-center justify-center gap-2 bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant text-sm">
+              Add a subject to this class first
+            </div>
+            {% endif %}
+            <button type="button"
+                    class="flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 px-4 rounded-xl border border-outline-variant cursor-pointer transition"
+                    hx-get="{% url 'closeRequest' %}"
+                    hx-target="#formBox"
+                    hx-swap="outerHTML">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  #quick-setup-result .quick-setup-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #quick-setup-result .quick-setup-partial {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #quick-setup-result .quick-setup-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+</style>

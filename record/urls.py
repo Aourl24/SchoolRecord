@@ -73,5 +73,11 @@ urlpatterns = [
     path('onboarding/subjects/', views.onboarding_subjects_view, name='onboarding-subjects'),
     path('onboarding/match/', views.onboarding_subject_match_view, name='onboarding-subject-match'),
     path('onboarding/records/', views.onboarding_records_view, name='onboarding-records'),
+
+    # Inline quick-add for the Subject dropdown (regular form + onboarding)
+    path('create-subject/', views.create_subject_ajax_view, name='create-subject-ajax'),
+    # Add these two lines to urlpatterns:
+path('set-term/', views.set_active_term_view, name='set-active-term'),
+path('class/<int:class_id>/quick-setup/', views.quick_setup_view, name='quick-setup'),
     
 ]

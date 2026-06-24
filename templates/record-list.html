@@ -1,40 +1,98 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+{% if record %}
 
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
   {% for rec in record %}
-  <div class="bg-white {% if partial %}border border-gray-200{% endif %} rounded-2xl shadow-sm p-4 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition"
+
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group flex flex-col overflow-hidden"
        hx-get="{% url 'get-record' rec.id %}"
        hx-target="body"
        hx-swap="outerHTML"
        hx-push-url="true">
 
-    {% if not partial %}
-    <div class="mb-3">
-      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Class</span>
-      <div class="text-base font-bold text-primary mt-0.5">{{ rec.class_name }}</div>
-    </div>
-    {% endif %}
-
-    <div class="mb-3">
-      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Subject</span>
-      <div class="text-base font-bold text-primary mt-0.5">{{ rec.subject }}</div>
+    <!-- Coloured top strip based on record type -->
+    <div class="h-1.5 w-full
+      {% if rec.record_type == 'Exam' %}bg-tertiary
+      {% elif rec.record_type == 'Test' %}bg-secondary
+      {% elif rec.record_type == 'Assignment' %}bg-primary
+      {% else %}bg-outline{% endif %}">
     </div>
 
-    <div class="mb-3">
-      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Term</span>
-      <div class="text-base font-semibold text-primary mt-0.5">{{ rec.title }}</div>
-    </div>
+    <div class="p-5 flex flex-col flex-1">
 
-    <div class="mb-3">
-      <span class="text-xs font-medium text-tertiary uppercase tracking-wide">Type</span>
-      <div class="text-base font-semibold text-primary mt-0.5">{{ rec.record_type }} {{ rec.record_number }}</div>
-    </div>
+      <!-- Top row: type badge + record number -->
+      <div class="flex items-start justify-between mb-4">
 
-    <div class="flex justify-between items-center text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2 mt-2">
-      <span class="hidden">Record {{ forloop.counter }}</span>
-      <span>Created {{ rec.date_created }}</span>
-    </div>
+        <!-- Type badge -->
+        <span class="inline-flex items-center gap-1.5 text-label-sm font-bold px-2.5 py-1 rounded-full
+          {% if rec.record_type == 'Exam' %}bg-tertiary/10 text-tertiary
+          {% elif rec.record_type == 'Test' %}bg-secondary/10 text-secondary
+          {% elif rec.record_type == 'Assignment' %}bg-primary/10 text-primary
+          {% else %}bg-surface-container text-on-surface-variant{% endif %}">
+          <i class="fas
+            {% if rec.record_type == 'Exam' %}fa-graduation-cap
+            {% elif rec.record_type == 'Test' %}fa-file-pen
+            {% elif rec.record_type == 'Assignment' %}fa-pencil
+            {% else %}fa-file{% endif %} text-xs">
+          </i>
+          {{ rec.record_type }} {{ rec.record_number }}
+        </span>
 
+        <!-- Arrow icon -->
+        <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:bg-primary group-hover:text-on-primary transition-all">
+          <i class="fas fa-arrow-right text-xs"></i>
+        </div>
+      </div>
+
+      <!-- Subject -->
+      <h3 class="text-title-md font-bold text-on-surface leading-tight mb-1 group-hover:text-primary transition-colors">
+        {{ rec.subject }}
+      </h3>
+
+      <!-- Class (only on full list, not partial) -->
+      {% if not partial %}
+      <div class="flex items-center gap-1.5 mb-3">
+        <i class="fas fa-school text-xs text-on-surface-variant"></i>
+        <span class="text-sm text-on-surface-variant font-medium">{{ rec.class_name }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Spacer -->
+      <div class="flex-1"></div>
+
+      <!-- Bottom row: term + date -->
+      <div class="flex items-center justify-between pt-4 border-t border-outline-variant mt-4">
+
+        <!-- Term pill -->
+        <span class="inline-flex items-center gap-1.5 bg-surface-container text-on-surface-variant text-xs font-semibold px-2.5 py-1 rounded-full">
+          <i class="fas fa-calendar-days text-[10px]"></i>
+          {{ rec.title }}
+        </span>
+
+        <!-- Max score -->
+        <span class="text-xs text-on-surface-variant flex items-center gap-1">
+          <i class="fas fa-star text-[10px] text-outline"></i>
+          Max: <strong class="text-on-surface ml-0.5">{{ rec.total_score }}</strong>
+        </span>
+
+      </div>
+
+    </div>
   </div>
-  {% endfor %}
 
+  {% endfor %}
 </div>
+
+{% else %}
+
+<!-- Empty state -->
+<div class="flex flex-col items-center justify-center bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-2xl py-16 px-6 text-center">
+  <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4">
+    <i class="fas fa-file-circle-plus text-on-surface-variant text-2xl"></i>
+  </div>
+  <h3 class="text-title-md font-bold text-on-surface mb-1">No records yet</h3>
+  <p class="text-sm text-on-surface-variant max-w-xs">
+    Create your first record to start tracking student performance.
+  </p>
+</div>
+
+{% endif %}

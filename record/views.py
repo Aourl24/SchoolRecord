@@ -77,12 +77,13 @@ class StudentListView(ListView):
         return Student.objects.for_user(self.request.user)
     
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'subjects': Subject.objects.for_user(self.request.user),
-            'classes': Class.objects.for_user(self.request.user).values('name').distinct()
-        })
-        return context
+      context = super().get_context_data(**kwargs)
+      
+      context.update({
+          'subjects': SubjectTeacher.objects.for_user(self.request.user),
+          'classes': Class.objects.for_user(self.request.user)
+      })
+      return context
     
     def get(self, request, *args, **kwargs):
         HistoryService.log_user_activity(
@@ -219,7 +220,10 @@ def form_view(request, form_type, update_id=None):
         
         return HttpResponse(result['message'])
     else:
-        form = form_class(instance=instance,user=request.user)
+        initial = {}
+        if form_type == 'record' and not update_id:
+            initial['title'] = getattr(request.user, 'active_term', None)
+        form = form_class(instance=instance, user=request.user, initial=initial or None)
     
     context = {
         'form': form,
@@ -455,6 +459,7 @@ def login(request,username,password,url=None):
     else:
         return render (request,'login.html',{"error":"Invalid credentials"})
   except User.DoesNotExist:
+    return render (request,'login.html',{"error":"User doesn't exist"})
     messages.error(request, "Invalid credentials")
   
 def signup_view(request):
@@ -499,7 +504,7 @@ def login_view(request):
 @login_require
 def subject_list_view(request):
     """List all subjects (shared across every teacher — not per-user)"""
-    subjects = Subject.objects.all().order_by('name')
+    subjects = Subject.objects.filter(subjectTeacher__user=request.user).order_by('name').distinct()
     return render(request, 'subject.html', {'subjects': subjects})
 
 @login_require
@@ -521,21 +526,51 @@ def topic_list_view(request):
 
 @login_require
 def subject_detail_view(request, id):
-    """Subject detail with related topics"""
+    """Subject detail — classes, students, and topics scoped via SubjectTeacher."""
     subject = get_object_or_404(Subject, id=id)
-    classes = Class.objects.for_user(request.user).values('name').distinct()
-    
+
+    # Only classes where THIS teacher has assigned this subject (via SubjectTeacher)
+    # This replaces Class.objects.for_user().values('name').distinct() which
+    # returned all the teacher's classes regardless of whether they teach this subject.
+    subject_teachers = (
+        SubjectTeacher.objects
+        .filter(subject=subject, user=request.user)
+        .select_related('class_name')
+        .order_by('class_name__name', 'class_name__batch')
+    )
+
+    classes = [st.class_name for st in subject_teachers]
+
+    # Students enrolled in those classes, scoped to this teacher
+    students = (
+        Student.objects
+        .filter(class_name__in=classes, user=request.user)
+        .select_related('class_name')
+        .order_by('class_name__name', 'name')
+    )
+
+    # Records created for this subject by this teacher
+    records_count = (
+        Record.objects
+        .filter(subject__in=subject_teachers, user=request.user)
+        .count()
+    )
+
     HistoryService.log_user_activity(
         request.user,
         f"Subject: {subject.name}",
         reverse('subject-detail', args=[id])
     )
-    
+
     context = {
         'subject': subject,
-        'classes': classes
+        'subject_teachers': subject_teachers,   # full objects with class_name
+        'classes': classes,                      # Class instances (not dicts)
+        'students': students,
+        'records_count': records_count,
     }
     return render(request, 'subject-detail.html', context)
+
 
 @login_require
 def topic_detail_view(request, id):
@@ -649,7 +684,13 @@ def promote_class_view(request, id):
 def add_record_to_class_view(request, id):
     """Add record to specific class"""
     class_obj = get_object_or_404(Class, id=id)
-    form = RecordForm(initial={'class_name': class_obj},user=request.user)
+    form = RecordForm(
+        initial={
+            'class_name': class_obj,
+            'title': getattr(request.user, 'active_term', None),
+        },
+        user=request.user
+    )
     
     context = {
         'class': class_obj,
@@ -788,57 +829,70 @@ def api_class_summary(request, class_id):
 
 @login_require
 def report_view(request):
-    """Enhanced report generation view"""
-    classes_obj = Class.objects.for_user(request.user)
-    classes = [c for c in classes_obj if c.batch == "A"]
-    subjects = Subject.objects.for_user(request.user)
+    """Report generation — only shows subject+class combos the teacher has records for."""
+
+    # ── GET context ──────────────────────────────────────────────────────────
+    # SubjectTeacher rows where at least one Record exists for this user.
+    # This replaces Subject.objects.all() + the batch-A-only class filter.
+    subject_teachers = (
+    SubjectTeacher.objects
+    .for_user(request.user)
+    .filter(record__isnull=False)
+    .select_related('subject', 'class_name')
+    .prefetch_related('record')
+    .distinct()
+    .order_by('class_name__name', 'class_name__batch', 'subject__name')
+)
+
+    # Distinct classes — all batches, not just A
+    classes = (
+        Class.objects
+        .for_user(request.user)
+        .filter(subjectTeacher__record__isnull=False)
+        .distinct()
+        .order_by('name', 'batch')
+    )
 
     context = {
-        'subjects': subjects,
+        'subject_teachers': subject_teachers,
         'classes': classes,
-        'error': None
+        'error': None,
     }
 
+    # ── POST ─────────────────────────────────────────────────────────────────
     if request.method == "POST":
-        subject_id = request.POST.get('subject')
-        class_name = request.POST.get('class')
-        batch = request.POST.get("batch", "A")
-        term = request.POST.get("term", "all")
-        sort_order = request.POST.get('sort', 'asc')
+        subject_id  = request.POST.get('subject')
+        class_name  = request.POST.get('class')
+        batch       = request.POST.get("batch", "A")
+        term        = request.POST.get("term", "all")
+        sort_order  = request.POST.get('sort', 'asc')
 
-        if not all([subject_id,class_name,batch,term,sort_order]):
+        if not all([subject_id, class_name, batch, term, sort_order]):
             context['error'] = "Invalid Parameters"
-            return render(request,'get_report.html' ,context)
+            return render(request, 'get_report.html', context)
 
-        report_result = Report.generate_report(
-            subject_id=subject_id,
-            class_name=class_name,
-            batch=batch,
-            term=term,
-            sort_order=sort_order
-        )
-
+        report_result = Report.generate_report(subject_id=subject_id, class_name=class_name,batch=batch, term=term, sort_order=sort_order,user=request.user    # ← add this
+)
         if report_result['success']:
             context.update({
                 'total_report': report_result.get('total_report') or report_result.get('data'),
-                'subject': report_result.get('subject'),
-                'term': report_result.get('term'),
-                'batch': report_result.get('batch'),
-                'sort': report_result.get('sort_order'),
-                'class': report_result.get('class_name'),
-                'All': report_result.get('is_all_subjects'),
-                'terms': report_result.get('terms'),
-                # also keep raw data if needed in the template
-                'report_data': report_result.get('data')
+                'subject':      report_result.get('subject'),
+                'term':         report_result.get('term'),
+                'batch':        report_result.get('batch'),
+                'sort':         report_result.get('sort_order'),
+                'class':        report_result.get('class_name'),
+                'All':          report_result.get('is_all_subjects'),
+                'terms':        report_result.get('terms'),
+                'report_data':  report_result.get('data'),
             })
-
             template = 'report-table.html' if request.headers.get('HX-Request') else 'report.html'
             return render(request, template, context)
         else:
             context['error'] = report_result.get('error', 'Unknown error')
-            return render(request, 'report.html', context)
+            return render(request, 'get_report.html', context)
 
     return render(request, 'get_report.html', context)
+
 
 def logout_view(request):
     """User logout"""
@@ -860,6 +914,12 @@ def user_detail(request,form="role"):
         if role:
           user.role = role
           user.save()
+      form = "term"
+    elif form == "term":
+      term = request.POST.get("term")
+      if term in ["First Term", "Second Term", "Third Term"]:
+        user.active_term = term
+        user.save()
       form = "full_name"
     elif form == "school":
       if not skip:
@@ -908,50 +968,78 @@ def _classes_needing_records(request):
 
 @login_require
 def onboarding_classes_view(request):
-    """Onboarding step: bulk-create every class the teacher lists, one per line ('JSS1 A')."""
-    context = {'current_session': current_academic_session()}
+    """Onboarding step: tick every class+batch combo the teacher teaches (no free text — can't be typo'd)."""
+    context = {
+        'current_session': current_academic_session(),
+        'class_names': [c[0] for c in CLASSES],
+    }
 
     if request.method == "POST":
         if request.POST.get("action") == "skip":
             return redirect('onboarding-subjects')
 
-        text = request.POST.get("body", "")
-        created, errors = OnboardingService.parse_and_create_classes(text, request.user)
-        context.update({'created': created, 'errors': errors})
+        created = 0
+        for value in request.POST.getlist('classes'):
+            try:
+                name, batch = value.split('|')
+            except ValueError:
+                continue
+            _, was_created = Class.objects.get_or_create(
+                user=request.user, name=name, batch=batch, session=current_academic_session()
+            )
+            if was_created:
+                created += 1
 
-        if created and not errors:
+        if created:
             return redirect('onboarding-subjects')
+
+        context['error'] = "Tick at least one class, or skip this step."
 
     return render(request, 'onboarding-classes.html', context)
 
 
 @login_require
 def onboarding_subjects_view(request):
-    """Onboarding step: bulk-create/reuse every subject the teacher lists, one per line."""
+    """
+    Onboarding step: pick which existing subjects the teacher teaches, with
+    a quick 'Add Subject' for anything missing from the shared list. The
+    chosen subject ids are stashed in session so the next step (matching
+    them to classes) only shows what's relevant to this teacher instead of
+    every subject in the database.
+    """
     if request.method == "POST":
         if request.POST.get("action") == "skip":
             return redirect('home')
 
-        text = request.POST.get("body", "")
-        created, subjects = OnboardingService.parse_and_create_subjects(text)
+        selected_ids = request.POST.getlist('subjects')
+        subjects = list(Subject.objects.filter(id__in=selected_ids))
 
         if Class.objects.for_user(request.user).exists() and subjects:
+            request.session['onboarding_selected_subjects'] = [s.id for s in subjects]
             return redirect('onboarding-subject-match')
         return redirect('home')
 
-    return render(request, 'onboarding-subjects.html', {})
+    subjects = Subject.objects.all().order_by('name')
+    return render(request, 'onboarding-subjects.html', {'subjects': subjects})
 
 
 @login_require
 def onboarding_subject_match_view(request):
-    """Onboarding step: tick which subjects apply to which class — creates SubjectTeacher rows."""
+    """Onboarding step: tick which (teacher-picked) subjects apply to which class — creates SubjectTeacher rows."""
     classes = Class.objects.for_user(request.user).order_by('name', 'batch')
-    subjects = Subject.objects.all().order_by('name')
+
+    selected_subject_ids = request.session.get('onboarding_selected_subjects')
+    if selected_subject_ids:
+        subjects = Subject.objects.filter(id__in=selected_subject_ids).order_by('name')
+    else:
+        subjects = Subject.objects.all().order_by('name')
 
     if not classes.exists() or not subjects.exists():
+        request.session.pop('onboarding_selected_subjects', None)
         return redirect('home')
 
     if request.method == "POST":
+        request.session.pop('onboarding_selected_subjects', None)
         if request.POST.get("action") == "skip":
             return redirect('home')
 
@@ -960,6 +1048,32 @@ def onboarding_subject_match_view(request):
 
     context = {'classes': classes, 'subjects': subjects}
     return render(request, 'onboarding-subject-match.html', context)
+
+
+@login_require
+def create_subject_ajax_view(request):
+    """
+    Quick-create (or reuse) a Subject inline, without leaving the form
+    that needed it. Used from:
+      - the regular Subject form's dropdown (mode='select', default) —
+        returns a freshly rendered <select id="id_subject"> with the new
+        subject selected, swapped in via outerHTML.
+      - the onboarding subjects checklist (mode='checklist-item') —
+        returns one new checked checkbox row to append.
+    """
+    name = request.POST.get('name', '').strip()
+    mode = request.POST.get('mode', 'select')
+
+    subject = None
+    if name:
+        subject, _ = Subject.objects.get_or_create(name=name.strip().title())
+
+    if mode == 'checklist-item':
+        return render(request, 'subject-checklist-item.html', {'subject': subject})
+
+    subjects = Subject.objects.all().order_by('name')
+    context = {'subjects': subjects, 'selected_id': subject.id if subject else None}
+    return render(request, 'subject-select.html', context)
 
 
 @login_require
@@ -1028,3 +1142,124 @@ def bulk_create_student(request,id):
     return HttpResponse(f"{len(seperate_body)}) students have been added to {class_name.name} ")
   else:
     return HttpResponse(f"Body is empty")
+
+@login_require
+def set_active_term_view(request):
+    """
+    HTMX view — updates the user's active term and returns the refreshed
+    term-indicator partial so the sidebar/top-bar badge updates in place.
+    """
+    if request.method == "POST":
+        term = request.POST.get("term")
+        valid_terms = ["First Term", "Second Term", "Third Term"]
+        if term in valid_terms:
+            request.user.active_term = term
+            request.user.save()
+    # Always return the updated indicator partial
+    return render(request, "term-indicator.html", {"user": request.user})
+
+
+@login_require
+def quick_setup_view(request, class_id):
+    """
+    Quick-setup: creates Exam (70) + Test (30) records for a class in one shot.
+    Expects POST with:
+      - subject_id  (SubjectTeacher id)
+      - record_number (default 1)
+    Uses request.user.active_term as the term.
+    """
+    from django.db import IntegrityError
+
+    class_obj = get_object_or_404(Class, id=class_id)
+
+    if request.method == "GET":
+        # Return the quick-setup modal
+        subjects = SubjectTeacher.objects.for_user(request.user).filter(
+            class_name=class_obj
+        )
+        return render(request, "quick-setup-modal.html", {
+            "class": class_obj,
+            "subjects": subjects,
+            "active_term": request.user.active_term,
+        })
+
+    # POST — create the two records
+    subject_id   = request.POST.get("subject_id")
+    record_number = int(request.POST.get("record_number", 1))
+    active_term  = request.user.active_term or "First Term"
+
+    subject_obj = get_object_or_404(SubjectTeacher, id=subject_id)
+
+    created = []
+    errors  = []
+
+    specs = [
+        {"record_type": "Exam", "total_score": 70},
+        {"record_type": "Test", "total_score": 30},
+    ]
+
+    for spec in specs:
+        try:
+            rec, was_created = Record.objects.get_or_create(
+                title=active_term,
+                subject=subject_obj,
+                class_name=class_obj,
+                record_type=spec["record_type"],
+                record_number=record_number,
+                defaults={
+                    "user": request.user,
+                    "total_score": spec["total_score"],
+                },
+            )
+            if was_created:
+                created.append(f"{spec['record_type']} ({spec['total_score']})")
+            else:
+                errors.append(
+                    f"{spec['record_type']} #{record_number} already exists for {active_term}"
+                )
+        except IntegrityError:
+            errors.append(
+                f"{spec['record_type']} #{record_number} already exists for {active_term}"
+            )
+
+    if created and not errors:
+        msg = (
+            f"<div class='quick-setup-success'>"
+            f"<i class='fas fa-circle-check'></i> "
+            f"Created {' + '.join(created)} for {subject_obj} · {active_term}"
+            f"</div>"
+        )
+    elif created and errors:
+        msg = (
+            f"<div class='quick-setup-partial'>"
+            f"<i class='fas fa-triangle-exclamation'></i> "
+            f"Created: {', '.join(created)}. Skipped: {', '.join(errors)}"
+            f"</div>"
+        )
+    else:
+        msg = (
+            f"<div class='quick-setup-error'>"
+            f"<i class='fas fa-circle-xmark'></i> "
+            f"{' '.join(errors)}"
+            f"</div>"
+        )
+
+    return HttpResponse(msg)
+
+@login_require
+def add_record_to_class_view(request, id):
+    class_obj = get_object_or_404(Class, id=id)
+    form = RecordForm(
+        initial={
+            'class_name': class_obj,
+            'title': request.user.active_term,   # ← add this line
+        },
+        user=request.user
+    )
+    context = {
+        'class': class_obj,
+        'form': form,
+        'form_type': "record",
+        'recordForm': True
+    }
+    return render(request, "record-form.html", context)

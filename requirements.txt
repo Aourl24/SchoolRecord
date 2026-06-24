@@ -1,2 +1,3 @@
 itsdangerous
 openpyxl
+Django==5.1.4

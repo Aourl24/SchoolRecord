@@ -1,71 +1,136 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="flex justify-center py-4">
-  <div class="w-full max-w-md">
+<div class="mt-4 md:mt-6">
 
-    <div class="text-xl font-bold text-primary mb-4">Get Report</div>
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface italic mb-1">
+      Generate Report
+    </h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      Select any combination below — only assessments you've created are shown.
+    </p>
+  </div>
 
-    {% if error %}
-    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
-      {{ form.errors }} {{ error }}
-    </div>
-    {% endif %}
+  {% if error %}
+  <div class="flex items-center gap-3 bg-error-container text-on-error-container rounded-xl p-4 mb-6 border border-error/20">
+    <span class="material-symbols-outlined">error</span>
+    <span class="font-body-md">{{ error }}</span>
+  </div>
+  {% endif %}
 
-    <form method="POST" action="{% url 'generateReport' %}" class="space-y-4">
-      {% csrf_token %}
+  <form method="POST" action="{% url 'generateReport' %}">
+    {% csrf_token %}
 
-      <!-- Subject -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Choose Subject</label>
-        <select name="subject"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition">
-          {% for sub in subjects %}
-          <option value="{{ sub.id }}">{{ sub.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
       <!-- Class -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Choose Class</label>
-        <select name="class"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition">
-          {% for cl in classes %}
-          <option value="{{ cl.name }}">{{ cl.name }}</option>
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Class</label>
+        <select name="class" id="id_class" required
+                class="border border-outline-variant bg-surface-container-lowest rounded-lg px-3 py-2.5 font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="">Select class…</option>
+          {% for class in classes %}
+          <option value="{{ class.name }}" data-batch="{{ class.batch }}">
+            {{ class.name }} {{ class.batch }}
+          </option>
           {% endfor %}
         </select>
       </div>
 
-      <!-- Batch -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Choose Batch</label>
-        <select name="batch"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition">
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="All">All</option>
+      <!-- Batch (auto-filled, kept as hidden but shown as read-only pill) -->
+      <input type="hidden" name="batch" id="id_batch" value="A" />
+
+      <!-- Subject — only subjects the teacher has records for -->
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Subject</label>
+        <select name="subject" id="id_subject" required
+                class="border border-outline-variant bg-surface-container-lowest rounded-lg px-3 py-2.5 font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="">Select subject…</option>
+          {% for st in subject_teachers %}
+          <option value="{{ st.subject.id }}"
+                  data-class="{{ st.class_name.name }}"
+                  data-batch="{{ st.class_name.batch }}">
+            {{ st.subject.name }} ({{ st.class_name }})
+          </option>
+          {% endfor %}
         </select>
       </div>
 
       <!-- Term -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Choose Term</label>
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Term</label>
         <select name="term"
-                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition">
-          <option value="First Term">First</option>
-          <option value="Second Term">Second</option>
-          <option value="Third Term">Third</option>
-          <option value="All">All</option>
+                class="border border-outline-variant bg-surface-container-lowest rounded-lg px-3 py-2.5 font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="all">All Terms</option>
+          <option value="First Term">First Term</option>
+          <option value="Second Term">Second Term</option>
+          <option value="Third Term">Third Term</option>
         </select>
       </div>
 
-      <button type="submit"
-              class="w-full color-bg-t text-white text-sm font-semibold py-3 rounded-xl border-0 cursor-pointer hover:opacity-90 transition">
-        Generate Report
-      </button>
+      <!-- Sort -->
+      <div class="flex flex-col gap-1.5">
+        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sort By</label>
+        <select name="sort"
+                class="border border-outline-variant bg-surface-container-lowest rounded-lg px-3 py-2.5 font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="asc">Alphabetically</option>
+          <option value="desc">By Score</option>
+        </select>
+      </div>
 
-    </form>
+    </div>
+
+    <button type="submit"
+            class="bg-primary text-on-primary font-semibold px-8 py-3 rounded-lg scholar-shadow hover:opacity-90 active:scale-95 transition border-0 cursor-pointer">
+      Generate Report
+    </button>
+  </form>
+
+  <!-- Quick-pick: available subject+class combos at a glance -->
+  {% if subject_teachers %}
+  <div class="mt-10">
+    <h2 class="font-title-md text-title-md text-on-surface mb-4">Available Reports</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {% for st in subject_teachers %}
+      <form method="POST" action="{% url 'generateReport' %}">
+        {% csrf_token %}
+        <input type="hidden" name="subject" value="{{ st.subject.id }}">
+        <input type="hidden" name="class"   value="{{ st.class_name.name }}">
+        <input type="hidden" name="batch"   value="{{ st.class_name.batch }}">
+        <input type="hidden" name="term"    value="all">
+        <input type="hidden" name="sort"    value="asc">
+        <button type="submit"
+                class="w-full text-left bg-surface-container-lowest border border-outline-variant rounded-xl p-4 hover:border-primary hover:bg-surface-container-low transition scholar-shadow-hover cursor-pointer">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="font-semibold text-on-surface">{{ st.subject.name }}</p>
+              <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider mt-1">
+                {{ st.class_name.name }} {{ st.class_name.batch }} · {{ st.class_name.session }}
+              </p>
+            </div>
+            <i class="fas fa-arrow-right text-primary mt-0.5"></i>
+          </div>
+          <div class="flex gap-2 mt-3 flex-wrap">
+            {% for record in st.record.all %}
+            <span class="px-2 py-0.5 bg-primary/10 text-primary rounded-full font-label-sm text-label-sm">
+              {{ record.record_type }} {{ record.record_number }}
+            </span>
+            {% endfor %}
+          </div>
+        </button>
+      </form>
+      {% endfor %}
+    </div>
   </div>
+  {% else %}
+  <div class="mt-10 text-center py-16 border border-dashed border-outline-variant rounded-2xl">
+    <span class="material-symbols-outlined text-4xl text-outline mb-3 block">folder_open</span>
+    <p class="font-title-md text-on-surface-variant">No records yet</p>
+    <p class="font-body-md text-outline mt-1">Create records for your classes first, then come back to generate reports.</p>
+  </div>
+  {% endif %}
+
 </div>
 {% endblock %}

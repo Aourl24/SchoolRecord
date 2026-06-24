@@ -1,60 +1,142 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div>
+<div class="mt-4 md:mt-6">
 
-  <!-- Subject Title -->
-  <div class="mb-2">
-    <div class="text-2xl font-bold text-primary">{{ subject.name }}</div>
-  </div>
+  <!-- Header Card -->
+  <section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 md:p-8 scholar-shadow mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
 
-  <!-- Edit Link -->
-  <div class="mb-4 text-sm">
-    <a href="/admin/record/subject/{{ subject.id }}/change/"
-       class="text-red-500 font-semibold px-3 py-1 rounded-lg border border-red-200 hover:bg-red-50 transition no-underline"
-       target="_blank">
-      Edit Subject
-    </a>
-  </div>
+      <div>
+        <h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary italic mb-4">
+          {{ subject.name }}
+        </h1>
 
-  <!-- Class Filter Pills -->
-  <div class="flex flex-wrap gap-2 my-3">
-    {% for class in classes %}
-    <span class="bg-blue-50 text-blue-700 text-sm font-medium px-3 py-1 rounded-full cursor-pointer hover:bg-blue-100 transition className"
-          hx-get="{% url 'class-topic' subject.id class.name %}"
-          onclick="highlight(this)"
-          hx-target="#topic" hx-swap="innerHTML">
-      {{ class.name }}
-    </span>
-    {% endfor %}
-  </div>
+        <!-- Stats row -->
+        <div class="flex flex-wrap gap-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">school</span>
+            </div>
+            <div>
+              <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Classes</p>
+              <p class="font-semibold text-on-surface">{{ classes|length }}</p>
+            </div>
+          </div>
 
-  <hr class="border-gray-100 my-4" />
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">group</span>
+            </div>
+            <div>
+              <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Students</p>
+              <p class="font-semibold text-on-surface">{{ students|length }}</p>
+            </div>
+          </div>
 
-  <!-- Topics Header -->
-  <div class="flex items-center justify-between my-3">
-    <div class="text-lg font-semibold text-gray-800">Topics</div>
-    <span class="color-bg-t text-white text-sm font-semibold px-4 py-1.5 rounded-full cursor-pointer hover:opacity-90 transition"
-          hx-get="{% url 'add-topic' subject.id %}"
-          hx-trigger="click"
-          hx-target="#topic" hx-swap="innerHTML">
-      + Add Topic
-    </span>
-  </div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: 'FILL' 1;">assignment</span>
+            </div>
+            <div>
+              <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Assessments</p>
+              <p class="font-semibold text-on-surface">{{ records_count }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <!-- Topics Content -->
-  <div id="topic" class="mt-2"></div>
+      <a href="/admin/record/subject/{{ subject.id }}/change/"
+         target="_blank"
+         class="self-start flex items-center gap-2 border border-error/30 text-error bg-error-container/30 hover:bg-error-container transition px-4 py-2 rounded-lg font-semibold no-underline text-sm shrink-0">
+        <span class="material-symbols-outlined text-[18px]">edit</span> Edit Subject
+      </a>
+    </div>
+  </section>
+
+  <!-- Classes Taking This Subject -->
+  <section class="mb-6">
+    <h2 class="font-title-md text-title-md text-on-surface mb-3">Classes</h2>
+
+    {% if subject_teachers %}
+    <div class="flex flex-wrap gap-2">
+      {% for st in subject_teachers %}
+      <button type="button"
+              class="class-pill flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest font-semibold text-on-surface-variant hover:border-primary hover:text-primary hover:bg-surface-container-low transition scholar-shadow-hover"
+              hx-get="{% url 'class-topics' subject.id st.class_name.name %}"
+              hx-target="#topic"
+              hx-swap="innerHTML"
+              onclick="highlightPill(this)">
+        <span class="material-symbols-outlined text-[16px]">class</span>
+        {{ st.class_name.name }} {{ st.class_name.batch }}
+      </button>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="font-body-md text-on-surface-variant">No classes assigned to this subject yet.</p>
+    {% endif %}
+  </section>
+
+  <!-- Students -->
+  {% if students %}
+  <section class="mb-6">
+    <h2 class="font-title-md text-title-md text-on-surface mb-3">Students</h2>
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-xl scholar-shadow overflow-hidden">
+      {% for student in students %}
+      <a href="{% url 'get-student-detail' student.id %}"
+         class="flex items-center justify-between px-5 py-3 no-underline
+                {% if not forloop.last %}border-b border-outline-variant{% endif %}
+                hover:bg-surface-container-low transition-colors group">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs shrink-0">
+            {{ student.name|slice:":1"|upper }}
+          </div>
+          <div>
+            <p class="font-semibold text-on-surface group-hover:text-primary transition-colors">{{ student.name|title }}</p>
+            <p class="font-label-sm text-label-sm text-outline">{{ student.class_name.name }} {{ student.class_name.batch }}</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Topics Section -->
+  <section>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-title-md text-title-md text-on-surface">Topics</h2>
+      <button type="button"
+              class="flex items-center gap-2 bg-tertiary text-on-tertiary px-4 py-2 rounded-lg font-semibold scholar-shadow hover:opacity-90 active:scale-95 transition border-0 cursor-pointer"
+              hx-get="{% url 'add-topic' subject.id %}"
+              hx-trigger="click"
+              hx-target="#topic"
+              hx-swap="innerHTML">
+        <span class="material-symbols-outlined text-[18px]">add</span> Add Topic
+      </button>
+    </div>
+
+    <div id="topic" class="mt-2">
+      {% if not subject_teachers %}
+      <div class="text-center py-10 border border-dashed border-outline-variant rounded-xl">
+        <span class="material-symbols-outlined text-4xl text-outline mb-2 block">topic</span>
+        <p class="font-body-md text-on-surface-variant">Select a class above to see its topics.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
 
 </div>
 
 <script>
-  function highlight(el) {
-    document.querySelectorAll('.className').forEach(x => {
-      x.classList.remove('bg-indigo-600', 'text-white');
-      x.classList.add('bg-blue-50', 'text-blue-700');
+  function highlightPill(el) {
+    document.querySelectorAll('.class-pill').forEach(btn => {
+      btn.classList.remove('bg-primary', 'text-on-primary', 'border-primary');
+      btn.classList.add('bg-surface-container-lowest', 'text-on-surface-variant', 'border-outline-variant');
     });
-    el.classList.remove('bg-blue-50', 'text-blue-700');
-    el.classList.add('bg-indigo-600', 'text-white');
+    el.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant', 'border-outline-variant');
+    el.classList.add('bg-primary', 'text-on-primary', 'border-primary');
   }
 </script>
 {% endblock %}

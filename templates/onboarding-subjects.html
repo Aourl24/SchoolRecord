@@ -26,7 +26,7 @@
         </div>
         <div>
           <h2 class="text-on-primary text-title-md font-headline-lg m-0">Your Subjects</h2>
-          <p class="text-on-primary/80 text-xs mt-0.5">List every subject you teach — one per line</p>
+          <p class="text-on-primary/80 text-xs mt-0.5">Tick everything you teach</p>
         </div>
       </div>
 
@@ -34,18 +34,39 @@
       <div class="p-6 sm:p-8">
 
         <p class="text-on-surface-variant text-sm mb-4">
-          Subjects are shared across every teacher on MarkBook — if "Mathematics" already exists, we'll reuse it instead of creating a duplicate. For example:
+          Subjects are shared across every teacher on MarkBook — pick from what's already there, or add one below if yours is missing.
         </p>
-        <div class="bg-surface-container-low rounded-xl px-4 py-3 mb-5 text-xs font-mono text-on-surface-variant leading-relaxed">
-          Mathematics<br>English Language<br>Basic Science
-        </div>
 
         <form hx-post="{% url 'onboarding-subjects' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
           {% csrf_token %}
-          <textarea name="body"
-                    rows="6"
-                    placeholder="Mathematics&#10;English Language"
-                    class="w-full border border-outline-variant rounded-xl px-4 py-3 text-sm bg-surface-container-low outline-none transition-all focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 mb-6"></textarea>
+
+          <div id="subject-checklist" class="max-h-[40vh] overflow-y-auto rounded-xl border border-outline-variant mb-3">
+            {% for subject in subjects %}
+            <label class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-surface-container-low transition border-b border-outline-variant last:border-b-0">
+              <input type="checkbox" name="subjects" value="{{ subject.id }}"
+                     class="w-4 h-4 accent-primary cursor-pointer" />
+              <span class="text-sm text-on-surface">{{ subject.name }}</span>
+            </label>
+            {% empty %}
+            <div class="px-4 py-8 text-center text-sm text-on-surface-variant">
+              No subjects yet — add your first one below.
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="flex items-center gap-2 mb-6">
+            <input type="text" id="new-subject-name" name="name" placeholder="Add a subject not listed..."
+                   class="flex-1 border border-outline-variant rounded-lg px-3 py-2.5 text-sm bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" />
+            <button type="button"
+                    class="text-sm font-semibold text-primary bg-primary-fixed/50 hover:bg-primary-fixed/70 px-4 py-2.5 rounded-lg border-0 cursor-pointer transition flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap"
+                    hx-post="{% url 'create-subject-ajax' %}"
+                    hx-vals='{"mode": "checklist-item"}'
+                    hx-include="#new-subject-name"
+                    hx-target="#subject-checklist"
+                    hx-swap="beforeend">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
 
           <button type="submit" name="action" value="save"
                   class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md mb-3">
@@ -69,7 +90,3 @@
   </div>
 </div>
 {% endblock %}
-
- {%block navBottom%}
- 
- {%endblock%}

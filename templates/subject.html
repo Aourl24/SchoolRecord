@@ -1,16 +1,46 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2 class="py-4 text-2xl font-bold text-primary">All Subjects</h2>
+<div class="mt-4 md:mt-6">
 
-<ul class="divide-y divide-gray-100">
-  {% for subject in subjects %}
-  <li>
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface italic mb-1">
+      Subjects
+    </h1>
+    <p class="font-body-md text-body-md text-on-surface-variant">
+      {{ subjects|length }} subject{{ subjects|length|pluralize }} available
+    </p>
+  </div>
+
+  <!-- Subject List -->
+  {% if subjects %}
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-xl scholar-shadow overflow-hidden">
+    {% for subject in subjects %}
     <a href="{{ subject.get_absolute_url }}"
-       class="block py-3 text-base text-gray-800 no-underline hover:text-primary transition font-medium">
-      {{ subject.name }}
+       class="flex items-center justify-between px-5 py-4 no-underline
+              {% if not forloop.last %}border-b border-outline-variant{% endif %}
+              hover:bg-surface-container-low transition-colors group">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <i class="fas fa-book text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;"></i>
+        </div>
+        <span class="font-semibold text-on-surface group-hover:text-primary transition-colors">
+          {{ subject.name }}
+        </span>
+      </div>
+      <i class="fas fa-chevron-right group-hover:text-primary transition-colors"></i>
     </a>
-  </li>
-  {% endfor %}
-</ul>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="text-center py-16 border border-dashed border-outline-variant rounded-2xl">
+    <span class="material-symbols-outlined text-4xl text-outline mb-3 block">menu_book</span>
+    <p class="font-title-md text-on-surface-variant">No subjects yet</p>
+    <p class="font-body-md text-outline mt-1">Subjects will appear here once added.</p>
+  </div>
+  {% endif %}
+
+</div>
 {% endblock %}

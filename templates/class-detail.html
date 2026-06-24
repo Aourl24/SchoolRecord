@@ -32,39 +32,56 @@
   <div class="lg:col-span-8 flex flex-col gap-gutter-desktop">
 
     <!-- Action Tiles -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<!-- Action Tiles — replace the existing grid in class-detail.html -->
+<!-- Find: <div class="grid grid-cols-1 sm:grid-cols-3 gap-4"> -->
+<!-- Replace the entire grid with this: -->
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
       <!-- Edit Class -->
       <div hx-get="{% url 'update-form' 'class' class_name.id %}"
            hx-target="#addHere"
-           class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
+           class="flex flex-col items-center justify-center gap-3 p-5 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
         <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed group-hover:scale-110 transition-transform">
           <i class="fas fa-pen"></i>
         </div>
-        <span class="font-title-md text-on-surface text-sm font-semibold">Edit Class</span>
+        <span class="font-title-md text-on-surface text-sm font-semibold text-center">Edit Class</span>
       </div>
 
       <!-- Add Students -->
       <div hx-get="{% url 'add-student' class_name.id %}"
            hx-target="#addHere" hx-swap="innerHTML"
-           class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
+           class="flex flex-col items-center justify-center gap-3 p-5 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
         <div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed group-hover:scale-110 transition-transform">
           <i class="fas fa-user-graduate"></i>
         </div>
-        <span class="font-title-md text-on-surface text-sm font-semibold">Add Students</span>
+        <span class="font-title-md text-on-surface text-sm font-semibold text-center">Add Students</span>
       </div>
 
       <!-- Add Record -->
       <div hx-get="{% url 'add-record' class_name.id %}"
            hx-target="#addHere"
-           class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
+           class="flex flex-col items-center justify-center gap-3 p-5 bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group">
         <div class="w-12 h-12 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed group-hover:scale-110 transition-transform">
           <i class="fas fa-file"></i>
         </div>
-        <span class="font-title-md text-on-surface text-sm font-semibold">Add Record</span>
+        <span class="font-title-md text-on-surface text-sm font-semibold text-center">Add Record</span>
+      </div>
+
+      <!-- ⚡ Quick Setup -->
+      <div hx-get="{% url 'quick-setup' class_name.id %}"
+           hx-target="#addHere" hx-swap="innerHTML"
+           class="flex flex-col items-center justify-center gap-3 p-5 bg-surface-container-lowest border border-primary/30 rounded-2xl scholar-shadow scholar-shadow-hover transition-all cursor-pointer group relative overflow-hidden">
+        <!-- subtle glow background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-tertiary/5 pointer-events-none"></div>
+        <div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-on-primary group-hover:scale-110 transition-transform relative z-10">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <span class="font-title-md text-primary text-sm font-bold text-center relative z-10">Quick Setup</span>
       </div>
 
     </div>
+
 
     <!-- View Toggle -->
     <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant scholar-shadow overflow-hidden">

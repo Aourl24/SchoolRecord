@@ -1,0 +1,76 @@
+{% comment %}
+  Reusable term indicator + picker.
+  Include this inside the sidebar and the mobile top bar.
+  It renders a pill showing the active term; clicking opens an inline picker.
+{% endcomment %}
+
+<div id="term-indicator" class="relative">
+
+  <!-- Term Pill (tappable to open picker) -->
+  <button
+    type="button"
+    onclick="toggleTermPicker()"
+    class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-full transition-all cursor-pointer group w-full"
+    aria-label="Change active term">
+    <span class="w-2 h-2 rounded-full bg-primary flex-shrink-0 animate-pulse"></span>
+    <span class="text-label-sm font-bold text-primary truncate">
+      {{ user.active_term|default:"Set Term" }}
+    </span>
+    <i class="fas fa-chevron-down text-primary text-[10px] ml-auto group-hover:rotate-180 transition-transform duration-200"></i>
+  </button>
+
+  <!-- Inline Term Picker (hidden by default) -->
+  <div id="term-picker"
+       class="hidden absolute left-0 right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-xl scholar-shadow z-[200] overflow-hidden">
+
+    <p class="text-[10px] text-on-surface-variant uppercase tracking-widest px-3 pt-3 pb-1 font-bold">
+      Set Active Term
+    </p>
+
+<button type="button"
+  class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-body-md hover:bg-surface-container-low transition-colors {% if user.active_term == 'First Term' %}text-primary font-bold bg-primary/5{% else %}text-on-surface{% endif %}"
+  hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "First Term"}'
+  hx-target="#term-indicator" hx-swap="outerHTML" onclick="toggleTermPicker()">
+  {% if user.active_term == 'First Term' %}<i class="fas fa-circle-check text-primary text-xs w-4"></i>{% else %}<i class="fas fa-circle text-outline text-xs w-4"></i>{% endif %}
+  <span class="text-sm">First Term</span>
+</button>
+
+<button type="button"
+  class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-body-md hover:bg-surface-container-low transition-colors {% if user.active_term == 'Second Term' %}text-primary font-bold bg-primary/5{% else %}text-on-surface{% endif %}"
+  hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "Second Term"}'
+  hx-target="#term-indicator" hx-swap="outerHTML" onclick="toggleTermPicker()">
+  {% if user.active_term == 'Second Term' %}<i class="fas fa-circle-check text-primary text-xs w-4"></i>{% else %}<i class="fas fa-circle text-outline text-xs w-4"></i>{% endif %}
+  <span class="text-sm">Second Term</span>
+</button>
+
+<button type="button"
+  class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-body-md hover:bg-surface-container-low transition-colors {% if user.active_term == 'Third Term' %}text-primary font-bold bg-primary/5{% else %}text-on-surface{% endif %}"
+  hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "Third Term"}'
+  hx-target="#term-indicator" hx-swap="outerHTML" onclick="toggleTermPicker()">
+  {% if user.active_term == 'Third Term' %}<i class="fas fa-circle-check text-primary text-xs w-4"></i>{% else %}<i class="fas fa-circle text-outline text-xs w-4"></i>{% endif %}
+  <span class="text-sm">Third Term</span>
+</button>
+
+    <div class="px-3 py-2 border-t border-outline-variant">
+      <p class="text-[10px] text-on-surface-variant">
+        <i class="fas fa-circle-info mr-1"></i>
+        All new records will use this term.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleTermPicker() {
+    var picker = document.getElementById('term-picker');
+    if (picker) picker.classList.toggle('hidden');
+  }
+  // Close picker when clicking outside
+  document.addEventListener('click', function(e) {
+    var indicator = document.getElementById('term-indicator');
+    var picker = document.getElementById('term-picker');
+    if (picker && indicator && !indicator.contains(e.target)) {
+      picker.classList.add('hidden');
+    }
+  });
+</script>

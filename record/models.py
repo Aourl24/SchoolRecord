@@ -24,8 +24,8 @@ def current_academic_session():
 
 class UserQuerySet(models.QuerySet):
     def for_user(self, user):
-        return self.filter(user)
-    
+        return self.filter(user=user)
+        
 class StudentRecordQuerySet(UserQuerySet):
     def by_score_range(self, min_score, max_score):
         return self.filter(score__gte=min_score, score__lte=max_score)
@@ -60,6 +60,17 @@ class User(models.Model):
     password = models.CharField(max_length=255)
     school = models.ForeignKey(School,related_name="user",null=True,blank=True,on_delete=models.CASCADE)
     role = models.CharField(choices=[("Teacher","Teacher"),("School Administration","School Administration"),("Student","Student")],default="Teacher",max_length=255)
+    active_term = models.CharField(
+    max_length=100,
+    choices=[
+        ('First Term', 'First Term'),
+        ('Second Term', 'Second Term'),
+        ('Third Term', 'Third Term'),
+    ],
+    default='First Term',
+    blank=True,
+    null=True,
+)
     secret_key = models.CharField(max_length=255, blank=True, null=True)
 
     def set_password(self, raw_password):
