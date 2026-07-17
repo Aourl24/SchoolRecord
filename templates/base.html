@@ -102,6 +102,7 @@
 
     <!-- Font Awesome -->
     <link href="{% static 'css/fontawesome/css/all.min.css' %}" rel="stylesheet">
+    
     <!-- Google Fonts: Hanken Grotesk + Source Serif 4 -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
@@ -213,6 +214,11 @@
           <i class="fas fa-calendar-day w-5 text-center"></i>
           <span class="font-body-md">Attendance</span>
         </a>
+        <a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all cursor-pointer"
+   hx-get="{% url 'report-card' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+  <i class="fas fa-id-card w-5 text-center"></i>
+  <span class="font-body-md">Report Cards</span>
+</a>
         <a class="hidden flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-all" href="#">
           <i class="fas fa-gear w-5 text-center"></i>
           <span class="font-body-md">Settings</span>
@@ -249,181 +255,174 @@
           <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mt-1">Educator</p>
         </div>
       </a>
-      <!-- Active Term Indicator -->
-<div class="px-4 pb-2">
-  {% include "term-indicator.html" with user=request.user %}
-</div>
+      <!-- Active Term Indicator (desktop) -->
+      <div class="px-4 pb-2">
+        {% include "term-indicator.html" with user=request.user %}
+      </div>
     </aside>
 
-    <!-- ============ Mobile Top Navigation ============ -->
-    <!-- ============ Mobile Top Navigation ============ -->
-<header class="lg:hidden bg-surface-container-lowest border-b border-outline-variant shadow-sm flex justify-between items-center w-full px-margin-mobile h-16 sticky top-0 z-50">
-  <a class="flex items-center gap-3 no-underline"
-     href=""
-     hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
-      <i class="fas fa-graduation-cap text-sm"></i>
-    </div>
-    <span class="text-title-md font-bold text-primary">MarkBook</span>
-  </a>
-  <div class="flex items-center gap-2">
-    <!-- Active Term pill (compact, mobile) -->
-    <div id="term-indicator-mobile" class="relative">
-      <button type="button"
-              onclick="toggleTermPickerMobile()"
-              class="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-full transition-all cursor-pointer"
-              aria-label="Change active term">
-        <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 animate-pulse"></span>
-        <span class="text-[11px] font-bold text-primary leading-none">
-          {{ request.user.active_term|default:"Term"|truncatechars:6 }}
-        </span>
-        <i class="fas fa-chevron-down text-primary text-[9px]"></i>
-      </button>
+    <!-- ============ Mobile Top Navigation (Redesigned) ============ -->
+    <header class="lg:hidden bg-surface-container-lowest border-b border-outline-variant shadow-sm flex justify-between items-center px-4 h-16 sticky top-0 z-50">
 
-      <!-- Mobile term picker dropdown -->
-      <div id="term-picker-mobile"
-           class="hidden absolute right-0 top-full mt-1 w-44 bg-surface-container-lowest border border-outline-variant rounded-xl scholar-shadow z-[200] overflow-hidden">
-        <p class="text-[10px] text-on-surface-variant uppercase tracking-widest px-3 pt-3 pb-1 font-bold">
-          Set Active Term
-        </p>
-<button type="button"
-  class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-surface-container-low transition-colors {% if request.user.active_term == 'First Term' %}text-primary font-bold bg-primary/5{% else %}text-on-surface{% endif %}"
-  hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "First Term"}'
-  hx-target="#term-indicator" hx-swap="outerHTML" onclick="toggleTermPickerMobile()">
-  {% if request.user.active_term == 'First Term' %}<i class="fas fa-circle-check text-primary text-xs w-4"></i>{% else %}<i class="fas fa-circle text-outline text-xs w-4"></i>{% endif %}
-  <span class="text-sm">First Term</span>
-</button>
+      <!-- Logo (icon only) -->
+      <a class="flex items-center gap-2 no-underline"
+         href=""
+         hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-md">
+          <i class="fas fa-graduation-cap text-lg"></i>
+        </div>
+        <span class="text-title-md font-bold text-primary hiddn sm:inline">MarkBook</span>
+      </a>
 
-<button type="button"
-  class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-surface-container-low transition-colors {% if request.user.active_term == 'Second Term' %}text-primary font-bold bg-primary/5{% else %}text-on-surface{% endif %}"
-  hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "Second Term"}'
-  hx-target="#term-indicator" hx-swap="outerHTML" onclick="toggleTermPickerMobile()">
-  {% if request.user.active_term == 'Second Term' %}<i class="fas fa-circle-check text-primary text-xs w-4"></i>{% else %}<i class="fas fa-circle text-outline text-xs w-4"></i>{% endif %}
-  <span class="text-sm">Second Term</span>
-</button>
+      <!-- Right side: term dot + menu button -->
+      <div class="flex items-center gap-3">
+        <!-- Active term indicator (colored dot) -->
+        <div class="relative group" title="Active term: {{ request.user.active_term|default:'Not set' }}">
+          <span class="w-2.5 h-2.5 rounded-full block
+                       {% if request.user.active_term == 'First Term' %}bg-emerald-500
+                       {% elif request.user.active_term == 'Second Term' %}bg-blue-500
+                       {% elif request.user.active_term == 'Third Term' %}bg-amber-500
+                       {% else %}bg-gray-400{% endif %}
+                       ring-2 ring-offset-2 ring-offset-surface-container-lowest ring-primary/30">
+          </span>
+        </div>
 
-<button type="button"
-  class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-surface-container-low transition-colors {% if request.user.active_term == 'Third Term' %}text-primary font-bold bg-primary/5{% else %}text-on-surface{% endif %}"
-  hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "Third Term"}'
-  hx-target="#term-indicator" hx-swap="outerHTML" onclick="toggleTermPickerMobile()">
-  {% if request.user.active_term == 'Third Term' %}<i class="fas fa-circle-check text-primary text-xs w-4"></i>{% else %}<i class="fas fa-circle text-outline text-xs w-4"></i>{% endif %}
-  <span class="text-sm">Third Term</span>
-</button>
+        <!-- Menu toggle -->
+        <button class="text-on-surface-variant active-tap p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                onclick="menuDrop()" type="button" aria-label="Toggle menu">
+          <i class="fas fa-bars text-xl" id="icon-menu"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============ Mobile Slide‑over Menu (Redesigned) ============ -->
+    <div class="fixed inset-0 bg-on-surface/50 backdrop-blur-sm hidden z-[100] lg:hidden transition-opacity" id="menu-drop">
+      <div class="absolute top-0 left-0 w-full max-h-screen bg-surface-container-lowest rounded-b-3xl shadow-2xl overflow-y-auto pb-8" style="max-height: 95vh;">
+
+        <!-- Close button & header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-outline-variant sticky top-0 bg-surface-container-lowest z-10">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-sm">
+              {{ request.user.username|first|upper }}
+            </div>
+            <div>
+              <p class="text-body-md font-bold text-on-surface leading-none">{{ request.user.username }}</p>
+              <p class="text-label-sm text-on-surface-variant">{{ request.user.role|default:"Educator" }}</p>
+            </div>
+          </div>
+          <button onclick="menuDrop()" class="text-on-surface-variant active-tap p-2 rounded-full hover:bg-surface-container-low transition-colors">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Active term switcher -->
+        <div class="px-5 py-4 border-b border-outline-variant">
+          <p class="text-label-sm font-semibold uppercase tracking-widest text-outline mb-3">Active Term</p>
+          <div class="flex gap-2">
+            <button type="button"
+                    class="flex-1 text-center py-2 px-3 rounded-xl text-sm font-medium transition-all
+                           {% if request.user.active_term == 'First Term' %}bg-primary text-on-primary shadow-md{% else %}bg-surface-container-low text-on-surface-variant hover:bg-surface-container{% endif %}"
+                    hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "First Term"}'
+                    hx-target="#term-indicator" hx-swap="outerHTML" onclick="closeMenu()">
+              First
+            </button>
+            <button type="button"
+                    class="flex-1 text-center py-2 px-3 rounded-xl text-sm font-medium transition-all
+                           {% if request.user.active_term == 'Second Term' %}bg-primary text-on-primary shadow-md{% else %}bg-surface-container-low text-on-surface-variant hover:bg-surface-container{% endif %}"
+                    hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "Second Term"}'
+                    hx-target="#term-indicator" hx-swap="outerHTML" onclick="closeMenu()">
+              Second
+            </button>
+            <button type="button"
+                    class="flex-1 text-center py-2 px-3 rounded-xl text-sm font-medium transition-all
+                           {% if request.user.active_term == 'Third Term' %}bg-primary text-on-primary shadow-md{% else %}bg-surface-container-low text-on-surface-variant hover:bg-surface-container{% endif %}"
+                    hx-post="{% url 'set-active-term' %}" hx-vals='{"term": "Third Term"}'
+                    hx-target="#term-indicator" hx-swap="outerHTML" onclick="closeMenu()">
+              Third
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation links -->
+        <nav class="px-4 py-4 space-y-1">
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl {% if request.resolver_match.url_name == 'home' %}bg-primary-container text-on-primary-container font-semibold{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors cursor-pointer"
+             hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-table-columns w-5 text-center"></i>
+            <span class="font-body-md">Overview</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl {% if request.resolver_match.url_name == 'class-list' %}bg-primary-container text-on-primary-container font-semibold{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors cursor-pointer"
+             hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-school w-5 text-center"></i>
+            <span class="font-body-md">My Classes</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+             hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-file-lines w-5 text-center"></i>
+            <span class="font-body-md">Records</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+             hx-get="{% url 'student-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-user-graduate w-5 text-center"></i>
+            <span class="font-body-md">Students</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+             hx-get="{% url 'subject-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-book w-5 text-center"></i>
+            <span class="font-body-md">Subjects</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+             hx-get="{% url 'generateReport' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-chart-bar w-5 text-center"></i>
+            <span class="font-body-md">Reports</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+             hx-get="{% url 'historyView' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+            <i class="fas fa-history w-5 text-center"></i>
+            <span class="font-body-md">History</span>
+          </a>
+          <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer"
+   hx-get="{% url 'report-card' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true" onclick="closeMenu()">
+  <i class="fas fa-id-card w-5 text-center"></i>
+  <span class="font-body-md">Report Cards</span>
+</a>
+        </nav>
+
+        <!-- Quick Action Buttons -->
+        <div class="px-4 py-3 border-t border-outline-variant">
+          <p class="text-label-sm font-semibold uppercase tracking-widest text-outline mb-3">Quick Actions</p>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="flex items-center justify-center gap-2 py-2.5 px-3 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition-colors active:scale-95"
+                    hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="closeMenu()">
+              <i class="fas fa-school"></i> Add Class
+            </button>
+            <button class="flex items-center justify-center gap-2 py-2.5 px-3 bg-secondary/10 text-secondary rounded-xl text-sm font-medium hover:bg-secondary/20 transition-colors active:scale-95"
+                    hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="closeMenu()">
+              <i class="fas fa-file"></i> Add Record
+            </button>
+            <button class="flex items-center justify-center gap-2 py-2.5 px-3 bg-tertiary/10 text-tertiary rounded-xl text-sm font-medium hover:bg-tertiary/20 transition-colors active:scale-95"
+                    hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="closeMenu()">
+              <i class="fas fa-user-graduate"></i> Add Student
+            </button>
+            <a class="flex items-center justify-center gap-2 py-2.5 px-3 bg-error/10 text-error rounded-xl text-sm font-medium hover:bg-error/20 transition-colors active:scale-95"
+               href="{% url 'logout' %}">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          </div>
+        </div>
+
+        <!-- Back button -->
+        <div class="px-4 pt-2 pb-4">
+          <button onclick="history.back()" class="w-full flex items-center justify-center gap-2 py-2.5 bg-surface-container-low text-on-surface-variant rounded-xl text-sm font-medium hover:bg-surface-container transition-colors">
+            <i class="fas fa-arrow-left"></i> Go Back
+          </button>
+        </div>
       </div>
     </div>
-
-    <button onclick="history.back()" class="text-on-surface-variant active-tap p-1">
-      <i class="fas fa-arrow-left"></i>
-    </button>
-    <button class="text-on-surface-variant active-tap p-1" onclick="menuDrop()" type="button">
-      <i class="fas fa-bars" id="icon-menu"></i>
-    </button>
-  </div>
-</header>
-
 
     {% endblock %}
 
     <!-- HTMX drop area (forms injected here) -->
     <div id="drop-area" style="z-index:999"></div>
-
-    <!-- Mobile slide-down menu -->
-    <div class="fixed inset-0 bg-on-surface/40 backdrop-blur-sm hidden z-[99] lg:hidden" id="menu-drop">
-      <div class="absolute top-0 left-0 w-full bg-surface-container-lowest rounded-b-3xl scholar-shadow overflow-y-auto" style="max-height: 90vh;">
-
-        <!-- Header -->
-        <div class="flex items-center justify-between px-margin-mobile h-16 border-b border-outline-variant">
-          <div class="flex items-center gap-2">
-            <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-sm">
-              {{ request.user.username|first|upper }}
-            </div>
-            <div>
-              <p class="text-label-sm font-bold text-on-surface leading-none">{{ request.user.username }}</p>
-              <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mt-1">Teacher Menu</p>
-            </div>
-          </div>
-          <button onclick="menuDrop()" class="text-on-surface-variant active-tap p-2">
-            <i class="fas fa-times text-lg"></i>
-          </button>
-        </div>
-
-        <div class="px-margin-mobile py-6">
-          <h6 class="text-label-sm font-label-sm uppercase tracking-widest text-outline mb-4">Quick Actions</h6>
-
-          <div class="grid grid-cols-2 gap-3">
-
-            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
-              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <i class="fas fa-clipboard-check"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Attendance Marking</span>
-            </a>
-
-            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
-              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <i class="fas fa-chalkboard-user"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">My Class</span>
-            </a>
-
-            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
-              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <i class="fas fa-calendar-days"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Timetable</span>
-            </a>
-
-            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-primary/30 transition-colors cursor-pointer"
-               hx-get="{% url 'form' 'record' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
-              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <i class="fas fa-file"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Add Record</span>
-            </a>
-
-            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-secondary/30 transition-colors cursor-pointer"
-               hx-get="{% url 'form' 'subject' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
-              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                <i class="fas fa-book"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Add Subject</span>
-            </a>
-
-            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-tertiary/30 transition-colors cursor-pointer"
-               hx-get="{% url 'form' 'class' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
-              <div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary">
-                <i class="fas fa-school"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Add Class</span>
-            </a>
-
-            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-primary/30 transition-colors cursor-pointer"
-               hx-get="{% url 'form' 'student' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
-              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <i class="fas fa-user-graduate"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Add Student</span>
-            </a>
-
-            <a class="flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap hover:border-secondary/30 transition-colors cursor-pointer"
-               hx-get="{% url 'form' 'student-record' %}" hx-swap="innerHTML" hx-target="#drop-area" onclick="menuDrop()">
-              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                <i class="fas fa-file"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Add Student Record</span>
-            </a>
-
-            <a class="hidden flex flex-col items-center gap-2 p-5 bg-surface-container-low border border-outline-variant rounded-2xl active-tap transition-colors" href="#">
-              <div class="w-10 h-10 rounded-full bg-on-surface-variant/10 flex items-center justify-center text-on-surface-variant">
-                <i class="fas fa-gear"></i>
-              </div>
-              <span class="text-label-sm font-bold text-on-surface text-center">Settings</span>
-            </a>
-
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- addHere target (modals/forms) -->
     <div id="addHere"></div>
@@ -453,29 +452,65 @@
     </main>
 
     <!-- ============ Mobile Bottom Navigation ============ -->
-    {%block navBottom%}
-    <nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest flex justify-around items-center px-4 py-3 border-t border-outline-variant shadow-lg rounded-t-xl">
-      <a class="flex flex-col items-center justify-center {% if request.resolver_match.url_name == 'home' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant{% endif %} rounded-xl px-5 py-2 cursor-pointer"
-         hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-        <i class="fas fa-house"></i>
-        <span class="text-label-sm">Home</span>
-      </a>
-      <a class="flex flex-col items-center justify-center {% if request.resolver_match.url_name == 'class-list' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant{% endif %} rounded-xl px-5 py-2 cursor-pointer"
-         hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-        <i class="fas fa-people-group"></i>
-        <span class="text-label-sm">Classes</span>
-      </a>
-      <a class="flex flex-col items-center justify-center {% if request.resolver_match.url_name == 'record-list' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant{% endif %} rounded-xl px-5 py-2 cursor-pointer"
-         hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-        <i class="fas fa-file-lines"></i>
-        <span class="text-label-sm">Records</span>
-      </a>
-      <a class="hidden flex flex-col items-center justify-center text-on-surface-variant px-5 py-2" href="#">
-        <i class="fas fa-user"></i>
-        <span class="text-label-sm">Profile</span>
-      </a>
-    </nav>
-{%endblock%}
+<!-- ============ Mobile Bottom Navigation (Improved) ============ -->
+{% block navBottom %}
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-sm flex justify-around items-center px-2 py-1 border-t border-outline-variant shadow-2xl rounded-t-2xl scholar-shadow">
+
+  <!-- Home -->
+  <a class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 rounded-xl transition-all active-tap
+            {% if request.resolver_match.url_name == 'home' %}text-primary{% else %}text-on-surface-variant hover:text-primary{% endif %}"
+     hx-get="{% url 'home' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    <i class="fas fa-home text-xl"></i>
+    <span class="text-[10px] font-medium leading-tight">Home</span>
+    {% if request.resolver_match.url_name == 'home' %}
+      <span class="w-1.5 h-1.5 rounded-full bg-primary mt-0.5"></span>
+    {% endif %}
+  </a>
+
+  <!-- Classes -->
+  <a class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 rounded-xl transition-all active-tap
+            {% if request.resolver_match.url_name == 'class-list' %}text-primary{% else %}text-on-surface-variant hover:text-primary{% endif %}"
+     hx-get="{% url 'class-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    <i class="fas fa-users text-xl"></i>
+    <span class="text-[10px] font-medium leading-tight">Classes</span>
+    {% if request.resolver_match.url_name == 'class-list' %}
+      <span class="w-1.5 h-1.5 rounded-full bg-primary mt-0.5"></span>
+    {% endif %}
+  </a>
+
+  <!-- FAB (Add) – centered and elevated -->
+  <div class="relative -mt-6">
+    <button class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center active:scale-95 transition-transform duration-150 border-2 border-white"
+            hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML"
+            aria-label="Add new record">
+      <i class="fas fa-plus text-2xl"></i>
+    </button>
+  </div>
+
+  <!-- Records -->
+  <a class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 rounded-xl transition-all active-tap
+            {% if request.resolver_match.url_name == 'record-list' %}text-primary{% else %}text-on-surface-variant hover:text-primary{% endif %}"
+     hx-get="{% url 'record-list' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    <i class="fas fa-file text-xl"></i>
+    <span class="text-[10px] font-medium leading-tight">Records</span>
+    {% if request.resolver_match.url_name == 'record-list' %}
+      <span class="w-1.5 h-1.5 rounded-full bg-primary mt-0.5"></span>
+    {% endif %}
+  </a>
+
+  <!-- Profile (or Settings) -->
+  <a class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 rounded-xl transition-all active-tap
+            {% if request.resolver_match.url_name == 'profile' %}text-primary{% else %}text-on-surface-variant hover:text-primary{% endif %}" href="{% url 'new_user_detail' %}" hx-get="{% url 'new_user_detail' %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+    <i class="fas fa-user text-xl"></i>
+    <span class="text-[10px] font-medium leading-tight">Profile</span>
+    {% if request.resolver_match.url_name == 'profile' %}
+      <span class="w-1.5 h-1.5 rounded-full bg-primary mt-0.5"></span>
+    {% endif %}
+  </a>
+
+</nav>
+{% endblock %}
+
     <!-- Contextual FAB -->
     <button class="hidden lg:flex fixed bottom-12 right-12 w-16 h-16 bg-primary text-on-primary rounded-full shadow-2xl items-center justify-center active:scale-95 transition-transform z-40 group"
             hx-get="{% url 'form' 'record' %}" hx-target="#drop-area" hx-swap="innerHTML">
@@ -487,33 +522,40 @@
     </footer>
 
     <script src="{% static 'js/htmx.min.js' %}"></script>
-        
+
     <script>
-  function toggleTermPickerMobile() {
-    var picker = document.getElementById('term-picker-mobile');
-    if (picker) picker.classList.toggle('hidden');
-  }
-  function refreshMobileTermPill(term) {
-    // Update the mobile pill text after HTMX swap (desktop indicator swaps via HTMX)
-    var shortTerm = term.replace(' Term', '');
-    var pill = document.querySelector('#term-indicator-mobile button span.text-\\[11px\\]');
-    if (pill) pill.textContent = shortTerm;
-  }
-  document.addEventListener('click', function(e) {
-    var mobileIndicator = document.getElementById('term-indicator-mobile');
-    var mobilePicker    = document.getElementById('term-picker-mobile');
-    if (mobilePicker && mobileIndicator && !mobileIndicator.contains(e.target)) {
-      mobilePicker.classList.add('hidden');
-    }
-  });
+      // ========== Mobile menu functions ==========
       function menuDrop() {
-        document.getElementById('menu-drop').classList.toggle('hidden');
-        let icon = document.getElementById('icon-menu');
+        const menu = document.getElementById('menu-drop');
+        const icon = document.getElementById('icon-menu');
+        menu.classList.toggle('hidden');
         icon.classList.toggle('fa-bars');
         icon.classList.toggle('fa-xmark');
-        icon.classList.toggle('text-error');
+        icon.classList.toggle('text-primary');
       }
 
+      function closeMenu() {
+        const menu = document.getElementById('menu-drop');
+        const icon = document.getElementById('icon-menu');
+        menu.classList.add('hidden');
+        icon.classList.remove('fa-xmark');
+        icon.classList.add('fa-bars');
+        icon.classList.remove('text-primary');
+      }
+
+      // Close menu when clicking outside (on the backdrop)
+      document.addEventListener('click', function(e) {
+        const menu = document.getElementById('menu-drop');
+        const icon = document.getElementById('icon-menu');
+        if (!menu.classList.contains('hidden')) {
+          const panel = menu.querySelector('.absolute');
+          if (panel && !panel.contains(e.target) && !icon.contains(e.target)) {
+            closeMenu();
+          }
+        }
+      });
+
+      // ========== HTMX progress bar ==========
       (function () {
         const SHOW_DELAY = 120;
         const PROGRESS_STEP_MS = 200;
@@ -582,5 +624,6 @@
         };
       })();
     </script>
+
   </body>
 </html>

@@ -15,13 +15,13 @@ from .report import Report
 # Utility Mixins
 class UserFilterMixin:
     """Mixin to filter querysets by user"""
-    
+
     def get_queryset(self):
         return super().get_queryset().for_user(self.request.user)
 
 class HistoryMixin:
     """Mixin to log user activity"""
-    
+
     def dispatch(self, request, *args, **kwargs):
         if hasattr(self, 'history_title') and hasattr(self, 'history_url'):
             HistoryService.log_user_activity(
@@ -31,10 +31,10 @@ class HistoryMixin:
             )
         return super().dispatch(request, *args, **kwargs)
 
-#Landimg Views
+#Landing Views
 def landing_view(request):
   return render(request,"landing.html")
-  
+
 # Main Views
 @login_require
 def home_view(request, part=None):
@@ -45,7 +45,7 @@ def home_view(request, part=None):
         'classes': Class.objects.for_user(request.user),
         'subjects': SubjectTeacher.objects.for_user(request.user)
     }
-    
+
     template = "home-partial.html" if part else 'home.html'
     return render(request, template, context)
 
@@ -55,36 +55,48 @@ class RecordListView(ListView):
     model = Record
     template_name = 'record.html'
     context_object_name = 'record'
-    
+
     def get_queryset(self):
-        return Record.objects.for_user(self.request.user)
-    
+        return Record.objects.for_user(self.request.user).select_related(
+            'class_name', 'subject__subject'
+        ).order_by(
+            'class_name__name', 'class_name__batch',
+            'subject__subject__name', 'record_type', 'record_number'
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['grouped_records'] = RecordGroupingService.group_by_class_and_subject(
+            context['record']
+        )
+        return context
+
     def get(self, request, *args, **kwargs):
         HistoryService.log_user_activity(
-            request.user, 
-            "Record List", 
+            request.user,
+            "Record List",
             reverse('record-list')
         )
         return super().get(request, *args, **kwargs)
-
+        
 @method_decorator(login_require, name='dispatch')
 class StudentListView(ListView):
     model = Student
     template_name = 'student.html'
     context_object_name = 'student'
-    
+
     def get_queryset(self):
         return Student.objects.for_user(self.request.user)
-    
+
     def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
-      
+
       context.update({
           'subjects': SubjectTeacher.objects.for_user(self.request.user),
           'classes': Class.objects.for_user(self.request.user)
       })
       return context
-    
+
     def get(self, request, *args, **kwargs):
         HistoryService.log_user_activity(
             request.user, 
@@ -98,10 +110,10 @@ class ClassListView(ListView):
     model = Class
     template_name = 'class.html'
     context_object_name = 'school_class'
-    
+
     def get_queryset(self):
         return Class.objects.for_user(self.request.user)
-    
+
     def get(self, request, *args, **kwargs):
         HistoryService.log_user_activity(
             request.user, 
@@ -113,38 +125,59 @@ class ClassListView(ListView):
 # Detail Views
 @login_require
 def record_detail_view(request, id):
-    """Record detail with students"""
     record = get_object_or_404(Record, id=id)
     students = StudentRecord.objects.filter(record=record)
     students_without_record = StudentRecordService.get_students_without_record(record)
-    
+
+    # ---- Statistics ----
+    score_list = [sr.score for sr in students]
+    total_students = students.count() + students_without_record.count()
+    entered = students.count()
+    remaining = students_without_record.count()
+    avg_score = sum(score_list) / len(score_list) if score_list else None
+    max_score = max(score_list) if score_list else None
+    min_score = min(score_list) if score_list else None
+
+    # For top performers – sort by score descending, take first 5
+    top_performers = students.order_by('-score')[:5] if students else []
+
+    # For "needs attention" – we'll compute in template with filters or simple loops
+
     HistoryService.log_user_activity(
-        request.user, 
-        f"{record}", 
+        request.user,
+        f"{record}",
         reverse('get-record', args=[id])
     )
-    
+
     context = {
         'record': record,
         'students': students,
         'students_without_record': students_without_record,
         'edit': True,
-        'half': record.total_score / 2
+        'half': record.total_score / 2,
+        'total_students': total_students,
+        'entered': entered,
+        'remaining': remaining,
+        'avg_score': avg_score,
+        'max_score': max_score,
+        'min_score': min_score,
+        'top_performers': top_performers,
+        'score_list': score_list,   # for distribution if needed
     }
     return render(request, 'record-detail.html', context)
-
+    
 @login_require
 def student_detail_view(request, id):
     """Student detail with records"""
     student = get_object_or_404(Student, id=id)
     records = StudentRecord.objects.filter(student=student)
-    
+
     HistoryService.log_user_activity(
         request.user, 
         f"{student}", 
         reverse('get-student-detail', args=[id])
     )
-    
+
     context = {
         'student': student,
         'records': records
@@ -153,26 +186,95 @@ def student_detail_view(request, id):
 
 @login_require
 def class_detail_view(request, id):
-    """Class detail with students"""
     class_obj = get_object_or_404(Class, id=id)
     students = Student.objects.filter(class_name=class_obj)
-    
+    # Filter history for this class by URL containing the class ID
+    history = History.objects.for_user(request.user).filter(
+        url__icontains=f'/class/{id}/'
+    ).order_by('-time')[:10]
+
     HistoryService.log_user_activity(
         request.user, 
         f"{class_obj}", 
         reverse('get-class', args=[id])
     )
-    
+
     context = {
         'class_name': class_obj,
-        'student': students
+        'student': students,
+        'history': history,  # <-- add this
     }
     return render(request, 'class-detail.html', context)
-    
+
+
+from django.db.models import Avg  # at top of file
+
+@login_require
+def class_report_view(request, id):
+    """Class‑specific report:
+       - GET without subject_id → list of subjects with records.
+       - GET with subject_id → full report for that subject.
+    """
+    class_obj = get_object_or_404(Class, id=id, user=request.user)
+    term = request.user.active_term or "First Term"
+    subject_id = request.GET.get('subject_id')
+    sort_order = request.GET.get('sort', 'asc')
+
+    if subject_id:
+        # Generate report for a specific subject – NO user argument
+        report_result = ReportService.generate_report(
+            subject_id=subject_id,
+            class_name=class_obj.name,
+            batch=class_obj.batch,
+            term=term,
+            sort_order=sort_order,
+        )
+
+        context = {
+            'class_obj': class_obj,
+            'total_report': report_result.get('total_report'),
+            'subject': report_result.get('subject'),
+            'is_all_subjects': report_result.get('is_all_subjects', False),
+            'terms': report_result.get('terms', []),
+            'batch': class_obj.batch,
+            'class': class_obj.name,
+            'term': term,
+            'sort': sort_order,
+            'error': report_result.get('error'),
+        }
+        return render(request, 'class-report-partial.html', context)
+
+    else:
+        # List mode: show all subjects with records for this class
+        subject_teachers = SubjectTeacher.objects.filter(
+            class_name=class_obj,
+            user=request.user,
+            record__isnull=False
+        ).distinct().select_related('subject')
+
+        subjects_data = []
+        for st in subject_teachers:
+            records = Record.objects.filter(subject=st, class_name=class_obj)
+            student_records = StudentRecord.objects.filter(record__in=records)
+            avg_score = student_records.aggregate(Avg('score'))['score__avg']
+            subjects_data.append({
+                'subject_teacher': st,
+                'subject': st.subject,
+                'record_count': records.count(),
+                'avg_score': avg_score or 0,
+            })
+
+        context = {
+            'class_obj': class_obj,
+            'subjects_data': subjects_data,
+            'term': term,
+        }
+        return render(request, 'class-report-list.html', context)
+        
 #Form Views
 class BaseFormView:
     """Base class for form handling"""
-    
+
     form_classes = {
         'record': RecordForm,
         'subject': SubjectForm,
@@ -180,8 +282,9 @@ class BaseFormView:
         'student': StudentForm,
         'student-record': StudentRecordForm,
         'topic': TopicForm,
+        'term-report': TermReportForm,
     }
-    
+
     model_classes = {
         'record': Record,
         'subject': SubjectTeacher,
@@ -189,42 +292,43 @@ class BaseFormView:
         'student': Student,
         'student-record': StudentRecord,
         'topic': Topic,
+        'term-report': TermReport,
     }
 
 @login_require
 def form_view(request, form_type, update_id=None):
     """Generic form view for all model forms"""
     base_form = BaseFormView()
-    
+
     if form_type not in base_form.form_classes:
         return HttpResponse("Invalid form type", status=400)
-    
+
     form_class = base_form.form_classes[form_type]
     model_class = base_form.model_classes[form_type]
-    
+
     # Get instance for updates
     instance = None
     if update_id:
         instance = get_object_or_404(model_class, id=update_id)
-    
-      
+
+
     if request.method == 'POST':
-        form = form_class(request.POST, instance=instance,user=request.user)
+        form = form_class(request.POST, instance=instance, user=request.user)
         result = FormService.save_model_form(form, request.user)
-        
+
         HistoryService.log_user_activity(
             request.user,
             f"{'Update' if instance else 'Create'} {form_type}",
             request.path
         )
-        
+
         return HttpResponse(result['message'])
     else:
         initial = {}
         if form_type == 'record' and not update_id:
             initial['title'] = getattr(request.user, 'active_term', None)
         form = form_class(instance=instance, user=request.user, initial=initial or None)
-    
+
     context = {
         'form': form,
         'form_type': form_type,
@@ -240,7 +344,7 @@ def search_view(request):
     """Search across all models"""
     query = request.GET.get('search', '')
     result = SearchService.search_all(query, request.user)
-    context = dict(record=result['records'],student=result["students"],school_class=result["classes"])
+    context = dict(record=result['records'], student=result["students"], school_class=result["classes"])
     return render(request, 'search.html', context)
 
 def filter_record_view(request):
@@ -250,7 +354,7 @@ def filter_record_view(request):
     term = request.GET.get('term')
     record_type = request.GET.get('r_type')
     record_number = request.GET.get('number')
-    
+
     subject = get_object_or_404(Subject, id=subject_id)
     records = Record.objects.filter(
         subject=subject,
@@ -258,10 +362,10 @@ def filter_record_view(request):
         record_number=record_number,
         class_name__name=class_name
     )
-    
+
     students = StudentRecord.objects.filter(record__in=records)
     record_list = [r.id for r in records]
-    
+
     record_data = {
         'class_name': class_name,
         'subject': subject,
@@ -271,7 +375,7 @@ def filter_record_view(request):
         'total_score': records.first().total_score if records.exists() else None,
         'half': records.first().total_score / 2 if records.exists() else None
     }
-    
+
     context = {
         'record': record_data,
         'record_list': record_list,
@@ -289,7 +393,7 @@ def filter_student_view(request):
     record_id = request.GET.get('record')
     edit = request.GET.get("edit")
     record_list = request.GET.getlist("record-list")
-    
+
     # Determine if we're filtering a single record or multiple
     try:
         if record_id:
@@ -304,7 +408,7 @@ def filter_student_view(request):
             record = records.first()
     except (Record.DoesNotExist, ValueError):
         return HttpResponse("Invalid record data", status=400)
-    
+
     # Apply score filtering
     if score and operator:
         score_filter = {'score': score, 'operator': operator}
@@ -312,14 +416,14 @@ def filter_student_view(request):
             students, 
             score_filter=score_filter
         )
-    
+
     # Apply sorting
     if filter_type:
         students = StudentRecordService.filter_student_records(
             students, 
             sort_filter=filter_type
         )
-    
+
     context = {
         'students': students,
         'edit': edit != "None",
@@ -333,11 +437,11 @@ def filter_student_view(request):
 def add_to_record_view(request, id):
     """Add student to specific record"""
     record = get_object_or_404(Record, id=id)
-    form = StudentRecordForm(initial={'record': record},user=request.user)
-    
+    form = StudentRecordForm(initial={'record': record}, user=request.user)
+
     students_without_record = StudentRecordService.get_students_without_record(record)
     form.fields['student'].queryset = students_without_record
-    
+
     context = {
         'form': form,
         'form_type': 'student-record',
@@ -427,7 +531,7 @@ def bulk_score_entry_view(request, id):
 def add_student_to_class_view(request, id):
     """Add student to specific class"""
     class_obj = get_object_or_404(Class, id=id)
-    
+
     if request.method == "POST":
         student_name = request.POST.get("name")
         if student_name:
@@ -437,12 +541,12 @@ def add_student_to_class_view(request, id):
                 class_name=class_obj
             )
             return HttpResponse(f"{student_name} added to class {class_obj.name}")
-    
+
     return render(request, "add-student.html", {"class": class_obj})
 
 # Authentication Views
 
-def login(request,username,password,url=None):
+def login(request, username, password, url=None):
   try:
     user = User.objects.get(username=username)
     if check_password(password, user.password):
@@ -457,11 +561,11 @@ def login(request,username,password,url=None):
         )
         return response
     else:
-        return render (request,'login.html',{"error":"Invalid credentials"})
+        return render(request, 'login.html', {"error": "Invalid credentials"})
   except User.DoesNotExist:
-    return render (request,'login.html',{"error":"User doesn't exist"})
+    return render(request, 'login.html', {"error": "User doesn't exist"})
     messages.error(request, "Invalid credentials")
-  
+
 def signup_view(request):
     """User registration"""
     errors = None
@@ -472,22 +576,22 @@ def signup_view(request):
             password = form.cleaned_data['password']
             confirm_password = form.cleaned_data["confirm_password"]
             if password == confirm_password:
-              
+
               result = UserService.create_user(username, password)
               if result['success']:
                   messages.success(request, "Account created successfully!")
-                  return login(request,username,password,url="new_user_detail")
+                  return login(request, username, password, url="new_user_detail")
               else:
                   messages.error(request, result['error'])
-            
+
             else:
               errors = "Password is not the same"
         # else:
         #     form = UserForm(request.POST)
     else:
         form = UserForm()
-    
-    return render(request, "signup.html", {'form': form,'errors':errors if errors else None })
+
+    return render(request, "signup.html", {'form': form, 'errors': errors if errors else None})
 
 def login_view(request):
     """User login"""
@@ -496,10 +600,10 @@ def login_view(request):
         password = request.POST.get("password")
         next_url = request.POST.get("next")
         url = "home" if not next_url or next_url == "/" else next_url
-        return(login(request,username,password,url=url))
-        
+        return login(request, username, password, url=url)
+
     return render(request, "login.html")
-    
+
 # Other Views (subjects, topics, history, reports)
 @login_require
 def subject_list_view(request):
@@ -509,15 +613,15 @@ def subject_list_view(request):
 
 @login_require
 def history_view(request):
-    """User activity history"""
-    history = History.objects.for_user(request.user).order_by('-time')
+    """User activity history – latest 10 entries"""
+    history = History.objects.for_user(request.user).order_by('-time')[:10]
     return render(request, 'history.html', {'history': history})
 
 def close_request_view(request):
     """Utility view for closing modals/requests"""
     return HttpResponse("")
-    
-    
+
+
 @login_require
 def topic_list_view(request):
     """List all topics"""
@@ -576,23 +680,23 @@ def subject_detail_view(request, id):
 def topic_detail_view(request, id):
     """Topic detail view"""
     topic = get_object_or_404(Topic, id=id)
-    
+
     HistoryService.log_user_activity(
         request.user,
         f"Topic: {topic.title}",
         reverse('topic-detail', args=[id])
     )
-    
+
     return render(request, 'topic-detail.html', {'topic': topic})
 
 def class_topics_view(request, id, name):
     """Get topics for specific class and subject"""
     subject = get_object_or_404(Subject, id=id)
     class_obj = Class.objects.filter(name=name).first()
-    
+
     if not class_obj:
         return HttpResponse("Class not found", status=404)
-    
+
     topics = subject.topic.filter(class_name=class_obj)
     return render(request, 'topic-list.html', {'topics': topics})
 
@@ -601,7 +705,7 @@ def add_topic_view(request, id):
     subject = get_object_or_404(Subject, id=id)
     form = TopicForm(initial={'subject': subject})
     form.fields['class_name'].queryset = Class.objects.values('name').distinct()
-    
+
     context = {
         'form': form,
         'form_type': "topic",
@@ -614,7 +718,7 @@ def update_record_view(request, id):
     """Update student record"""
     student_record = get_object_or_404(StudentRecord, id=id)
     form = StudentRecordForm(instance=student_record)
-    
+
     context = {
         'form': form,
         'form_type': "student-record",
@@ -691,7 +795,7 @@ def add_record_to_class_view(request, id):
         },
         user=request.user
     )
-    
+
     context = {
         'class': class_obj,
         'form': form,
@@ -702,35 +806,38 @@ def add_record_to_class_view(request, id):
 
 @login_require
 def get_class_records_view(request, id):
-    """Get all records for a specific class"""
+    """Get all records for a specific class, grouped by subject"""
     class_obj = get_object_or_404(Class, id=id)
-    records = Record.objects.filter(class_name=class_obj).select_related('subject')
-    
+    records = Record.objects.filter(class_name=class_obj).select_related(
+        'subject__subject'
+    ).order_by('subject__subject__name', 'record_type', 'record_number')
+
     HistoryService.log_user_activity(
         request.user,
         f"{class_obj} records",
         reverse('get-class-record', args=[id])
     )
-    
+
     context = {
         'class_name': class_obj,
         'record': records,
+        'grouped_records': RecordGroupingService.group_by_subject(records),
         'partial': True
     }
-    return render(request, 'record-list.html', context)
+    return render(request, 'record-list-by-subject.html', context)
 
 @login_require
 def get_class_students_view(request, id):
     """Get all students for a specific class"""
     class_obj = get_object_or_404(Class, id=id)
     students = Student.objects.filter(class_name=class_obj).order_by("name")
-    
+
     HistoryService.log_user_activity(
         request.user,
         f"{class_obj} students",
         reverse('get-student', args=[id])
     )
-    
+
     return render(request, 'student-list.html', {'student': students})
 
 # Advanced filtering and analytics views
@@ -739,7 +846,7 @@ def analytics_dashboard_view(request):
     """Analytics dashboard with charts and statistics"""
     user_records = Record.objects.for_user(request.user)
     user_students = Student.objects.for_user(request.user)
-    
+
     # Calculate basic statistics
     stats = {
         'total_records': user_records.count(),
@@ -747,10 +854,10 @@ def analytics_dashboard_view(request):
         'total_classes': Class.objects.for_user(request.user).count(),
         'total_subjects': Subject.objects.for_user(request.user).count(),
     }
-    
+
     # Get recent activity
     recent_records = user_records.order_by('-date_created')[:5]
-    
+
     # Performance statistics
     student_records = StudentRecord.objects.for_user(request.user)
     if student_records.exists():
@@ -761,23 +868,23 @@ def analytics_dashboard_view(request):
             total_records=Count('id')
         )
         stats.update(performance_stats)
-    
+
     context = {
         'stats': stats,
         'recent_records': recent_records,
     }
-    
+
     return render(request, 'analytics.html', context)
 
 # API-style views for AJAX requests
 def api_student_records(request, student_id):
     """API endpoint to get student records as JSON"""
     from django.http import JsonResponse
-    
+
     try:
         student = get_object_or_404(Student, id=student_id)
         records = StudentRecord.objects.filter(student=student).select_related('record')
-        
+
         data = [
             {
                 'id': sr.id,
@@ -791,23 +898,23 @@ def api_student_records(request, student_id):
             }
             for sr in records
         ]
-        
+
         return JsonResponse({'success': True, 'data': data})
-    
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
 def api_class_summary(request, class_id):
     """API endpoint to get class summary as JSON"""
     from django.http import JsonResponse
-    
+
     try:
         class_obj = get_object_or_404(Class, id=class_id)
         summary_result = ReportService.generate_class_summary_report(
             class_obj.name, 
             class_obj.batch
         )
-        
+
         if summary_result['success']:
             # Convert model instances to serializable data
             data = summary_result['data']
@@ -819,11 +926,11 @@ def api_class_summary(request, class_id):
                 'max_score': float(data['max_score'] or 0),
                 'min_score': float(data['min_score'] or 0),
             }
-            
+
             return JsonResponse({'success': True, 'data': serialized_data})
         else:
             return JsonResponse({'success': False, 'error': summary_result['error']})
-    
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
@@ -871,8 +978,14 @@ def report_view(request):
             context['error'] = "Invalid Parameters"
             return render(request, 'get_report.html', context)
 
-        report_result = Report.generate_report(subject_id=subject_id, class_name=class_name,batch=batch, term=term, sort_order=sort_order,user=request.user    # ← add this
-)
+        report_result = Report.generate_report(
+            subject_id=subject_id, 
+            class_name=class_name,
+            batch=batch, 
+            term=term, 
+            sort_order=sort_order,
+            user=request.user
+        )
         if report_result['success']:
             context.update({
                 'total_report': report_result.get('total_report') or report_result.get('data'),
@@ -902,7 +1015,7 @@ def logout_view(request):
     return response
 
 @login_require
-def user_detail(request,form="role"):
+def user_detail(request, form="role"):
   schools = None   
   if request.method == "POST":
     user = request.user
@@ -945,9 +1058,9 @@ def user_detail(request,form="role"):
           user.save()
       form = "school"
       schools = School.objects.all()
-      
-  context = {"form":form,"schools":schools}
-  return render(request,"details.html",context)
+
+  context = {"form": form, "schools": schools}
+  return render(request, "details.html", context)
 
 
 def _classes_needing_records(request):
@@ -1132,16 +1245,16 @@ def onboarding_records_view(request):
     return render(request, 'onboarding-records.html', context)
 
 @login_require
-def bulk_create_student(request,id):
+def bulk_create_student(request, id):
   class_name = Class.objects.get(id=id)
   body = request.POST.get("body")
   if body:
     seperate_body = body.split("\n")
     for std in seperate_body:
-      Student.objects.create_for_user(request.user,name=std,class_name=class_name)
-    return HttpResponse(f"{len(seperate_body)}) students have been added to {class_name.name} ")
+      Student.objects.create_for_user(request.user, name=std, class_name=class_name)
+    return HttpResponse(f"{len(seperate_body)} students have been added to {class_name.name}")
   else:
-    return HttpResponse(f"Body is empty")
+    return HttpResponse("Body is empty")
 
 @login_require
 def set_active_term_view(request):
@@ -1246,20 +1359,135 @@ def quick_setup_view(request, class_id):
 
     return HttpResponse(msg)
 
+
+# ═══════════════════════════════════════════════════════════════
+# NEW: Report Card view
+# ═══════════════════════════════════════════════════════════════
+
 @login_require
-def add_record_to_class_view(request, id):
-    class_obj = get_object_or_404(Class, id=id)
-    form = RecordForm(
-        initial={
-            'class_name': class_obj,
-            'title': request.user.active_term,   # ← add this line
-        },
-        user=request.user
+def report_card_view(request, student_id=None):
+    # ----- No student or class specified – show class selection -----
+    if student_id is None and 'class_id' not in request.GET:
+        all_classes = Class.objects.for_user(request.user).order_by('name', 'batch')
+        return render(request, 'report-card-select.html', {'all_classes': all_classes})
+
+    # ----- If class_id is provided, redirect to the first student in that class -----
+    class_id = request.GET.get('class_id')
+    if class_id and student_id is None:
+        class_obj = get_object_or_404(Class, id=class_id, user=request.user)
+        first_student = Student.objects.filter(class_name=class_obj, user=request.user).order_by('name').first()
+        if first_student:
+            term = request.GET.get('term', request.user.active_term or "First Term")
+            session = request.GET.get('session', class_obj.session)
+            return redirect(f"{reverse('report-card', args=[first_student.id])}?term={term}&session={session}")
+        else:
+            messages.warning(request, "No students found in this class.")
+            return redirect('class-list')
+
+    # ----- Existing student report logic (same as before) -----
+
+    # Otherwise, get the student by ID
+    student = get_object_or_404(Student, id=student_id, user=request.user)
+    class_obj = student.class_name
+
+    term = request.GET.get('term', request.user.active_term or "First Term")
+    session = request.GET.get('session', class_obj.session)
+
+    # Build report context
+    context = ReportCardService.build_report_card_context(student, term, session)
+    context['school'] = request.user.school
+    context['term'] = term
+    context['session'] = session
+    context['student'] = student
+    context['class_obj'] = class_obj
+
+    # ---- Navigation: all students in the same class ----
+    all_students = Student.objects.filter(class_name=class_obj, user=request.user).order_by('name')
+    student_ids = list(all_students.values_list('id', flat=True))
+    current_index = student_ids.index(student.id) if student.id in student_ids else -1
+
+    prev_id = student_ids[current_index - 1] if current_index > 0 else None
+    next_id = student_ids[current_index + 1] if current_index < len(student_ids) - 1 else None
+
+    # ---- All classes taught by this teacher ----
+    all_classes = Class.objects.for_user(request.user).order_by('name', 'batch')
+
+    context.update({
+        'all_students': all_students,
+        'prev_id': prev_id,
+        'next_id': next_id,
+        'current_index': current_index + 1,
+        'total_students': len(student_ids),
+        'all_classes': all_classes,
+    })
+
+    HistoryService.log_user_activity(
+        request.user,
+        f"Report Card: {student.name} ({term} {session})",
+        reverse('report-card', args=[student_id])
     )
-    context = {
-        'class': class_obj,
-        'form': form,
-        'form_type': "record",
-        'recordForm': True
-    }
-    return render(request, "record-form.html", context)
+    return render(request, 'report-card.html', context)
+
+
+
+@login_require
+def class_report_view(request, id):
+    """Class‑specific report:
+       - GET without subject_id → list of subjects with records.
+       - GET with subject_id → full report for that subject.
+    """
+    class_obj = get_object_or_404(Class, id=id, user=request.user)
+    term = request.user.active_term or "First Term"
+    subject_id = request.GET.get('subject_id')
+    sort_order = request.GET.get('sort', 'asc')
+
+    if subject_id:
+        # Generate report for a specific subject – NO user argument
+        report_result = ReportService.generate_report(
+            subject_id=subject_id,
+            class_name=class_obj.name,
+            batch=class_obj.batch,
+            term=term,
+            sort_order=sort_order,
+        )
+
+        context = {
+            'class_obj': class_obj,
+            'total_report': report_result.get('total_report'),
+            'subject': report_result.get('subject'),
+            'is_all_subjects': report_result.get('is_all_subjects', False),
+            'terms': report_result.get('terms', []),
+            'batch': class_obj.batch,
+            'class': class_obj.name,
+            'term': term,
+            'sort': sort_order,
+            'error': report_result.get('error'),
+        }
+        return render(request, 'class-report-partial.html', context)
+
+    else:
+        # List mode: show all subjects with records for this class
+        subject_teachers = SubjectTeacher.objects.filter(
+            class_name=class_obj,
+            user=request.user,
+            record__isnull=False
+        ).distinct().select_related('subject')
+
+        subjects_data = []
+        for st in subject_teachers:
+            records = Record.objects.filter(subject=st, class_name=class_obj)
+            student_records = StudentRecord.objects.filter(record__in=records)
+            avg_score = student_records.aggregate(Avg('score'))['score__avg']
+            subjects_data.append({
+                'subject_teacher': st,
+                'subject': st.subject,
+                'record_count': records.count(),
+                'avg_score': avg_score or 0,
+            })
+
+        context = {
+            'class_obj': class_obj,
+            'subjects_data': subjects_data,
+            'term': term,
+        }
+        return render(request, 'class-report-list.html', context)

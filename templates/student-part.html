@@ -1,66 +1,55 @@
-<div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 md:p-5 mb-6">
-  <form hx-get="{% url 'filter-students' %}"
-        hx-swap="innerHTML"
-        hx-target="#studentTable">
-
-    <div class="grid grid-cols-2 md:flex md:flex-wrap md:items-end gap-3 md:gap-4 mb-4">
-
-      <!-- Score Filter -->
-      <div class="flex flex-col gap-1 col-span-2 md:col-span-1">
-        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Score</label>
-        <div class="flex gap-2">
-          <select name="sign"
-                  class="flex-1 border border-outline-variant rounded-lg bg-surface-container-lowest px-2 py-2 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent min-w-[64px]">
-            <option value="">...</option>
-            <option>=</option>
-            <option>&gt;</option>
-            <option>&lt;</option>
-          </select>
-          <select name="score"
-                  class="flex-1 border border-outline-variant rounded-lg bg-surface-container-lowest px-2 py-2 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent min-w-[80px]">
-            <option value="">...</option>
-            {% with "1234567890203766"|slice:":10" as dummy_str %}
-              {% for i in dummy_str %}
-                <option>{{ forloop.counter0 }}</option>
-              {% endfor %}
-            {% endwith %}
-          </select>
-        </div>
-      </div>
-
-      <!-- Sort -->
-      <div class="flex flex-col gap-1 col-span-2 md:col-span-1 md:min-w-[200px]">
-        <label class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sort</label>
-        <select name="filter"
-                class="w-full border border-outline-variant rounded-lg bg-surface-container-lowest px-3 py-2 font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent">
-          <option>Sort</option>
-          <option value="alpha">Arrange Alphabetically</option>
-          <option value="score">Arrange by Score</option>
-        </select>
-      </div>
-
-      <!-- Apply Button -->
-      <button class="col-span-2 md:col-span-1 md:ml-auto bg-secondary text-on-secondary text-sm font-semibold px-6 py-2.5 rounded-lg scholar-shadow hover:opacity-90 transition border-0 cursor-pointer">
-        Apply Filters
+<!-- student-part.html -->
+<div x-data="{ search: '' }" class="p-4 md:p-5">
+  <!-- Search & Filter Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+    <div class="relative flex-1">
+      <i class="fas fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-outline"></i>
+      <input type="text" x-model="search" placeholder="Search students..."
+             class="w-full pl-9 pr-4 py-2 border border-outline-variant rounded-xl bg-surface-container-low focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/30 focus:border-transparent outline-none transition text-sm">
+    </div>
+    <form hx-get="{% url 'filter-students' %}"
+          hx-swap="innerHTML"
+          hx-target="#studentTable"
+          class="flex flex-wrap items-center gap-2">
+      <select name="sign" class="border border-outline-variant rounded-xl px-3 py-2 bg-surface-container-low text-sm focus:ring-2 focus:ring-primary/30 focus:border-transparent outline-none">
+        <option value="">Score</option>
+        <option value="=">=</option>
+        <option value="&gt;">&gt;</option>
+        <option value="&lt;">&lt;</option>
+      </select>
+      <select name="score" class="border border-outline-variant rounded-xl px-3 py-2 bg-surface-container-low text-sm focus:ring-2 focus:ring-primary/30 focus:border-transparent outline-none">
+        <option value="">Value</option>
+        {% with "012345678910" as dummy %}
+          {% for i in dummy %}
+            <option>{{ forloop.counter0 }}</option>
+          {% endfor %}
+        {% endwith %}
+      </select>
+      <select name="filter" class="border border-outline-variant rounded-xl px-3 py-2 bg-surface-container-low text-sm focus:ring-2 focus:ring-primary/30 focus:border-transparent outline-none">
+        <option value="">Sort</option>
+        <option value="alpha">Alphabetical</option>
+        <option value="score">By Score</option>
+      </select>
+      <button class="bg-secondary text-on-secondary text-sm font-semibold px-5 py-2 rounded-xl shadow-sm hover:opacity-90 transition active:scale-95 border-0 cursor-pointer">
+        Apply
       </button>
-    </div>
+    </form>
+  </div>
 
-    <!-- Hidden Fields -->
-    {% for s in students %}
-      <input type="hidden" name="students" value="{{ s.student.id }}" />
+  <!-- Hidden fields -->
+  {% for s in students %}
+    <input type="hidden" name="students" value="{{ s.student.id }}" />
+  {% endfor %}
+  {% if record_list %}
+    {% for r in record_list %}
+      <input type="hidden" name="record-list" value="{{ r }}" />
     {% endfor %}
-    {% if record_list %}
-      {% for r in record_list %}
-        <input type="hidden" name="record-list" value="{{ r }}" />
-      {% endfor %}
-    {% endif %}
-    <input type="hidden" name="edit" value="{{ edit }}" />
-    <input type="hidden" name="record" value="{{ record.id }}" />
+  {% endif %}
+  <input type="hidden" name="edit" value="{{ edit }}" />
+  <input type="hidden" name="record" value="{{ record.id }}" />
 
-    <!-- Student Table -->
-    <div id="studentTable" class="rounded-xl overflow-hidden border border-outline-variant">
-      {% include 'students-table.html' %}
-    </div>
-
-  </form>
+  <!-- Student Table -->
+  <div id="studentTable" x-data="{ search: search }">
+    {% include 'students-table.html' %}
+  </div>
 </div>

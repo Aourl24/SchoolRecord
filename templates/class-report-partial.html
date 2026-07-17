@@ -1,0 +1,26 @@
+<!-- class-report-partial.html -->
+{% load static %}
+{% load extra %}
+{% load string_extra %}
+
+<div>
+  <!-- Back button -->
+  <button class="text-primary hover:underline text-sm mb-4 flex items-center gap-1"
+          hx-get="{% url 'class-report' class_obj.id %}"
+          hx-target="#tab-content" hx-swap="innerHTML">
+    <i class="fas fa-arrow-left"></i> Back to report list
+  </button>
+
+  <!-- Include the existing report-table.html – it expects 'total_report', 'terms', etc. -->
+  {% if error %}
+    <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
+      {{ error }}
+    </div>
+  {% elif total_report %}
+    {% include 'report-table.html' %}
+  {% else %}
+    <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm rounded-xl px-4 py-3">
+      No data available for this subject.
+    </div>
+  {% endif %}
+</div>

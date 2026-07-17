@@ -1,35 +1,84 @@
 <div class="overflow-x-auto rounded-xl border border-outline-variant scholar-shadow">
-  <table class="w-full border-collapse">
+  <table class="w-full border-collapse text-sm">
     <thead>
-      <tr class="bg-primary text-on-primary">
-        <th class="px-4 py-3 text-center font-label-sm text-label-sm uppercase tracking-wider border-r border-white/20 w-16">S/N</th>
-        <th class="px-4 py-3 text-left font-label-sm text-label-sm uppercase tracking-wider border-r border-white/20">Student</th>
-        <th class="px-4 py-3 text-center font-label-sm text-label-sm uppercase tracking-wider w-24">Score</th>
+      <tr class="bg-primary text-on-primary sticky top-0 z-10">
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider border-r border-white/20 w-12">#</th>
+        <th class="px-4 py-3 text-left font-label-sm uppercase tracking-wider border-r border-white/20 min-w-[160px]">Student</th>
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider border-r border-white/20 w-24">Adm. No.</th>
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider border-r border-white/20 w-20">Score</th>
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider border-r border-white/20 w-20">%</th>
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider border-r border-white/20 w-16">Grade</th>
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider border-r border-white/20 w-20">Status</th>
+        <th class="px-4 py-3 text-center font-label-sm uppercase tracking-wider w-24">Actions</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-outline-variant">
       {% for student in students %}
       <tr class="{% cycle 'bg-surface-container-lowest' 'bg-surface-container-low/30' %} hover:bg-surface-container-low transition-colors">
-        <td class="px-4 py-3 text-center font-body-md text-outline border-r border-outline-variant/30">{{ forloop.counter }}</td>
-        <td class="px-4 py-3 font-body-md border-r border-outline-variant/30">
-          <span class="font-semibold text-on-surface cursor-pointer hover:text-primary transition-colors"
+        <td class="px-4 py-3 text-center text-outline border-r border-outline-variant/30">{{ forloop.counter }}</td>
+        <td class="px-4 py-3 font-medium border-r border-outline-variant/30">
+          <span class="text-on-surface cursor-pointer hover:text-primary transition"
                 hx-get="{% url 'get-student-detail' student.student.id %}"
                 hx-target="#load-area"
                 hx-swap="innerHTML">
             {{ student.student.name|title }}
           </span>
           {% if not edit %}
-          <span class="font-label-sm text-label-sm text-outline ml-1">{{ student.student.class_name }}</span>
+          <span class="text-label-sm text-outline ml-1">{{ student.student.class_name }}</span>
           {% endif %}
         </td>
-        <td class="px-4 py-3 text-center">
-          <span class="inline-flex items-center justify-center w-12 h-10 rounded-lg font-bold cursor-pointer transition-transform active:scale-95
+        <td class="px-4 py-3 text-center border-r border-outline-variant/30 text-outline">
+          {{ student.student.admission_number|default:"—" }}
+        </td>
+        <td class="px-4 py-3 text-center border-r border-outline-variant/30">
+          <span class="inline-flex items-center justify-center w-14 h-10 rounded-lg font-bold cursor-pointer transition-transform active:scale-95
                        {% if student.score >= half %}bg-secondary text-on-secondary{% else %}bg-error text-on-error{% endif %}"
                 hx-get="{% url 'update-form' 'student-record' student.id %}"
                 hx-target="#addHere"
                 hx-trigger="click">
             {{ student.score }}
           </span>
+        </td>
+        <td class="px-4 py-3 text-center border-r border-outline-variant/30 font-semibold">
+          {% widthratio student.score record.total_score 100 %}%
+        </td>
+        <td class="px-4 py-3 text-center border-r border-outline-variant/30">
+          {% if student.score >= half %}
+            <span class="px-2 py-0.5 rounded-full text-label-sm font-semibold bg-secondary/20 text-secondary">Pass</span>
+          {% else %}
+            <span class="px-2 py-0.5 rounded-full text-label-sm font-semibold bg-error/20 text-error">Fail</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-center border-r border-outline-variant/30">
+          {% if student.score >= half %}
+            <span class="text-secondary"><i class="fas fa-check-circle"></i></span>
+          {% else %}
+            <span class="text-error"><i class="fas fa-times-circle"></i></span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-center">
+          <div class="flex items-center justify-center gap-1">
+            <button class="w-8 h-8 rounded-lg hover:bg-surface-container-low transition flex items-center justify-center text-on-surface-variant"
+                    title="Edit Score"
+                    hx-get="{% url 'update-form' 'student-record' student.id %}"
+                    hx-target="#addHere">
+              <i class="fas fa-pen text-xs"></i>
+            </button>
+            <button class="w-8 h-8 rounded-lg hover:bg-surface-container-low transition flex items-center justify-center text-on-surface-variant"
+                    title="View Profile"
+                    hx-get="{% url 'get-student-detail' student.student.id %}"
+                    hx-target="#load-area"
+                    hx-swap="innerHTML">
+              <i class="fas fa-user text-xs"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center py-8 text-on-surface-variant">
+          <i class="fas fa-inbox text-3xl text-outline block mb-2"></i>
+          No students found.
         </td>
       </tr>
       {% endfor %}

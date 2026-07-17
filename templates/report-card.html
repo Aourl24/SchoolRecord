@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block nav %}{% endblock %}
+{% block search %}{% endblock %}
+{% block navBottom %}{% endblock %}
+
+{% block content %}
+<style>
+  @media print {
+    body { padding: 0 !important; }
+    .no-print { display: none !important; }
+    .report-card { box-shadow: none !important; border: none !important; }
+  }
+</style>
+
+<!-- ========== Navigation (no-print) ========== -->
+<div class="no-print max-w-3xl mx-auto mb-4 px-1">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+
+    <!-- Left side: Back + Class Selector -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <button onclick="history.back()" class="text-on-surface-variant text-sm flex items-center gap-2 cursor-pointer">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+
+      <!-- Class Dropdown -->
+      <select onchange="window.location.href='{% url 'report-card' %}?class_id='+this.value+'&term={{ term }}&session={{ session }}'"
+              class="border border-outline-variant rounded-lg px-3 py-1.5 text-sm bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/30">
+        {% for cls in all_classes %}
+        <option value="{{ cls.id }}" {% if cls.id == class_obj.id %}selected{% endif %}>
+          {{ cls.name }} {{ cls.batch }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Right side: Student Navigation + Print -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Previous -->
+      {% if prev_id %}
+      <button class="text-on-surface-variant hover:text-primary transition px-3 py-1.5 rounded-lg border border-outline-variant hover:border-primary/30 text-sm flex items-center gap-1"
+              hx-get="{% url 'report-card' prev_id %}?term={{ term }}&session={{ session }}"
+              hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        <i class="fas fa-chevron-left"></i> Prev
+      </button>
+      {% endif %}
+
+      <!-- Student dropdown (within class) -->
+      <select onchange="window.location.href=this.value"
+              class="border border-outline-variant rounded-lg px-3 py-1.5 text-sm bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/30">
+        {% for s in all_students %}
+        <option value="{% url 'report-card' s.id %}?term={{ term }}&session={{ session }}"
+                {% if s.id == student.id %}selected{% endif %}>
+          {{ s.name }}
+        </option>
+        {% endfor %}
+      </select>
+
+      <!-- Next -->
+      {% if next_id %}
+      <button class="text-on-surface-variant hover:text-primary transition px-3 py-1.5 rounded-lg border border-outline-variant hover:border-primary/30 text-sm flex items-center gap-1"
+              hx-get="{% url 'report-card' next_id %}?term={{ term }}&session={{ session }}"
+              hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+        Next <i class="fas fa-chevron-right"></i>
+      </button>
+      {% endif %}
+
+      <!-- Print -->
+      <button onclick="window.print()"
+              class="bg-primary text-on-primary text-sm font-bold px-4 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:opacity-90 transition">
+        <i class="fas fa-print"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress indicator -->
+  <div class="text-center text-xs text-on-surface-variant mt-1">
+    {{ current_index }} of {{ total_students }} students in {{ class_obj.name }} {{ class_obj.batch }}
+  </div>
+</div>
+
+<!-- ========== Term / Session Picker ========== -->
+<form hx-get="{% url 'report-card' student.id %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true"
+      class="no-print flex flex-wrap gap-3 items-end max-w-3xl mx-auto mb-6 bg-surface-container-lowest border border-outline-variant rounded-xl p-4 scholar-shadow">
+  <div class="flex-1 min-w-[140px]">
+    <label class="text-label-sm font-bold text-on-surface-variant uppercase block mb-1">Term</label>
+    <select name="term" class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/30">
+      <option value="">Select Term</option>
+      <option value="First Term" {% if term == "First Term" %}selected{% endif %}>First Term</option>
+      <option value="Second Term" {% if term == "Second Term" %}selected{% endif %}>Second Term</option>
+      <option value="Third Term" {% if term == "Third Term" %}selected{% endif %}>Third Term</option>
+    </select>
+  </div>
+  <div class="flex-1 min-w-[140px]">
+    <label class="text-label-sm font-bold text-on-surface-variant uppercase block mb-1">Session</label>
+    <input type="text" name="session" value="{{ session }}" placeholder="e.g. 2025/2026"
+           class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/30" />
+  </div>
+  <button type="submit"
+          class="bg-primary text-on-primary text-sm font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer hover:opacity-90 transition">
+    <i class="fas fa-rotate"></i> Load
+  </button>
+</form>
+
+{% if not term %}
+<div class="max-w-3xl mx-auto bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-xl px-4 py-3 mb-4">
+  Select a term above to load {{ student.name }}'s report card.
+</div>
+{% else %}
+
+<!-- Report Card -->
+<div class="report-card max-w-3xl mx-auto bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow p-6 sm:p-10">
+
+  <!-- School Header -->
+  <div class="text-center border-b-2 border-primary pb-4 mb-6">
+    <h1 class="text-headline-lg-mobile sm:text-headline-lg font-headline-lg text-primary uppercase">
+      {{ school.name|default:"School Name Not Set" }}
+    </h1>
+    <p class="text-label-sm text-on-surface-variant uppercase tracking-widest mt-1">
+      {{ term }} Examination {% if session %}— {{ session }}{% endif %}
+    </p>
+  </div>
+
+  <!-- Student Info Grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm mb-6 pb-6 border-b border-outline-variant">
+    <div><span class="text-on-surface-variant text-xs uppercase block">Name</span>
+      <span class="font-bold text-on-surface">{{ student.name }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Class</span>
+      <span class="font-bold text-on-surface">{{ class_obj.name }} {{ class_obj.batch }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Sex</span>
+      <span class="font-bold text-on-surface">{{ student.gender|default:"-" }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Position</span>
+      <span class="font-bold text-on-surface">{{ position|default:"-" }}{% if out_of %} of {{ out_of }}{% endif %}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">No. Examined</span>
+      <span class="font-bold text-on-surface">{{ number_examined }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Times Present</span>
+      <span class="font-bold text-on-surface">{{ term_report.times_present|default:"-" }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Times Absent</span>
+      <span class="font-bold text-on-surface">{{ term_report.times_absent|default:"-" }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Total Score</span>
+      <span class="font-bold text-on-surface">{{ total_score }} / {{ total_available }}</span></div>
+    <div><span class="text-on-surface-variant text-xs uppercase block">Percentage</span>
+      <span class="font-bold text-primary">{{ percentage }}%</span></div>
+  </div>
+
+  <!-- Subject Table -->
+  <div class="overflow-x-auto mb-6">
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="bg-primary text-on-primary text-xs">
+          <th class="px-3 py-2 text-left border border-primary-fixed/30">Subject</th>
+          <th class="px-3 py-2 text-center border border-primary-fixed/30">Cont. Assess</th>
+          <th class="px-3 py-2 text-center border border-primary-fixed/30">Exam</th>
+          <th class="px-3 py-2 text-center border border-primary-fixed/30">Obtainable</th>
+          <th class="px-3 py-2 text-center border border-primary-fixed/30">Obtained</th>
+          <th class="px-3 py-2 text-center border border-primary-fixed/30">Remark</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant">
+        {% for row in subjects_data %}
+        <tr class="hover:bg-surface-container-low">
+          <td class="px-3 py-2 border border-outline-variant font-semibold text-on-surface">{{ row.subject }}</td>
+          <td class="px-3 py-2 text-center border border-outline-variant">{{ row.cont_assess }}</td>
+          <td class="px-3 py-2 text-center border border-outline-variant">{{ row.exam }}</td>
+          <td class="px-3 py-2 text-center border border-outline-variant">{{ row.obtainable }}</td>
+          <td class="px-3 py-2 text-center border border-outline-variant font-bold">{{ row.obtained }}</td>
+          <td class="px-3 py-2 text-center border border-outline-variant">{{ row.remark }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="px-3 py-4 text-center text-on-surface-variant">No subject records for this term.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Character Development -->
+  <div class="mb-6 pb-6 border-b border-outline-variant">
+    <h3 class="text-label-sm font-bold uppercase tracking-widest text-outline mb-3">
+      Character Development (E–A Grading)
+    </h3>
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
+      <div class="bg-surface-container-low rounded-lg p-3 text-center">
+        <span class="text-xs text-on-surface-variant block mb-1">Attentiveness</span>
+        <span class="font-bold text-primary text-lg">{{ term_report.attentiveness|default:"-" }}</span>
+      </div>
+      <div class="bg-surface-container-low rounded-lg p-3 text-center">
+        <span class="text-xs text-on-surface-variant block mb-1">Neatness</span>
+        <span class="font-bold text-primary text-lg">{{ term_report.neatness|default:"-" }}</span>
+      </div>
+      <div class="bg-surface-container-low rounded-lg p-3 text-center">
+        <span class="text-xs text-on-surface-variant block mb-1">Punctuality</span>
+        <span class="font-bold text-primary text-lg">{{ term_report.punctuality|default:"-" }}</span>
+      </div>
+      <div class="bg-surface-container-low rounded-lg p-3 text-center">
+        <span class="text-xs text-on-surface-variant block mb-1">Politeness</span>
+        <span class="font-bold text-primary text-lg">{{ term_report.politeness|default:"-" }}</span>
+      </div>
+      <div class="bg-surface-container-low rounded-lg p-3 text-center">
+        <span class="text-xs text-on-surface-variant block mb-1">Relationship</span>
+        <span class="font-bold text-primary text-lg">{{ term_report.relationship_with_others|default:"-" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Remarks -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 pb-6 border-b border-outline-variant text-sm">
+    <div>
+      <h4 class="text-xs uppercase text-on-surface-variant font-bold mb-1">Class Teacher's Remark</h4>
+      <p class="text-on-surface min-h-[3rem]">{{ term_report.class_teacher_remark|default:"—" }}</p>
+      <div class="mt-4 border-t border-outline-variant pt-1 text-xs text-on-surface-variant">Signature &amp; Date</div>
+    </div>
+    <div>
+      <h4 class="text-xs uppercase text-on-surface-variant font-bold mb-1">H.M. Comment</h4>
+      <p class="text-on-surface min-h-[3rem]">{{ term_report.hm_comment|default:"—" }}</p>
+      <div class="mt-4 border-t border-outline-variant pt-1 text-xs text-on-surface-variant">Signature &amp; Date</div>
+    </div>
+  </div>
+
+  <!-- Promotion -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div><span class="text-xs uppercase text-on-surface-variant block mb-1">Promoted To</span>
+      <span class="font-bold text-on-surface">{{ term_report.promoted_to|default:"—" }}</span></div>
+    <div><span class="text-xs uppercase text-on-surface-variant block mb-1">Next Term Begins</span>
+      <span class="font-bold text-on-surface">{{ term_report.next_term_begins|default:"—" }}</span></div>
+  </div>
+
+</div>
+{% endif %}
+{% endblock %}

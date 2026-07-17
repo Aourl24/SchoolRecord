@@ -1,9 +1,40 @@
-<div class="divide-y divide-gray-100">
-  {% for hist in history %}
-  <div class="py-2.5 px-1">
-    <a href="{{ hist.url }}" class="text-sm text-gray-700 no-underline hover:text-primary transition">
-      {{ hist.title }}
-    </a>
+
+  <!-- History Card -->
+  <div class="">
+    {% if history %}
+      <div class="divide-y divide-outline-variant">
+        {% for item in history %}
+          <div class="flex items-center justify-between py-3 px-4 hover:bg-surface-container-low transition-colors">
+            <div class="flex-1 min-w-0">
+              <a href="{{ item.url }}"
+                 class="text-body-md text-on-surface hover:text-primary transition-colors no-underline font-medium truncate block"
+                 title="{{ item.title }}">
+                {{ item.title }}
+              </a>
+              <span class="text-label-sm text-on-surface-variant">
+                <i class="far fa-clock mr-1"></i>
+                {{ item.time|timesince }} ago
+              </span>
+            </div>
+            <div class="text-on-surface-variant text-xs ml-4 flex-shrink-0">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- "View all" link (optional) -->
+      <div class="border-t border-outline-variant px-4 py-3 bg-surface-container-low">
+        <a href="#" class="text-primary hover:underline text-sm font-medium">
+          View all history (coming soon)
+        </a>
+      </div>
+
+    {% else %}
+      <div class="text-center py-12 text-on-surface-variant">
+        <i class="fas fa-history text-4xl text-outline mb-3 block"></i>
+        <p class="text-body-lg">No activity history yet.</p>
+        <p class="text-sm mt-1">Your actions will appear here as you use the app.</p>
+      </div>
+    {% endif %}
   </div>
-  {% endfor %}
-</div>

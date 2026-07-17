@@ -1,0 +1,47 @@
+<!-- class-report-list.html -->
+{% load static %}
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 scholar-shadow">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-headline-sm text-on-surface">Available Reports ({{ term }})</h3>
+    <span class="text-label-sm text-on-surface-variant">{{ subjects_data|length }} subjects</span>
+  </div>
+
+  {% if subjects_data %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="text-label-sm text-on-surface-variant bg-surface-container-low border-b border-outline-variant">
+          <tr>
+            <th class="py-2 px-3">Subject</th>
+            <th class="py-2 px-3 text-center">Records</th>
+            <th class="py-2 px-3 text-center">Avg Score</th>
+            <th class="py-2 px-3 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in subjects_data %}
+            <tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+              <td class="py-2 px-3 font-medium">{{ item.subject.name }}</td>
+              <td class="py-2 px-3 text-center">{{ item.record_count }}</td>
+              <td class="py-2 px-3 text-center">{{ item.avg_score|floatformat:1 }}</td>
+              <td class="py-2 px-3 text-center">
+                <button class="text-primary hover:underline text-sm font-medium"
+                        hx-get="{% url 'class-report' class_obj.id %}?subject_id={{ item.subject.id }}"
+                        hx-target="#tab-content" hx-swap="innerHTML"
+                        hx-push-url="false">
+                  <i class="fas fa-file-alt mr-1"></i> View Report
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-8 text-on-surface-variant">
+      <i class="fas fa-inbox text-4xl text-outline mb-3 block"></i>
+      <p>No records found for this class yet.</p>
+      <p class="text-sm mt-1">Once you add assessments, they will appear here.</p>
+    </div>
+  {% endif %}
+</div>

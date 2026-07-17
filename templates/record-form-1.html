@@ -1,82 +1,82 @@
-<!-- Modal Overlay -->
+<!-- ========== Modal Overlay ========== -->
 <div id="formBox"
-     class="fixed inset-0 z-[100000] overflow-y-auto bg-on-surface/50 backdrop-blur-sm p-4"
-     style="animation: fadeIn 0.3s ease-out;">
+     class="fixed inset-0 z-[100000] overflow-y-auto bg-on-surface/60 backdrop-blur-sm p-4 flex items-start justify-center"
+     style="animation: fadeIn 0.25s ease-out;">
 
-  <!-- Modal Container -->
-  <div class="w-full max-w-2xl mx-auto mt-10 mb-10"
-       style="animation: modalSlideIn 0.4s ease-out;">
+  <!-- ========== Modal Container ========== -->
+  <div class="w-full max-w-3xl my-8 mx-auto"
+       style="animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);">
 
-    <!-- Tab Navigation -->
+    <!-- ========== Tab Navigation ========== -->
     {% if not recordForm or update %}
-    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-2 mb-4 scholar-shadow">
-      <div class="flex flex-wrap gap-1.5 justify-center">
+    <div class="bg-surface-container-lowest/95 backdrop-blur-sm border border-outline-variant rounded-2xl p-1.5 mb-5 scholar-shadow">
+      <div class="flex flex-wrap gap-1 justify-center">
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+        <button class="flex-1 min-w-[70px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-label-sm font-bold transition-all duration-200
                        {% if form_type == 'record' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'record' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
-          <i class="fas fa-file"></i>
-          <span class="hidden sm:inline">Record</span>
+          <i class="fas fa-file text-sm"></i>
+          <span class="hidden xs:inline">Record</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+        <button class="flex-1 min-w-[70px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-label-sm font-bold transition-all duration-200
                        {% if form_type == 'subject' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'subject' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
-          <i class="fas fa-book"></i>
-          <span class="hidden sm:inline">Subject</span>
+          <i class="fas fa-book text-sm"></i>
+          <span class="hidden xs:inline">Subject</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+        <button class="flex-1 min-w-[70px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-label-sm font-bold transition-all duration-200
                        {% if form_type == 'class' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'class' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
-          <i class="fas fa-school"></i>
-          <span class="hidden sm:inline">Class</span>
+          <i class="fas fa-school text-sm"></i>
+          <span class="hidden xs:inline">Class</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+        <button class="flex-1 min-w-[70px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-label-sm font-bold transition-all duration-200
                        {% if form_type == 'student' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'student' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML">
-          <i class="fas fa-user-graduate"></i>
-          <span class="hidden sm:inline">Student</span>
+          <i class="fas fa-user-graduate text-sm"></i>
+          <span class="hidden xs:inline">Student</span>
         </button>
 
-        <button class="flex-1 min-w-[80px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-label-sm font-bold transition
+        <button class="flex-1 min-w-[70px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-label-sm font-bold transition-all duration-200
                        {% if form_type == 'student-record' %}bg-primary text-on-primary shadow-md{% else %}text-on-surface-variant hover:bg-surface-container-low hover:text-primary{% endif %}"
                 hx-get="{% url 'form' 'student-record' %}"
                 hx-target="#drop-area"
                 hx-swap="innerHTML"
                 hx-push-url="true">
-          <i class="fas fa-chart-line"></i>
-          <span class="hidden sm:inline">Std Rec</span>
+          <i class="fas fa-chart-line text-sm"></i>
+          <span class="hidden xs:inline">Std Rec</span>
         </button>
 
       </div>
     </div>
     {% endif %}
 
-    <!-- Main Form Card -->
-    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow overflow-hidden">
+    <!-- ========== Main Form Card ========== -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-3xl scholar-shadow overflow-hidden">
 
-      <!-- Header -->
-      <div class="bg-primary px-6 py-5 flex items-center justify-between">
+      <!-- ========== Card Header ========== -->
+      <div class="relative px-6 py-5 bg-gradient-to-r from-primary to-primary-container flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center text-on-primary text-xl">
+          <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center text-on-primary text-xl backdrop-blur-sm">
             <i class="fas fa-{% if update %}pen{% else %}circle-plus{% endif %}"></i>
           </div>
-          <h2 class="text-on-primary text-title-md font-headline-lg m-0">
-            {% if update %}Update{% else %}Add New{% endif %} {{ form_type|capfirst }}
+          <h2 class="text-on-primary text-title-md font-headline-lg m-0 tracking-tight">
+            {% if update %}Update{% else %}Add New{% endif %}
+            <span class="font-bold capitalize">{{ form_type }}</span>
           </h2>
         </div>
-        <button class="w-10 h-10 bg-white/15 hover:bg-white/25 rounded-xl flex items-center justify-center text-on-primary text-lg border-0 cursor-pointer transition hover:rotate-90"
-                style="transition: all 0.3s ease;"
+        <button class="w-10 h-10 bg-white/15 hover:bg-white/25 rounded-2xl flex items-center justify-center text-on-primary text-lg border-0 cursor-pointer transition-all duration-300 hover:rotate-90"
                 hx-target="#formBox"
                 hx-swap="outerHTML"
                 hx-get="{% url 'closeRequest' %}"
@@ -85,36 +85,44 @@
         </button>
       </div>
 
-      <!-- Form Body -->
+      <!-- ========== Form Body ========== -->
       <div class="p-6 sm:p-8">
-        <div id="saved" class="mb-4"></div>
+        <div id="saved" class="mb-5"></div>
 
         <form method="post"
               {% if update %}hx-post="{% url 'update-form' form_type model.id %}"{% else %}hx-post="{% url 'form' form_type %}"{% endif %}
               hx-target="#saved"
               hx-swap="innerHTML">
+
           {% csrf_token %}
 
-          <!-- Fields Grid -->
+          <!-- ========== Form Fields ========== -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
             {% for field in form %}
-            <div class="flex flex-col gap-1.5">
+            <div class="flex flex-col gap-1.5 {% if field.field.widget.input_type == 'checkbox' %}sm:col-span-2{% endif %}">
               <label for="{{ field.id_for_label }}"
-                     class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wide">
+                     class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
                 {{ field.label }}
+                {% if field.field.required %}
+                <span class="text-error text-xs">*</span>
+                {% endif %}
               </label>
-              <div class="[&_input]:w-full [&_input]:border [&_input]:border-outline-variant [&_input]:rounded-lg [&_input]:px-4 [&_input]:py-3 [&_input]:text-sm [&_input]:bg-surface-container-low [&_input]:outline-none [&_input]:transition-all [&_input:focus]:border-primary [&_input:focus]:bg-surface-container-lowest [&_input:focus]:ring-2 [&_input:focus]:ring-primary/20
-                          [&_select]:w-full [&_select]:border [&_select]:border-outline-variant [&_select]:rounded-lg [&_select]:px-4 [&_select]:py-3 [&_select]:text-sm [&_select]:bg-surface-container-low [&_select]:outline-none [&_select]:transition-all [&_select:focus]:border-primary [&_select:focus]:bg-surface-container-lowest [&_select:focus]:ring-2 [&_select:focus]:ring-primary/20
-                          [&_textarea]:w-full [&_textarea]:border [&_textarea]:border-outline-variant [&_textarea]:rounded-lg [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:bg-surface-container-low [&_textarea]:outline-none [&_textarea]:transition-all [&_textarea:focus]:border-primary [&_textarea:focus]:bg-surface-container-lowest [&_textarea:focus]:ring-2 [&_textarea:focus]:ring-primary/20">
+
+              <!-- Field Widget -->
+              <div class="[&_input]:w-full [&_input]:border [&_input]:border-outline-variant [&_input]:rounded-xl [&_input]:px-4 [&_input]:py-3 [&_input]:text-sm [&_input]:bg-surface-container-low [&_input]:outline-none [&_input]:transition-all [&_input:focus]:border-primary [&_input:focus]:bg-surface-container-lowest [&_input:focus]:ring-2 [&_input:focus]:ring-primary/20 [&_input:disabled]:opacity-60 [&_input:disabled]:cursor-not-allowed
+                          [&_select]:w-full [&_select]:border [&_select]:border-outline-variant [&_select]:rounded-xl [&_select]:px-4 [&_select]:py-3 [&_select]:text-sm [&_select]:bg-surface-container-low [&_select]:outline-none [&_select]:transition-all [&_select:focus]:border-primary [&_select:focus]:bg-surface-container-lowest [&_select:focus]:ring-2 [&_select:focus]:ring-primary/20 [&_select:disabled]:opacity-60 [&_select:disabled]:cursor-not-allowed
+                          [&_textarea]:w-full [&_textarea]:border [&_textarea]:border-outline-variant [&_textarea]:rounded-xl [&_textarea]:px-4 [&_textarea]:py-3 [&_textarea]:text-sm [&_textarea]:bg-surface-container-low [&_textarea]:outline-none [&_textarea]:transition-all [&_textarea:focus]:border-primary [&_textarea:focus]:bg-surface-container-lowest [&_textarea:focus]:ring-2 [&_textarea:focus]:ring-primary/20 [&_textarea:disabled]:opacity-60 [&_textarea:disabled]:cursor-not-allowed
+                          [&_input[type=checkbox]]:w-5 [&_input[type=checkbox]]:h-5 [&_input[type=checkbox]]:rounded-md [&_input[type=checkbox]]:border [&_input[type=checkbox]]:border-outline-variant [&_input[type=checkbox]]:bg-surface-container-low [&_input[type=checkbox]]:text-primary [&_input[type=checkbox]]:focus:ring-2 [&_input[type=checkbox]]:focus:ring-primary/20 [&_input[type=checkbox]]:cursor-pointer">
                 {{ field }}
               </div>
 
+              <!-- Inline subject creation -->
               {% if form_type == 'subject' and field.name == 'subject' %}
-              <div class="flex items-center gap-2 mt-1">
+              <div class="flex items-center gap-2 mt-2">
                 <input type="text" id="new-subject-name" name="name" placeholder="Can't find it? Add a new subject..."
-                       class="flex-1 border border-outline-variant rounded-lg px-3 py-2 text-xs bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" />
+                       class="flex-1 border border-outline-variant rounded-xl px-3 py-2 text-xs bg-surface-container-low outline-none focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" />
                 <button type="button"
-                        class="text-xs font-semibold text-primary bg-primary-fixed/50 hover:bg-primary-fixed/70 px-3 py-2 rounded-lg border-0 cursor-pointer transition flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap"
+                        class="text-xs font-semibold text-primary bg-primary-fixed/40 hover:bg-primary-fixed/70 px-4 py-2 rounded-xl border-0 cursor-pointer transition flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap"
                         hx-post="{% url 'create-subject-ajax' %}"
                         hx-include="#new-subject-name"
                         hx-target="#id_subject"
@@ -124,15 +132,18 @@
               </div>
               {% endif %}
 
+              <!-- Help text -->
               {% if field.help_text %}
-              <small class="text-on-surface-variant text-xs flex items-center gap-1.5 opacity-80">
+              <p class="text-on-surface-variant text-xs flex items-center gap-1.5 opacity-80 mt-1">
                 <i class="fas fa-circle-info"></i> {{ field.help_text }}
-              </small>
+              </p>
               {% endif %}
+
+              <!-- Errors -->
               {% if field.errors %}
-              <div class="text-error text-xs flex flex-col gap-1">
+              <div class="text-error text-xs flex flex-col gap-1 mt-1">
                 {% for error in field.errors %}
-                <span class="flex items-center gap-1.5">
+                <span class="flex items-center gap-1.5 bg-error-container/30 px-3 py-1.5 rounded-lg">
                   <i class="fas fa-circle-exclamation"></i> {{ error }}
                 </span>
                 {% endfor %}
@@ -142,15 +153,15 @@
             {% endfor %}
           </div>
 
-          <!-- Action Buttons -->
-          <div class="flex gap-3 flex-col sm:flex-row">
+          <!-- ========== Form Actions ========== -->
+          <div class="flex gap-3 flex-col sm:flex-row pt-2 border-t border-outline-variant">
             <button type="submit"
-                    class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md">
+                    class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:bg-primary/90 active:scale-[0.98] transition-all shadow-md">
               <i class="fas fa-floppy-disk"></i>
               {% if update %}Update{% else %}Save{% endif %} {{ form_type|capfirst }}
             </button>
             <button type="button"
-                    class="flex-1 flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant cursor-pointer transition"
+                    class="flex-1 flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant cursor-pointer transition-all active:scale-[0.98]"
                     hx-target="#formBox"
                     hx-swap="outerHTML"
                     hx-get="{% url 'closeRequest' %}">
@@ -162,26 +173,41 @@
         </form>
       </div>
     </div>
-
   </div>
 </div>
 
+<!-- ========== Styles ========== -->
 <style>
   @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
   }
   @keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    from { opacity: 0; transform: translateY(-40px) scale(0.96); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
+    from { opacity: 0; transform: translateY(-12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   #saved .alert {
-    border-radius: 12px;
-    padding: 16px;
-    animation: slideDown 0.4s ease-out;
+    border-radius: 16px;
+    padding: 16px 20px;
+    animation: slideDown 0.35s ease-out;
+    backdrop-filter: blur(4px);
+  }
+  #saved .alert-success {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #065f46;
+  }
+  #saved .alert-danger {
+    background: rgba(239, 68, 68, 0.10);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #991b1b;
+  }
+  /* Extra small screen helper */
+  @media (min-width: 480px) {
+    .xs\:inline { display: inline; }
   }
 </style>

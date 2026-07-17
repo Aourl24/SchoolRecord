@@ -1,0 +1,30 @@
+<div class="flex flex-col gap-5">
+  {% for subject_group in grouped_records %}
+  <div>
+    <h4 class="text-label-sm font-bold uppercase tracking-widest text-outline mb-3 flex items-center gap-2">
+      <i class="fas fa-book text-primary"></i> {{ subject_group.subject_name }}
+    </h4>
+    <div class="flex flex-wrap gap-2">
+      {% for rec in subject_group.records %}
+<a hx-get="{% url 'get-record' rec.id %}"
+   hx-target="body" hx-swap="outerHTML" hx-push-url="true"
+   class="inline-flex items-center gap-2 bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant rounded-full px-4 py-2 text-sm font-semibold text-on-surface no-underline cursor-pointer transition">
+  {{ rec.record_type }} {{ rec.record_number }}
+  <span class="text-xs text-on-surface-variant">{{ rec.title }}</span>
+  <span class="inline-flex items-center gap-1 text-xs bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full">
+    <i class="fas fa-user-graduate"></i> {{ rec.evaluation.count }}
+  </span>
+</a>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="flex flex-col items-center justify-center bg-surface border-2 border-dashed border-outline-variant rounded-xl p-8 text-center">
+    <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant mb-3">
+      <i class="fas fa-file-circle-plus text-xl"></i>
+    </div>
+    <h3 class="text-title-md font-bold text-on-surface">No records yet</h3>
+    <p class="text-body-md text-on-surface-variant mt-2">Add a record to get started.</p>
+  </div>
+  {% endfor %}
+</div>

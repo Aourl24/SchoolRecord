@@ -8,7 +8,7 @@ from .models import *
 
 class HistoryService:
     """Handle user history logging"""
-    
+
     @staticmethod
     def log_user_activity(user, title, url):
         """Log user activity to history"""
@@ -25,26 +25,26 @@ class HistoryService:
 
 class FormService:
     """Handle form processing and validation"""
-    
+
     @staticmethod
     def save_model_form(form, user):
         """Save form with proper error handling"""
 
         if not form.is_valid():
             return FormService._format_form_errors(form)
-        
+
         try:
             instance = form.save(commit=False)
             instance.user = user
             instance.save()
-            
+
             success_message = FormService._format_success_message(form, instance)
             return {
                 'success': True,
                 'message': success_message,
                 'instance': instance
             }
-            
+
         except ValidationError as e:
             return {
                 'success': False,
@@ -55,7 +55,7 @@ class FormService:
                 'success': False,
                 'message': f"Error saving record: {str(e)}"
             }
-    
+
     @staticmethod
     def _format_success_message(form, instance):
         """Format success message with field values"""
@@ -67,7 +67,7 @@ class FormService:
         print("success")
         display_data = "<br>".join(field_values)
         return f"<div class='alert alert-primary'>{display_data}<br>Record created successfully.</div>"
-    
+
     @staticmethod
     def _format_form_errors(form):
         """Format form errors for display"""
@@ -77,7 +77,7 @@ class FormService:
             label = form.fields.get(field).label if field in form.fields else field.replace('_', ' ').title()
             for error in errors:
                 error_messages.append(f"<li><strong>{label}:</strong> {error}</li>")
-        
+
         error_html = "<ul>" + "".join(error_messages) + "</ul>"
         return {
             'success': False,
@@ -86,7 +86,7 @@ class FormService:
 
 class StudentRecordService:
     """Handle student record operations"""
-    
+
     @staticmethod
     def get_students_without_record(record):
         """Get students in class who don't have this record"""
@@ -94,31 +94,31 @@ class StudentRecordService:
         return Student.objects.filter(class_name=record.class_name).exclude(
             record__in=students_with_record
         ).order_by('name')
-    
+
     @staticmethod
     def filter_student_records(students_queryset, score_filter=None, sort_filter=None):
         """Filter and sort student records"""
         if score_filter:
             score = score_filter.get('score')
             operator = score_filter.get('operator')
-            
+
             if operator == "=":
                 students_queryset = students_queryset.filter(score=score)
             elif operator == ">":
                 students_queryset = students_queryset.filter(score__gt=score)
             elif operator == "<":
                 students_queryset = students_queryset.filter(score__lt=score)
-        
+
         if sort_filter == "alpha":
             students_queryset = students_queryset.order_by("student__name")
         elif sort_filter == "score":
             students_queryset = students_queryset.order_by("-score")
-        
+
         return students_queryset
 
 class SearchService:
     """Handle search operations"""
-    
+
     @staticmethod
     def search_all(query, user):
         """Search across all models"""
@@ -130,7 +130,7 @@ class SearchService:
 
 class UserService:
     """Handle user operations"""
-    
+
     @staticmethod
     def create_user(username, password):
         """Create new user with hashed password"""
@@ -529,3 +529,148 @@ class ReportService:
                 'data': [],
                 'total_report': None
             }
+
+
+# ═══════════════════════════════════════════════════════════════
+# NEW: ReportCardService
+# ═══════════════════════════════════════════════════════════════
+
+class ReportCardService:
+    """Builds the printable report card: rankings, subject breakdown, and TermReport data."""
+
+    @staticmethod
+    def calculate_positions(class_obj, term, session=None):
+        students = Student.objects.filter(class_name=class_obj)
+        totals = []
+        for student in students:
+            records = StudentRecord.objects.filter(
+                student=student,
+                record__class_name=class_obj,
+                record__title=term,
+                record__show_in_report=True
+            )
+            total_score = sum(r.score for r in records)
+            total_available = sum(r.record.total_score for r in records)
+            totals.append((student, total_score, total_available))
+
+        totals.sort(key=lambda x: x[1], reverse=True)
+
+        positions = {}
+        current_position = 0
+        previous_score = None
+        for idx, (student, score, available) in enumerate(totals, start=1):
+            if score != previous_score:
+                current_position = idx
+                previous_score = score
+            positions[student.id] = {
+                'position': current_position,
+                'total_score': score,
+                'total_available': available,
+                'out_of': len(totals)
+            }
+        return positions
+
+    @staticmethod
+    def grade_remark(percentage):
+        if percentage >= 70: return "Excellent"
+        elif percentage >= 60: return "Very Good"
+        elif percentage >= 50: return "Good"
+        elif percentage >= 40: return "Fair"
+        return "Poor"
+
+    @staticmethod
+    def build_report_card_context(student, term, session):
+        class_obj = student.class_name
+        term_report = TermReport.objects.filter(student=student, term=term, session=session).first()
+
+        positions = ReportCardService.calculate_positions(class_obj, term, session)
+        pdata = positions.get(student.id, {})
+        position = (term_report.position_override if term_report and term_report.position_override
+                    else pdata.get('position'))
+
+        subjects_data = []
+        for st in SubjectTeacher.objects.filter(class_name=class_obj):
+            records = Record.objects.filter(subject=st, class_name=class_obj, title=term, show_in_report=True)
+            test_score = exam_score = total_obtainable = 0
+            for rec in records:
+                sr = StudentRecord.objects.filter(student=student, record=rec).first()
+                score = sr.score if sr else 0
+                if rec.record_type == "Exam":
+                    exam_score += score
+                else:
+                    test_score += score
+                total_obtainable += rec.total_score
+            obtained = test_score + exam_score
+            pct = round((obtained / total_obtainable) * 100, 1) if total_obtainable else 0
+            subjects_data.append({
+                'subject': st.subject.name, 'cont_assess': test_score, 'exam': exam_score,
+                'obtainable': total_obtainable, 'obtained': obtained,
+                'remark': ReportCardService.grade_remark(pct),
+            })
+
+        total_score = pdata.get('total_score', 0)
+        total_available = pdata.get('total_available', 0)
+
+        return {
+            'student': student, 'class_obj': class_obj, 'term': term, 'session': session,
+            'term_report': term_report, 'position': position, 'out_of': pdata.get('out_of'),
+            'total_score': total_score, 'total_available': total_available,
+            'percentage': round((total_score / total_available) * 100, 1) if total_available else 0,
+            'subjects_data': subjects_data,
+            'number_examined': Student.objects.filter(class_name=class_obj).count(),
+        }
+
+
+class RecordGroupingService:
+    """Group a flat, pre-sorted record queryset into Class → Subject → Records."""
+
+    @staticmethod
+    def group_by_class_and_subject(records):
+        grouped = []
+        current_class_id = None
+        current_class_group = None
+        current_subject_name = None
+        current_subject_group = None
+
+        for rec in records:
+            class_id = rec.class_name.id if rec.class_name else None
+            subject_name = (
+                rec.subject.subject.name if rec.subject and rec.subject.subject else "No Subject"
+            )
+
+            if class_id != current_class_id:
+                current_class_id = class_id
+                current_class_group = {'class_obj': rec.class_name, 'subjects': []}
+                grouped.append(current_class_group)
+                current_subject_name = None
+
+            if subject_name != current_subject_name:
+                current_subject_name = subject_name
+                current_subject_group = {'subject_name': subject_name, 'records': []}
+                current_class_group['subjects'].append(current_subject_group)
+
+            current_subject_group['records'].append(rec)
+
+        return grouped
+
+    @staticmethod
+    def group_by_subject(records):
+        """Group a flat, pre-sorted (by subject) record queryset into Subject → Records.
+        Use when records are already scoped to a single class."""
+        grouped = []
+        current_subject_name = None
+        current_subject_group = None
+
+        for rec in records:
+            subject_name = (
+                rec.subject.subject.name if rec.subject and rec.subject.subject else "No Subject"
+            )
+
+            if subject_name != current_subject_name:
+                current_subject_name = subject_name
+                current_subject_group = {'subject_name': subject_name, 'records': []}
+                grouped.append(current_subject_group)
+
+            current_subject_group['records'].append(rec)
+
+        return grouped

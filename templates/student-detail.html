@@ -46,6 +46,10 @@
         <i class="fas fa-pen text-xs"></i>
         Edit Student
       </a>
+      <a hx-get="{% url 'report-card' student.id %}" hx-target="body" hx-swap="outerHTML" hx-push-url="true"
+   class="bg-primary text-on-primary text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer no-underline hover:opacity-90 transition ml-2">
+  View Report Card
+</a>
     </div>
 
     <!-- Personal Details -->

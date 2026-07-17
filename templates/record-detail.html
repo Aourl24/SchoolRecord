@@ -1,88 +1,336 @@
 {% extends 'base.html' %}
+{% load static %}
+{%load record_filters%}
+{% block extra_head %}
+<style>
+  .progress-bar { transition: width 0.6s ease; }
+  .stat-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
+  .dist-bar { transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="mt-4 md:mt-6">
+<div class="max-w-7xl mx-auto px-0 sm:px-2 lg:px-4 py-4 md:py-6">
 
-  <!-- Record Info Card -->
-  <section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 md:p-8 scholar-shadow mb-6">
-    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+<!-- ======================== HEADER ======================== -->
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-5 mb-6">
 
-      <!-- Details -->
-      <div class="space-y-1">
-        <div class="flex items-center gap-3 flex-wrap mb-1">
-          <h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">
-            {{ record.class_name }}
-          </h2>
-          <span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm">
-            {{ record.title }}
-          </span>
-        </div>
-        <p class="font-title-md text-title-md text-on-surface-variant">{{ record.subject }}</p>
-        <p class="font-body-md text-body-md text-primary font-semibold">{{ record.record_type }} {{ record.record_number }}</p>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 pt-4 mt-4 border-t border-outline-variant">
-          <div>
-            <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Date &amp; Time</p>
-            <p class="font-body-md text-body-md font-semibold text-on-surface">{{ record.date_created }}</p>
-          </div>
-          <div>
-            <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total Students</p>
-            <p class="font-body-md text-body-md font-semibold text-on-surface">{{ students.count }}</p>
-          </div>
-          <div>
-            <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Maximum Mark</p>
-            <p class="font-body-md text-body-md font-semibold text-on-surface">{{ record.total_score }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      {% if edit %}
-      <div class="grid grid-cols-2 lg:flex lg:flex-col gap-3 lg:min-w-[220px]">
-        <a hx-get="{% url 'update-form' 'record' record.id %}"
-           hx-target="#addHere" hx-trigger="click"
-           class="flex items-center justify-center gap-2 py-3 px-5 rounded-lg bg-secondary text-on-secondary font-semibold transition-transform active:scale-95 scholar-shadow no-underline cursor-pointer">
-          <i class="fas fa-pen"></i> Edit Record
-        </a>
-        <button id="addStudent"
-                hx-get="{% url 'add-to-record' record.id %}"
-                hx-target="#addHere"
-                class="flex items-center justify-center gap-2 py-3 px-5 rounded-lg bg-primary text-on-primary font-semibold transition-transform active:scale-95 scholar-shadow border-0 cursor-pointer">
-          <i class="fas fa-user"></i> Add Student Record
-        </button>
-        <button id="bulkScores"
-                hx-get="{% url 'bulk-score-entry' record.id %}"
-                hx-target="#addHere"
-                class="col-span-2 lg:col-span-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg bg-tertiary text-on-tertiary font-semibold transition-transform active:scale-95 scholar-shadow border-0 cursor-pointer">
-          <i class="fas fa-users"></i> Bulk Enter Scores
-        </button>
-      </div>
-      {% endif %}
+  <!-- Left: Title & Meta -->
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center gap-3 flex-wrap">
+      <h1 class="text-headline-lg-mobile lg:text-display-lg font-display-lg text-on-surface">
+        {{ record.subject.subject.name }} {{ record.record_type }} {{ record.record_number }}
+      </h1>
+      <span class="px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-label-sm font-semibold">
+        {{ record.class_name }}
+      </span>
     </div>
-  </section>
+    <div class="flex flex-wrap items-center gap-3 mt-1 text-body-md text-on-surface-variant">
+      <span>{{ record.title }}</span>
+      <span class="w-1 h-1 rounded-full bg-outline"></span>
+      <span>Total Score: {{ record.total_score }}</span>
+      <span class="w-1 h-1 rounded-full bg-outline"></span>
+      <span>Record #{{ record.record_number }}</span>
+      <span class="w-1 h-1 rounded-full bg-outline"></span>
+      <span class="text-label-sm">{{ record.date_created|date:"M d, Y" }}</span>
+    </div>
+  </div>
 
-  <!-- Student Filter + Table -->
-  {% include 'student-part.html' %}
+  <!-- Right: Primary Actions + Dropdown -->
+  <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+    {% if edit %}
+      <!-- Primary Buttons -->
+      <button class="flex items-center gap-2 px-4 py-2.5 bg-secondary text-on-secondary rounded-xl text-sm font-bold shadow-md hover:bg-secondary/90 transition active:scale-95"
+              hx-get="{% url 'bulk-score-entry' record.id %}"
+              hx-target="#addHere">
+        <i class="fas fa-pen-to-square"></i> Enter Scores
+      </button>
+      <button class="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-md hover:bg-primary/90 transition active:scale-95"
+              hx-get="{% url 'bulk-score-entry' record.id %}"
+              hx-target="#addHere">
+        <i class="fas fa-upload"></i> Bulk Entry
+      </button>
+      <button class="flex items-center gap-2 px-4 py-2.5 bg-tertiary text-on-tertiary rounded-xl text-sm font-bold shadow-md hover:bg-tertiary/90 transition active:scale-95"
+              hx-get="{% url 'update-form' 'record' record.id %}"
+              hx-target="#addHere">
+        <i class="fas fa-pen"></i> Edit
+      </button>
 
-  <!-- Students Without Record -->
-  <section class="bg-error-container/30 border border-error/20 rounded-xl p-5 my-6">
-    <h3 class="font-title-md text-title-md text-error flex items-center gap-2 mb-4">
-      <i class="fas fa-danger"></i>
-      Students in Class without Record
-    </h3>
-    <div class="space-y-2">
-      {% for student in students_without_record %}
-      <div class="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30">
-        <span class="font-body-md text-outline">{{ forloop.counter }}.</span>
-        <span class="font-body-md font-semibold text-on-surface">{{ student.name }}</span>
+      <!-- Three-dot Dropdown (fixed for mobile) -->
+      <div class="relative inline-block overflow-visible" id="action-dropdown-container">
+        <button onclick="toggleDropdown()" 
+                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-container-low transition text-on-surface-variant">
+          <i class="fas fa-ellipsis-vertical text-lg"></i>
+        </button>
+        <div id="action-dropdown-menu" 
+             class="hidden absolute right-0 mt-2 w-56 max-w-[90vw] bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl py-1 z-50">
+          <button class="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low transition flex items-center gap-2">
+            <i class="fas fa-copy w-5 text-on-surface-variant"></i> Duplicate Assessment
+          </button>
+          <button class="w-full text-left px-4 py-2 text-sm text-error hover:bg-error-container/30 transition flex items-center gap-2">
+            <i class="fas fa-trash w-5 text-error"></i> Delete Assessment
+          </button>
+          <button class="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low transition flex items-center gap-2">
+            <i class="fas fa-eye-slash w-5 text-on-surface-variant"></i> Hide from Report
+          </button>
+          <button class="w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low transition flex items-center gap-2">
+            <i class="fas fa-file-export w-5 text-on-surface-variant"></i> Export Scores
+          </button>
+        </div>
       </div>
-      {% empty %}
-      <p class="font-body-md text-body-md text-on-surface-variant text-center py-2">
-        Every student in this class has a record for this assessment.
+    {% endif %}
+  </div>
+</div>
+
+<!-- Add this script at the bottom of the template (or in the block) -->
+<script>
+  function toggleDropdown() {
+    const menu = document.getElementById('action-dropdown-menu');
+    menu.classList.toggle('hidden');
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const container = document.getElementById('action-dropdown-container');
+    const menu = document.getElementById('action-dropdown-menu');
+    if (container && !container.contains(e.target)) {
+      menu.classList.add('hidden');
+    }
+  });
+</script>
+
+  <!-- ======================== STAT CARDS ======================== -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6">
+    <div class="stat-card bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+      <p class="text-label-sm text-outline uppercase tracking-wider">Total Students</p>
+      <p class="text-headline-md text-headline-md text-on-surface mt-1">{{ total_students }}</p>
+    </div>
+    <div class="stat-card bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+      <p class="text-label-sm text-outline uppercase tracking-wider">Scores Entered</p>
+      <p class="text-headline-md text-headline-md text-on-surface mt-1">{{ entered }}</p>
+    </div>
+    <div class="stat-card bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+      <p class="text-label-sm text-outline uppercase tracking-wider">Remaining</p>
+      <p class="text-headline-md text-headline-md text-error mt-1">{{ remaining }}</p>
+    </div>
+    <div class="stat-card bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+      <p class="text-label-sm text-outline uppercase tracking-wider">Class Average</p>
+      <p class="text-headline-md text-headline-md text-on-surface mt-1">
+        {% if entered > 0 %}{{ avg_score|floatformat:1 }}{% else %}—{% endif %}
       </p>
+    </div>
+    <div class="stat-card bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+      <p class="text-label-sm text-outline uppercase tracking-wider">Highest Score</p>
+      <p class="text-headline-md text-headline-md text-secondary mt-1">{% if entered > 0 %}{{ max_score }}{% else %}—{% endif %}</p>
+    </div>
+    <div class="stat-card bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+      <p class="text-label-sm text-outline uppercase tracking-wider">Lowest Score</p>
+      <p class="text-headline-md text-headline-md text-error mt-1">{% if entered > 0 %}{{ min_score }}{% else %}—{% endif %}</p>
+    </div>
+  </div>
+
+  <!-- ======================== PROGRESS SECTION ======================== -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 md:p-6 mb-6 scholar-shadow">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h3 class="text-headline-sm text-headline-sm text-on-surface">Score Entry Progress</h3>
+        <p class="text-body-md text-on-surface-variant">
+          {{ entered }} of {{ total_students }} students graded
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-title-md font-bold text-primary">
+          {% if total_students > 0 %}{% widthratio entered total_students 100 %}{% else %}0{% endif %}%
+        </span>
+        <div class="w-48 h-2 bg-surface-container rounded-full overflow-hidden">
+          <div class="progress-bar h-full bg-primary rounded-full" style="width: {% if total_students > 0 %}{% widthratio entered total_students 100 %}{% else %}0{% endif %}%;"></div>
+        </div>
+      </div>
+    </div>
+    {% if remaining > 0 %}
+    <div class="mt-4 bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 flex items-center gap-3 text-error">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span class="text-sm font-medium">{{ remaining }} student{% if remaining > 1 %}s{% endif %} still need scores.</span>
+      <button class="ml-auto text-sm font-semibold text-error hover:underline"
+              hx-get="{% url 'add-to-record' record.id %}"
+              hx-target="#addHere">
+        Add scores now
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ======================== STUDENT SCORES TABLE ======================== -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden scholar-shadow mb-6">
+    {% include 'student-part.html' %}
+  </div>
+
+  <!-- ======================== PERFORMANCE SUMMARY ======================== -->
+  {% if entered > 0 %}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Class Average</p>
+        <p class="text-title-md font-bold text-on-surface">{{ avg_score|floatformat:1 }}</p>
+      </div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Median Score</p>
+        <p class="text-title-md font-bold text-on-surface">—</p>
+      </div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Highest</p>
+        <p class="text-title-md font-bold text-secondary">{{ max_score }}</p>
+      </div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Lowest</p>
+        <p class="text-title-md font-bold text-error">{{ min_score }}</p>
+      </div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Pass Rate</p>
+        <p class="text-title-md font-bold text-secondary">—%</p>
+      </div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Fail Rate</p>
+        <p class="text-title-md font-bold text-error">—%</p>
+      </div>
+    </div>
+
+    <!-- Distribution Chart -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card">
+      <p class="text-label-sm text-outline uppercase tracking-wider mb-3">Score Distribution</p>
+      <div class="space-y-1.5">
+        {% with buckets="0,25,50,75,100"|split:"," %}
+          {% for bucket in buckets %}
+            {% with count=score_list|filter_by_bucket:bucket %}
+            <div class="flex items-center gap-2 text-xs">
+              <span class="w-10 text-on-surface-variant">{{ bucket }}%</span>
+              <div class="flex-1 h-3 bg-surface-container rounded-full overflow-hidden">
+                <div class="dist-bar h-full bg-primary/70 rounded-full" style="width: {% widthratio count entered 100 %}%;"></div>
+              </div>
+              <span class="w-8 text-on-surface-variant text-right">{{ count }}</span>
+            </div>
+            {% endwith %}
+          {% endfor %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ======================== TOP PERFORMERS ======================== -->
+  {% if top_performers %}
+  <div class="mb-6">
+    <h3 class="text-headline-sm text-headline-sm text-on-surface mb-3 flex items-center gap-2">
+      <i class="fas fa-trophy text-secondary"></i> Top Performers
+    </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      {% for sr in top_performers %}
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4 stat-card flex items-center gap-3">
+        <span class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-bold text-sm">{{ forloop.counter }}</span>
+        <div class="min-w-0">
+          <p class="font-semibold text-on-surface truncate">{{ sr.student.name }}</p>
+          <p class="text-label-sm text-outline">{{ sr.score }} / {{ record.total_score }}</p>
+          <p class="text-label-sm text-primary font-bold">
+            {% widthratio sr.score record.total_score 100 %}%
+          </p>
+        </div>
+      </div>
       {% endfor %}
     </div>
-  </section>
+  </div>
+  {% endif %}
+
+  <!-- ======================== STUDENTS NEEDING ATTENTION ======================== -->
+  <div class="mb-6">
+    <h3 class="text-headline-sm text-headline-sm text-on-surface mb-3 flex items-center gap-2">
+      <i class="fas fa-circle-exclamation text-error"></i> Students Needing Attention
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <!-- Missing -->
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Missing Scores</p>
+        <p class="text-title-md font-bold text-error mb-2">{{ remaining }}</p>
+        <button class="text-sm text-primary font-semibold hover:underline"
+                hx-get="{% url 'add-to-record' record.id %}"
+                hx-target="#addHere">
+          Add scores
+        </button>
+      </div>
+      <!-- Failed (using half threshold) -->
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Failed</p>
+        <p class="text-title-md font-bold text-error mb-2">
+          {{ students|filter_failed:half|length }}
+        </p>
+        <button class="text-sm text-primary font-semibold hover:underline"
+                hx-get="{% url 'filter-students' %}?filter=failed&record={{ record.id }}"
+                hx-target="#studentTable">
+          View
+        </button>
+      </div>
+      <!-- Below Average -->
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-4">
+        <p class="text-label-sm text-outline uppercase tracking-wider">Below Class Average</p>
+        <p class="text-title-md font-bold text-secondary mb-2">
+          {{ students|filter_below_avg:avg_score|length }}
+        </p>
+        <button class="text-sm text-primary font-semibold hover:underline"
+                hx-get="{% url 'filter-students' %}?filter=below_avg&record={{ record.id }}"
+                hx-target="#studentTable">
+          View
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== ASSESSMENT INFORMATION ======================== -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 md:p-6 scholar-shadow mb-6">
+    <h3 class="text-headline-sm text-headline-sm text-on-surface mb-4">Assessment Information</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Subject</p><p class="font-medium text-on-surface">{{ record.subject.subject.name }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Class</p><p class="font-medium text-on-surface">{{ record.class_name }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Session</p><p class="font-medium text-on-surface">{{ record.class_name.session }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Term</p><p class="font-medium text-on-surface">{{ record.title }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Assessment Type</p><p class="font-medium text-on-surface">{{ record.record_type }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Record Number</p><p class="font-medium text-on-surface">{{ record.record_number }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Total Score</p><p class="font-medium text-on-surface">{{ record.total_score }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Date Created</p><p class="font-medium text-on-surface">{{ record.date_created|date:"M d, Y" }}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Report Visibility</p><p class="font-medium text-on-surface">{% if record.show_in_report %}Visible{% else %}Hidden{% endif %}</p></div>
+      <div><p class="text-label-sm text-outline uppercase tracking-wider">Auto Calculation</p><p class="font-medium text-on-surface">{% if record.logic %}Enabled{% else %}Disabled{% endif %}</p></div>
+    </div>
+  </div>
+
+  <!-- ======================== QUICK ACTIONS SIDEBAR ======================== -->
+  <div class="hidden lg:block fixed right-6 top-1/2 -translate-y-1/2 w-12 flex flex-col items-center gap-4">
+    <button class="w-12 h-12 rounded-2xl bg-primary text-on-primary shadow-md hover:bg-primary/90 transition active:scale-95 flex items-center justify-center"
+            title="Add Student to Assessment"
+            hx-get="{% url 'add-to-record' record.id %}"
+            hx-target="#addHere">
+      <i class="fas fa-user-plus"></i>
+    </button>
+    <button class="w-12 h-12 rounded-2xl bg-secondary text-on-secondary shadow-md hover:bg-secondary/90 transition active:scale-95 flex items-center justify-center"
+            title="Bulk Score Entry"
+            hx-get="{% url 'bulk-score-entry' record.id %}"
+            hx-target="#addHere">
+      <i class="fas fa-upload"></i>
+    </button>
+    <button class="w-12 h-12 rounded-2xl bg-tertiary text-on-tertiary shadow-md hover:bg-tertiary/90 transition active:scale-95 flex items-center justify-center"
+            title="Generate Report"
+            hx-get="{% url 'generateReport' %}"
+            hx-target="#load-area">
+      <i class="fas fa-file-alt"></i>
+    </button>
+    <button class="w-12 h-12 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-md hover:bg-surface-container-low transition active:scale-95 flex items-center justify-center text-on-surface-variant"
+            title="Print Score Sheet"
+            onclick="window.print()">
+      <i class="fas fa-print"></i>
+    </button>
+    <button class="w-12 h-12 rounded-2xl bg-surface-container-lowest border border-outline-variant shadow-md hover:bg-surface-container-low transition active:scale-95 flex items-center justify-center text-on-surface-variant"
+            title="Export CSV">
+      <i class="fas fa-file-csv"></i>
+    </button>
+  </div>
 
 </div>
 {% endblock %}

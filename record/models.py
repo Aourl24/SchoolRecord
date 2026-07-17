@@ -25,17 +25,17 @@ def current_academic_session():
 class UserQuerySet(models.QuerySet):
     def for_user(self, user):
         return self.filter(user=user)
-        
+
 class StudentRecordQuerySet(UserQuerySet):
     def by_score_range(self, min_score, max_score):
         return self.filter(score__gte=min_score, score__lte=max_score)
-    
+
     def passed(self, passing_score=50):
         return self.filter(score__gte=passing_score)
-    
+
     def failed(self, passing_score=50):
         return self.filter(score__lt=passing_score)
-        
+
 
 class UserManager(models.Manager):
     def get_queryset(self):
@@ -49,10 +49,10 @@ class UserManager(models.Manager):
 
 class School(models.Model):
   name = models.CharField(max_length=10000)
-  
+
   def __str__(self):
     return self.name
-    
+
 class User(models.Model):
     full_name = models.CharField(max_length=500, blank=True,null=True)
     username = models.CharField(max_length=255, unique=True)
@@ -90,7 +90,7 @@ class User(models.Model):
         signer = TimestampSigner(self.secret_key)
         token = signer.sign(f"{self.id}:{uuid4()}").decode()
         return token
-        
+
     def verify_token(self, token, max_age=60*60*24):
           signer = TimestampSigner(self.secret_key)
           try:
@@ -99,16 +99,16 @@ class User(models.Model):
               return str(self.id) == user_id
           except BadSignature:
               return False
-    
- 
+
+
 class UserModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     objects = UserManager()
-    
+
     class Meta:
         abstract = True
-        
-    
+
+
 CLASSES = [
     ("JSS1", "JSS1"),
     ("JSS2", "JSS2"),
@@ -132,10 +132,10 @@ class Class(UserModel):
   batch = models.CharField(max_length=100000,choices=[("A","A"),("B","B"),("C","C"),("D","D")])
   session = models.CharField(max_length=20, default=current_academic_session, help_text="Academic session, e.g. 2025/2026")
   class_teacher = models.ForeignKey(User,related_name="class_name",on_delete=models.CASCADE,null=True,blank=True)
-  
+
   class Meta:
     unique_together = ("user","name","batch","session")
-  
+
   def __str__(self):
     return f"{self.name} {self.batch} ({self.session})"
 
@@ -151,10 +151,10 @@ class Student(UserModel):
 
   class Meta:
     unique_together = ("name","class_name")
-  
+
   def __str__(self):
     return self.name
-    
+
   def save(self,**kwargs):
     self.school = self.user.school
     super().save(**kwargs)
@@ -189,11 +189,11 @@ class Subject(models.Model):
 
   def get_absolute_url(self):
     return reverse('subject-detail',args=[self.id])
-    
+
 class SubjectTeacher(UserModel):
   subject = models.ForeignKey(Subject,related_name="subjectTeacher",null=True,blank=True,on_delete=models.CASCADE)
   class_name = models.ForeignKey(Class,related_name="subjectTeacher",null=True,blank=True,on_delete=models.CASCADE)
-  
+
   class Meta: 
     unique_together = ("subject","class_name")
 
@@ -224,15 +224,15 @@ class Record(UserModel):
 
     def __str__(self):
         return f"{self.title} {self.subject} {self.record_type} {self.class_name} ({self.record_number})"
-    
+
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
-        
+
         # Auto-create StudentRecords if enabled and logic exists
         if is_new and self.logic and self.auto_create_records:
             self.create_student_records_with_logic()
-    
+
     @transaction.atomic
     def create_student_records_with_logic(self):
         """
@@ -240,15 +240,15 @@ class Record(UserModel):
         Only creates records that don't already exist.
         """
         students = Student.objects.filter(class_name=self.class_name)
-        
+
         created_count = 0
         failed_students = []
-        
+
         for student in students:
             # Skip if StudentRecord already exists
             if StudentRecord.objects.filter(student=student, record=self).exists():
                 continue
-            
+
             try:
                 # Create the StudentRecord - it will auto-calculate via save()
                 StudentRecord.objects.create(
@@ -262,12 +262,12 @@ class Record(UserModel):
                     'student': student.name,
                     'error': str(e)
                 })
-        
+
         return {
             'created': created_count,
             'failed': failed_students
         }
-    
+
     def recalculate_all_student_scores(self):
         """
         Recalculate scores for all existing StudentRecords.
@@ -275,7 +275,7 @@ class Record(UserModel):
         """
         student_records = StudentRecord.objects.filter(record=self)
         updated_count = 0
-        
+
         for sr in student_records:
             try:
                 if self.logic:
@@ -284,7 +284,7 @@ class Record(UserModel):
                     updated_count += 1
             except Exception as e:
                 print(f"Failed to recalculate for {sr.student.name}: {e}")
-        
+
         return updated_count
 
 
@@ -309,11 +309,11 @@ class StudentRecord(UserModel):
         - @title:subject:record_type:record_number -> specific record
         """
         parts = ref_pattern.strip('@').split(':')
-        
+
         filters = {
             'evaluation__student': self.student,
         }
-        
+
         if len(parts) == 1:
             filters.update({
                 'title': self.record.title,
@@ -350,7 +350,7 @@ class StudentRecord(UserModel):
                 'record_type': parts[2],
                 'record_number': int(parts[3])
             })
-        
+
         try:
             referenced_record = Record.objects.get(**filters)
             student_record = StudentRecord.objects.get(
@@ -364,14 +364,14 @@ class StudentRecord(UserModel):
     def process_logic(self):
         """
         Process the logic string and calculate the score.
-        
+
         Supported syntax:
         - Arithmetic: +, -, *, /, //, %, **
         - References: @record_number, @record_type:number, etc.
         - Numbers: integers and floats
         - Parentheses for grouping
         - Functions: avg(), min(), max(), sum()
-        
+
         Examples:
         - "@1 + @2" -> sum of record 1 and 2
         - "@1 * 0.5 + @2 * 0.5" -> weighted average
@@ -380,47 +380,47 @@ class StudentRecord(UserModel):
         """
         if not self.record.logic:
             return self.score
-        
+
         logic = self.record.logic.strip()
-        
+
         # Handle function calls (avg, min, max, sum)
         func_pattern = r'(avg|min|max|sum)\((.*?)\)'
-        
+
         def replace_function(match):
             func_name = match.group(1)
             args = match.group(2)
-            
+
             arg_list = [arg.strip() for arg in args.split(',')]
             values = []
-            
+
             for arg in arg_list:
                 if arg.startswith('@'):
                     values.append(self._get_referenced_record_score(arg))
                 else:
                     values.append(eval(arg))
-            
+
             operations = {
                 'avg': lambda x: sum(x) / len(x),
                 'min': min,
                 'max': max,
                 'sum': sum
             }
-            
+
             return str(operations[func_name](values))
-        
+
         # Replace functions first
         while re.search(func_pattern, logic):
             logic = re.sub(func_pattern, replace_function, logic)
-        
+
         # Replace @ references with actual scores
         ref_pattern = r'@[\w:]+'
-        
+
         def replace_reference(match):
             ref = match.group(0)
             return str(self._get_referenced_record_score(ref))
-        
+
         logic = re.sub(ref_pattern, replace_reference, logic)
-        
+
         # Safely evaluate the expression
         try:
             allowed_names = {"__builtins__": {}}
@@ -437,14 +437,14 @@ class StudentRecord(UserModel):
             except ValidationError as e:
                 # If logic fails, keep manual score but log the error
                 print(f"Logic calculation failed for {self}: {e}")
-        
+
         # Validate score
         if self.score > self.record.total_score:
             raise ValidationError(f"Score ({self.score}) can't be greater than Total Score ({self.record.total_score})")
-        
+
         if self.score < 0:
             raise ValidationError("Score can't be negative")
-        
+
         super().save(*args, **kwargs)
 
 
@@ -493,4 +493,45 @@ class Topic(UserModel):
 
 
   def get_absolute_url(self):
-    return reverse('topic-detail',args=[self.id])    
+    return reverse('topic-detail',args=[self.id])
+
+
+# ═══════════════════════════════════════════════════════════════
+# NEW: TermReport model (Report Card data)
+# ═══════════════════════════════════════════════════════════════
+
+GRADE_CHOICES = [("A", "A"), ("B", "B"), ("C", "C"), ("D", "D"), ("E", "E")]
+
+class TermReport(UserModel):
+    student = models.ForeignKey(Student, related_name="term_reports", on_delete=models.CASCADE)
+    class_name = models.ForeignKey(Class, related_name="term_reports", on_delete=models.CASCADE)
+    term = models.CharField(max_length=20, choices=TERM_CHOICES)
+    session = models.CharField(max_length=20, help_text="e.g. 2025/2026")
+
+    # Attendance
+    times_present = models.IntegerField(default=0)
+    times_absent = models.IntegerField(default=0)
+
+    # Position override — leave blank to auto-calculate from scores
+    position_override = models.CharField(max_length=20, null=True, blank=True)
+
+    # Character Development (E-A grading)
+    attentiveness = models.CharField(max_length=1, choices=GRADE_CHOICES, null=True, blank=True)
+    neatness = models.CharField(max_length=1, choices=GRADE_CHOICES, null=True, blank=True)
+    punctuality = models.CharField(max_length=1, choices=GRADE_CHOICES, null=True, blank=True)
+    politeness = models.CharField(max_length=1, choices=GRADE_CHOICES, null=True, blank=True)
+    relationship_with_others = models.CharField(max_length=1, choices=GRADE_CHOICES, null=True, blank=True)
+
+    # Remarks
+    class_teacher_remark = models.TextField(null=True, blank=True)
+    hm_comment = models.TextField(null=True, blank=True)
+
+    # Promotion
+    promoted_to = models.CharField(max_length=100, null=True, blank=True)
+    next_term_begins = models.DateField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("student", "term", "session")
+
+    def __str__(self):
+        return f"{self.student.name} - {self.term} {self.session}"
