@@ -1,0 +1,6 @@
+<form method="post" hx-post="{% url 'bulk-record-create' subject_teacher.id %}" hx-target="#saved">
+    {% csrf_token %}
+    <p>Create Test 1, Test 2, and Exam for <strong>{{ subject_teacher.subject.name }}</strong> – {{ class_obj }}</p>
+    <label>Starting Record Number: <input type="number" name="record_number" value="1" min="1"></label>
+    <button type="submit" class="bg-primary text-on-primary px-4 py-2 rounded-lg">Create</button>
+</form>

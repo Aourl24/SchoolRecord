@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-headline-lg-mobile lg:text-display-lg font-display-lg text-on-surface">
+        Bulk Enter Scores
+      </h1>
+      <p class="text-body-md text-on-surface-variant">
+        {{ subject_teacher.subject.name }} · {{ class_obj.name }} {{ class_obj.batch }} · {{ term }}
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{% url 'bulk-multi-score-entry' subject_teacher.id %}?mode=single"
+         class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
+        <i class="fas fa-mobile-screen-button"></i> Mobile View
+      </a>
+      <a href="{% url 'subject-detail' subject_teacher.subject.id %}"
+         class="text-on-surface-variant text-sm hover:text-primary transition">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <div id="saved" class="mb-4"></div>
+
+  {% if not records %}
+  <div class="text-center py-10 border border-dashed border-outline-variant rounded-xl">
+    <i class="fas fa-inbox text-3xl text-outline mb-3 block"></i>
+    <p class="text-on-surface-variant text-sm mb-3">
+      No scoreable records yet for {{ subject_teacher.subject.name }} in {{ term }}.
+    </p>
+    <a href="{% url 'bulk-record-create' subject_teacher.id %}"
+       class="text-primary text-sm font-semibold hover:underline">
+      <i class="fas fa-layer-group mr-1"></i> Create records first
+    </a>
+  </div>
+  {% else %}
+
+  <p class="text-on-surface-variant text-xs mb-4 flex items-center gap-1.5 opacity-80">
+    <i class="fas fa-circle-info"></i>
+    Leave a cell blank to skip it. Records driven by auto‑calculation logic aren't shown here.
+  </p>
+
+  <form hx-post="{% url 'bulk-multi-score-entry' subject_teacher.id %}"
+        hx-target="#saved"
+        hx-swap="innerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="term" value="{{ term }}" />
+
+    <div class="max-h-[70vh] overflow-auto rounded-xl border border-outline-variant">
+      <table class="w-full text-sm border-collapse">
+        <thead class="sticky top-0 z-10">
+          <tr class="bg-primary text-on-primary text-xs">
+            <th class="px-3 py-2.5 text-left sticky left-0 bg-primary z-20 whitespace-nowrap" style="min-width: 160px;">
+              Student
+            </th>
+            {% for record in records %}
+            <th class="px-3 py-2.5 text-center whitespace-nowrap border-l border-white/20" style="min-width: 90px;">
+              {{ record.record_type }} {{ record.record_number }}
+              <div class="text-[10px] font-normal opacity-75">/ {{ record.total_score }}</div>
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant">
+          {% for row in grid_rows %}
+          <tr class="hover:bg-surface-container-low transition-colors">
+            <td class="px-3 py-2 font-medium text-on-surface sticky left-0 bg-surface-container-lowest z-10 whitespace-nowrap">
+              {{ row.student.name }}
+            </td>
+            {% for cell in row.cells %}
+            <td class="px-2 py-1.5 text-center border-l border-outline-variant/40">
+              <input type="number"
+                     name="score_{{ row.student.id }}_{{ cell.record.id }}"
+                     value="{{ cell.score }}"
+                     min="0"
+                     max="{{ cell.record.total_score }}"
+                     placeholder="—"
+                     class="w-16 border border-outline-variant rounded-lg px-2 py-1.5 text-sm text-center bg-surface-container-low outline-none transition-all focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20" />
+            </td>
+            {% endfor %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ records|length|add:1 }}" class="px-4 py-8 text-center text-sm text-on-surface-variant">
+              No students in this class yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex gap-3 flex-col sm:flex-row mt-6">
+      <button type="submit"
+              class="flex-1 flex items-center justify-center gap-2 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 active:scale-[0.98] transition shadow-md">
+        <i class="fas fa-floppy-disk"></i> Save All Scores
+      </button>
+      <a href="{% url 'subject-detail' subject_teacher.subject.id %}"
+         class="flex-1 flex items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-bold py-3.5 rounded-xl border border-outline-variant cursor-pointer transition no-underline text-center">
+        <i class="fas fa-xmark"></i> Cancel
+      </a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

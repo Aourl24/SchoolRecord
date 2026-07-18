@@ -59,17 +59,37 @@
     <h2 class="font-title-md text-title-md text-on-surface mb-3">Classes</h2>
 
     {% if subject_teachers %}
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-col gap-2">
       {% for st in subject_teachers %}
-      <button type="button"
-              class="class-pill flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest font-semibold text-on-surface-variant hover:border-primary hover:text-primary hover:bg-surface-container-low transition scholar-shadow-hover"
-              hx-get="{% url 'class-topics' subject.id st.class_name.name %}"
-              hx-target="#topic"
-              hx-swap="innerHTML"
-              onclick="highlightPill(this)">
-        <span class="material-symbols-outlined text-[16px]">class</span>
-        {{ st.class_name.name }} {{ st.class_name.batch }}
-      </button>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-xl scholar-shadow-hover transition p-3 flex flex-wrap items-center justify-between gap-3">
+
+        <!-- Class pill (topics toggle) -->
+        <button type="button"
+                class="class-pill flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant bg-surface-container-low font-semibold text-on-surface-variant hover:border-primary hover:text-primary transition"
+                hx-get="{% url 'class-topics' subject.id st.class_name.name %}"
+                hx-target="#topic"
+                hx-swap="innerHTML"
+                onclick="highlightPill(this)">
+          <span class="material-symbols-outlined text-[16px]">class</span>
+          {{ st.class_name.name }} {{ st.class_name.batch }}
+        </button>
+
+        <!-- Bulk actions for this subject+class -->
+<!-- Bulk actions for this subject+class -->
+<div class="flex items-center gap-2">
+  <a href="{% url 'bulk-record-create' st.id %}"
+     class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition no-underline">
+    <i class="fas fa-layer-group"></i>
+    <span class="hidden sm:inline">Bulk Add Records</span>
+  </a>
+  <a href="{% url 'bulk-multi-score-entry' st.id %}?mode=table"
+     class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary/10 text-secondary text-xs font-bold hover:bg-secondary/20 transition no-underline">
+    <i class="fas fa-table-cells"></i>
+    <span class="hidden sm:inline">Bulk Enter Scores</span>
+  </a>
+</div>
+
+      </div>
       {% endfor %}
     </div>
     {% else %}
@@ -133,9 +153,9 @@
   function highlightPill(el) {
     document.querySelectorAll('.class-pill').forEach(btn => {
       btn.classList.remove('bg-primary', 'text-on-primary', 'border-primary');
-      btn.classList.add('bg-surface-container-lowest', 'text-on-surface-variant', 'border-outline-variant');
+      btn.classList.add('bg-surface-container-low', 'text-on-surface-variant', 'border-outline-variant');
     });
-    el.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant', 'border-outline-variant');
+    el.classList.remove('bg-surface-container-low', 'text-on-surface-variant', 'border-outline-variant');
     el.classList.add('bg-primary', 'text-on-primary', 'border-primary');
   }
 </script>

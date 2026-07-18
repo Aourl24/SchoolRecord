@@ -209,15 +209,27 @@ class Record(UserModel):
     subject = models.ForeignKey(SubjectTeacher, related_name='record', on_delete=models.CASCADE, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     record_type = models.CharField(
-        choices=[('Test','Test'), ('Exam','Exam'), ("Assignment","Assignment"), ("Notes","Notes")],
-        max_length=1000
-    )
+    choices=[
+        ('Quiz', 'Quiz'),
+        ('Test', 'Test'),
+        ('Exam', 'Exam'),
+        ('Assignment', 'Assignment'),
+        ('Practical', 'Practical'),
+        ('Worksheet', 'Worksheet'),   # <-- Add this
+        ('Notes', 'Notes'),
+    ],
+    max_length=1000
+)
     total_score = models.IntegerField()
     class_name = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="record", null=True, blank=True)
     record_number = models.IntegerField(null=True, blank=True)
     logic = models.CharField(max_length=10000, null=True, blank=True)
     auto_create_records = models.BooleanField(default=True, help_text="Automatically create student records when logic is present")
     show_in_report = models.BooleanField(default=True,help_text="Indicate whether to include record in report ")
+    include_in_total = models.BooleanField(
+        default=True,
+        help_text="If unchecked, scores from this record are shown but excluded from total score and percentage in reports."
+    )
 
     class Meta:
         unique_together = ("title", "subject", "class_name", "record_type", "record_number")
@@ -225,8 +237,30 @@ class Record(UserModel):
     def __str__(self):
         return f"{self.title} {self.subject} {self.record_type} {self.class_name} ({self.record_number})"
 
+    def _next_record_number(self):
+        """
+        Auto-assign the next record_number within this record's own scope
+        — (subject, class_name, title, record_type) — matching the same
+        keying your reports/exports already group by. Only used when the
+        teacher didn't supply a number explicitly.
+        """
+        existing_max = Record.objects.filter(
+            subject=self.subject,
+            class_name=self.class_name,
+            title=self.title,
+            record_type=self.record_type,
+        ).exclude(pk=self.pk).aggregate(models.Max('record_number'))['record_number__max']
+
+        return (existing_max or 0) + 1
+
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+
+        # Auto-number on create only — never renumber an existing record
+        # behind the teacher's back on an update.
+        if is_new and not self.record_number:
+            self.record_number = self._next_record_number()
+
         super().save(*args, **kwargs)
 
         # Auto-create StudentRecords if enabled and logic exists
@@ -298,155 +332,71 @@ class StudentRecord(UserModel):
 
     def __str__(self):
         return f"{self.student.name} {self.record.title} {self.record.subject}"
-
+        
     def _get_referenced_record_score(self, ref_pattern):
-        """
-        Parse reference patterns and return the score from another record.
-        Supported formats:
-        - @record_number -> same subject, class, title, type
-        - @record_type:record_number -> same subject, class, title
-        - @title:record_type:record_number -> same subject, class
-        - @title:subject:record_type:record_number -> specific record
-        """
-        parts = ref_pattern.strip('@').split(':')
-
-        filters = {
-            'evaluation__student': self.student,
-        }
-
-        if len(parts) == 1:
-            filters.update({
-                'title': self.record.title,
-                'subject': self.record.subject,
-                'class_name': self.record.class_name,
-                'record_type': self.record.record_type,
-                'record_number': int(parts[0])
-            })
-        elif len(parts) == 2:
-            filters.update({
-                'title': self.record.title,
-                'subject': self.record.subject,
-                'class_name': self.record.class_name,
-                'record_type': parts[0],
-                'record_number': int(parts[1])
-            })
-        elif len(parts) == 3:
-            filters.update({
-                'title': parts[0],
-                'subject': self.record.subject,
-                'class_name': self.record.class_name,
-                'record_type': parts[1],
-                'record_number': int(parts[2])
-            })
-        elif len(parts) == 4:
-            subject = SubjectTeacher.objects.filter(
-                subject__name=parts[1],
-                teacher=self.record.subject.teacher
-            ).first()
-            filters.update({
-                'title': parts[0],
-                'subject': subject,
-                'class_name': self.record.class_name,
-                'record_type': parts[2],
-                'record_number': int(parts[3])
-            })
-
-        try:
-            referenced_record = Record.objects.get(**filters)
-            student_record = StudentRecord.objects.get(
-                student=self.student,
-                record=referenced_record
-            )
-            return student_record.score
-        except (Record.DoesNotExist, StudentRecord.DoesNotExist):
-            raise ValidationError(f"Referenced record not found: {ref_pattern}")
-
-    def process_logic(self):
-        """
-        Process the logic string and calculate the score.
-
-        Supported syntax:
-        - Arithmetic: +, -, *, /, //, %, **
-        - References: @record_number, @record_type:number, etc.
-        - Numbers: integers and floats
-        - Parentheses for grouping
-        - Functions: avg(), min(), max(), sum()
-
-        Examples:
-        - "@1 + @2" -> sum of record 1 and 2
-        - "@1 * 0.5 + @2 * 0.5" -> weighted average
-        - "avg(@1, @2, @3)" -> average of three records
-        - "(@Test:1 + @Test:2) / 2" -> average of two tests
-        """
-        if not self.record.logic:
-            return self.score
-
-        logic = self.record.logic.strip()
-
-        # Handle function calls (avg, min, max, sum)
-        func_pattern = r'(avg|min|max|sum)\((.*?)\)'
-
-        def replace_function(match):
-            func_name = match.group(1)
-            args = match.group(2)
-
-            arg_list = [arg.strip() for arg in args.split(',')]
-            values = []
-
-            for arg in arg_list:
-                if arg.startswith('@'):
-                    values.append(self._get_referenced_record_score(arg))
-                else:
-                    values.append(eval(arg))
-
-            operations = {
-                'avg': lambda x: sum(x) / len(x),
-                'min': min,
-                'max': max,
-                'sum': sum
-            }
-
-            return str(operations[func_name](values))
-
-        # Replace functions first
-        while re.search(func_pattern, logic):
-            logic = re.sub(func_pattern, replace_function, logic)
-
-        # Replace @ references with actual scores
-        ref_pattern = r'@[\w:]+'
-
-        def replace_reference(match):
-            ref = match.group(0)
-            return str(self._get_referenced_record_score(ref))
-
-        logic = re.sub(ref_pattern, replace_reference, logic)
-
-        # Safely evaluate the expression
-        try:
-            allowed_names = {"__builtins__": {}}
-            calculated_score = eval(logic, allowed_names)
-            return int(round(calculated_score))
-        except Exception as e:
-            raise ValidationError(f"Invalid logic expression: {logic}. Error: {str(e)}")
-
-    def save(self, *args, **kwargs):
-        # Process logic before saving
-        if self.record.logic:
-            try:
-                self.score = self.process_logic()
-            except ValidationError as e:
-                # If logic fails, keep manual score but log the error
-                print(f"Logic calculation failed for {self}: {e}")
-
-        # Validate score
-        if self.score > self.record.total_score:
-            raise ValidationError(f"Score ({self.score}) can't be greater than Total Score ({self.record.total_score})")
-
-        if self.score < 0:
-            raise ValidationError("Score can't be negative")
-
-        super().save(*args, **kwargs)
-
+      parts = ref_pattern.strip('@').split(':')
+      if not parts:
+          raise ValidationError("Empty reference")
+  
+      # Detect if first part is a term
+      valid_terms = [choice[0] for choice in TERM_CHOICES]
+      term = None
+      if parts[0] in valid_terms:
+          term = parts[0]
+          parts = parts[1:]  # remove term part
+  
+      # Now parse the remaining parts
+      filters = {'evaluation__student': self.student}
+  
+      if term:
+          filters['title'] = term
+      else:
+          filters['title'] = self.record.title
+  
+      # common filters: subject and class
+      filters['subject'] = self.record.subject
+      filters['class_name'] = self.record.class_name
+  
+      if len(parts) == 1:
+          # only record number
+          filters['record_number'] = int(parts[0])
+          filters['record_type'] = self.record.record_type
+      elif len(parts) == 2:
+          # record_type:record_number
+          filters['record_type'] = parts[0]
+          filters['record_number'] = int(parts[1])
+      elif len(parts) == 3:
+          # title:record_type:record_number
+          filters['title'] = parts[0]
+          filters['record_type'] = parts[1]
+          filters['record_number'] = int(parts[2])
+      elif len(parts) == 4:
+          # title:subject_name:record_type:record_number
+          subject_teacher = SubjectTeacher.objects.filter(
+              subject__name=parts[1],
+              user=self.record.user
+          ).first()
+          if not subject_teacher:
+              raise ValidationError(f"Subject '{parts[1]}' not found for this teacher")
+          filters['title'] = parts[0]
+          filters['subject'] = subject_teacher
+          filters['record_type'] = parts[2]
+          filters['record_number'] = int(parts[3])
+      else:
+          raise ValidationError(f"Invalid reference format: {ref_pattern}")
+  
+      try:
+          referenced_record = Record.objects.get(**filters)
+          student_record = StudentRecord.objects.get(
+              student=self.student,
+              record=referenced_record
+          )
+          return student_record.score
+      except Record.DoesNotExist:
+          raise ValidationError(f"Referenced record not found: {ref_pattern}")
+      except StudentRecord.DoesNotExist:
+          raise ValidationError(f"Student record for referenced record not found: {ref_pattern}")
+    
 
 # MANAGEMENT COMMAND OR ADMIN ACTION
 # Use this to manually trigger student record creation if needed
@@ -497,7 +447,7 @@ class Topic(UserModel):
 
 
 # ═══════════════════════════════════════════════════════════════
-# NEW: TermReport model (Report Card data)
+# TermReport model (Report Card data)
 # ═══════════════════════════════════════════════════════════════
 
 GRADE_CHOICES = [("A", "A"), ("B", "B"), ("C", "C"), ("D", "D"), ("E", "E")]

@@ -1,9 +1,10 @@
 # services.py - Business logic separated from views
-from django.db.models import Q
+from django.db.models import Q, Avg, Max, Min, Count
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from collections import defaultdict
 from .models import *
 
 class HistoryService:
@@ -285,9 +286,6 @@ class PromotionService:
 
         return target_class, moved_count
 
-from collections import defaultdict
-from django.db.models import Avg, Max, Min, Q
-from .models import Record, StudentRecord, Subject, Class, Student
 
 class ReportService:
     """Unified report service combining student performance and class-summary style output."""
@@ -435,7 +433,6 @@ class ReportService:
                         }
                         # append to term list
                         if term_key not in term_scores_by_title:
-                            # ensure we have a slot if custom terms exist
                             term_scores_by_title.setdefault(term_key, [])
                         term_scores_by_title[term_key].append(rec_data)
 
@@ -448,16 +445,21 @@ class ReportService:
                                 'number': getattr(rec, 'record_number', None)
                             })
 
-                        # totals (only if numeric)
-                        if isinstance(score, (int, float)):
-                            student_total_score += score
+                        # ---- Totals: always add total_score to available, add score (or 0) to obtained ----
+                        if rec.include_in_total:
+                            # Add to available total (always)
                             if getattr(rec, 'total_score', None):
                                 student_total_available_score += rec.total_score
+                            # Add to obtained total only if score is numeric, else 0
+                            if isinstance(score, (int, float)):
+                                student_total_score += score
+                            # (if score is '-', it contributes 0 – no action needed)
 
+                            # Also update term totals (if not filtering by term)
                             if not term_filtering:
                                 if rec.record_type != "Exam":
-                                    term_test_totals[term_key] = term_test_totals.get(term_key, 0) + score
-                                term_total_scores[term_key] = term_total_scores.get(term_key, 0) + score
+                                    term_test_totals[term_key] = term_test_totals.get(term_key, 0) + (score if isinstance(score, (int, float)) else 0)
+                                term_total_scores[term_key] = term_total_scores.get(term_key, 0) + (score if isinstance(score, (int, float)) else 0)
 
                     percentage = round(
                         (student_total_score / student_total_available_score) * 100, 2
@@ -532,7 +534,7 @@ class ReportService:
 
 
 # ═══════════════════════════════════════════════════════════════
-# NEW: ReportCardService
+# ReportCardService
 # ═══════════════════════════════════════════════════════════════
 
 class ReportCardService:
@@ -540,17 +542,29 @@ class ReportCardService:
 
     @staticmethod
     def calculate_positions(class_obj, term, session=None):
+        """
+        Calculate positions based on all records for the class/term.
+        Missing scores are treated as 0, so the total available is the same for every student.
+        """
         students = Student.objects.filter(class_name=class_obj)
+        # Get all records for this class and term that are included in totals
+        all_records = Record.objects.filter(
+            class_name=class_obj,
+            title=term,
+            include_in_total=True,
+            show_in_report=True
+        )
+
         totals = []
         for student in students:
-            records = StudentRecord.objects.filter(
-                student=student,
-                record__class_name=class_obj,
-                record__title=term,
-                record__show_in_report=True
-            )
-            total_score = sum(r.score for r in records)
-            total_available = sum(r.record.total_score for r in records)
+            total_score = 0
+            total_available = 0
+            for rec in all_records:
+                total_available += rec.total_score
+                # Get the student's score for this record, default to 0
+                sr = StudentRecord.objects.filter(student=student, record=rec).first()
+                score = sr.score if sr else 0
+                total_score += score
             totals.append((student, total_score, total_available))
 
         totals.sort(key=lambda x: x[1], reverse=True)
@@ -590,21 +604,40 @@ class ReportCardService:
 
         subjects_data = []
         for st in SubjectTeacher.objects.filter(class_name=class_obj):
-            records = Record.objects.filter(subject=st, class_name=class_obj, title=term, show_in_report=True)
-            test_score = exam_score = total_obtainable = 0
-            for rec in records:
+            # Get all records for this subject, term, and class (show_in_report=True)
+            all_records = Record.objects.filter(
+                subject=st, class_name=class_obj, title=term, show_in_report=True
+            )
+            # Separate included vs excluded for total calculation
+            included_records = all_records.filter(include_in_total=True)
+
+            test_score = 0
+            exam_score = 0
+            total_obtainable = 0
+            obtained = 0
+
+            # Process all records for display
+            for rec in all_records:
                 sr = StudentRecord.objects.filter(student=student, record=rec).first()
                 score = sr.score if sr else 0
                 if rec.record_type == "Exam":
                     exam_score += score
                 else:
                     test_score += score
-                total_obtainable += rec.total_score
-            obtained = test_score + exam_score
+
+                # For totals, only include if this record is marked to be included
+                if rec.include_in_total:
+                    total_obtainable += rec.total_score
+                    obtained += score
+                # else: excluded, so not added to obtained/total_obtainable
+
             pct = round((obtained / total_obtainable) * 100, 1) if total_obtainable else 0
             subjects_data.append({
-                'subject': st.subject.name, 'cont_assess': test_score, 'exam': exam_score,
-                'obtainable': total_obtainable, 'obtained': obtained,
+                'subject': st.subject.name,
+                'cont_assess': test_score,
+                'exam': exam_score,
+                'obtainable': total_obtainable,
+                'obtained': obtained,
                 'remark': ReportCardService.grade_remark(pct),
             })
 

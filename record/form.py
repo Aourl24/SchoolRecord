@@ -72,17 +72,20 @@ class UserForm(BaseForm):
     exclude = ["secret_key","role","school","email","full_name"]
 
 class RecordForm(BaseForm):
-	class Meta:
-		model = Record 
-		exclude = ["user"]
+    class Meta:
+        model = Record
+        exclude = ["user"]
 
-	def __init__(self,*args,**kwargs):
-	  user = kwargs.pop("user")
-	  super().__init__(*args,**kwargs)
-	  class_name = Class.objects.for_user(user)
-	  subject = SubjectTeacher.objects.for_user(user)
-	  self.fields["class_name"].queryset = class_name
-	  self.fields["subject"].queryset = subject
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user")
+        super().__init__(*args, **kwargs)
+        class_name = Class.objects.for_user(user)
+        subject = SubjectTeacher.objects.for_user(user)
+        self.fields["class_name"].queryset = class_name
+        self.fields["subject"].queryset = subject
+
+        # ---- NEW: Make 'logic' a textarea with 3 rows ----
+        self.fields['logic'].widget = forms.Textarea(attrs={'rows': 3, 'class': 'form-control form-p'})
 
 
 

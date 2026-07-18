@@ -43,6 +43,12 @@ urlpatterns = [
     path('update-record/<int:id>/', views.update_record_view, name='update-record'),
     path('bulk-create-student/<int:id>/', views.bulk_create_student, name='bulk-create-student'),
 
+    # NEW: bulk record creation (Test 1 + Test 2 + Exam ... in one shot for a subject+class)
+    path('subject-teacher/<int:st_id>/bulk-records/', views.bulk_record_create_view, name='bulk-record-create'),
+
+    # NEW: bulk score entry across MULTIPLE records for one subject+class+term
+    path('subject-teacher/<int:st_id>/bulk-multi-scores/', views.bulk_multi_record_score_view, name='bulk-multi-score-entry'),
+
     # Filter and search
     path('search/', views.search_view, name='search'),
     path('filter/records/', views.filter_record_view, name='filterRecord'),
@@ -81,7 +87,7 @@ urlpatterns = [
     path('onboarding/subjects/', views.onboarding_subjects_view, name='onboarding-subjects'),
     path('onboarding/match/', views.onboarding_subject_match_view, name='onboarding-subject-match'),
     path('onboarding/records/', views.onboarding_records_view, name='onboarding-records'),
-    
+
 
     # Inline quick-add for the Subject dropdown (regular form + onboarding)
     path('create-subject/', views.create_subject_ajax_view, name='create-subject-ajax'),

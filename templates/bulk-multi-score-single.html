@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+  .swipe-enter { animation: slideIn 0.3s ease-out; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .score-input { font-size: 1.25rem; padding: 0.75rem 1rem; }
+  .nav-btn { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .nav-btn:active { transform: scale(0.92); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <a href="{% url 'subject-detail' subject_teacher.subject.id %}" class="text-on-surface-variant hover:text-primary transition text-sm flex items-center gap-1">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    <span class="text-label-sm text-on-surface-variant">
+      {{ current_index }} of {{ total_students }}
+    </span>
+    <a href="{% url 'bulk-multi-score-entry' subject_teacher.id %}?mode=table"
+       class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
+      <i class="fas fa-table"></i> Table View
+    </a>
+  </div>
+
+  <!-- Student Card -->
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl scholar-shadow overflow-hidden">
+    <!-- Student Info -->
+    <div class="bg-primary px-5 py-4 text-on-primary">
+      <h2 class="text-title-md font-bold">{{ current_student.name }}</h2>
+      <p class="text-on-primary/80 text-xs">{{ class_obj.name }} {{ class_obj.batch }} · {{ term }}</p>
+    </div>
+
+    <!-- Records -->
+    <div class="p-5 space-y-4">
+      <form id="score-form"
+            hx-post="{% url 'bulk-multi-score-entry' subject_teacher.id %}"
+            hx-target="#saved"
+            hx-swap="innerHTML">
+        {% csrf_token %}
+        <input type="hidden" name="mode" value="single" />
+
+        {% for item in student_records %}
+        <div class="flex items-center justify-between gap-4 border-b border-outline-variant pb-3 last:border-0 last:pb-0">
+          <div>
+            <label class="text-label-sm font-bold text-on-surface-variant uppercase tracking-wider block">
+              {{ item.record.record_type }} #{{ item.record.record_number }}
+            </label>
+            <span class="text-xs text-on-surface-variant opacity-70">Max: {{ item.record.total_score }}</span>
+          </div>
+          <input type="number"
+                 name="score_{{ current_student.id }}_{{ item.record.id }}"
+                 value="{{ item.score }}"
+                 min="0"
+                 max="{{ item.record.total_score }}"
+                 placeholder="—"
+                 class="score-input w-24 border border-outline-variant rounded-xl px-4 py-3 text-lg text-center bg-surface-container-low outline-none transition-all focus:border-primary focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20" />
+        </div>
+        {% endfor %}
+
+        <div id="saved" class="mt-4"></div>
+
+        <button type="submit"
+                class="w-full mt-4 bg-primary text-on-primary font-bold py-3.5 rounded-xl border-0 cursor-pointer hover:opacity-90 transition active:scale-[0.98] shadow-md flex items-center justify-center gap-2">
+          <i class="fas fa-floppy-disk"></i> Save Scores
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Navigation: Previous / Next -->
+  <div class="flex items-center justify-between gap-3 mt-4">
+    {% if prev_index is not None %}
+    <a href="{% url 'bulk-multi-score-entry' subject_teacher.id %}?mode=single&index={{ prev_index }}"
+       class="nav-btn flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface-variant font-medium hover:border-primary hover:text-primary transition active:scale-95 no-underline">
+      <i class="fas fa-chevron-left"></i> Previous
+    </a>
+    {% else %}
+    <span class="flex-1"></span>
+    {% endif %}
+
+    <span class="text-label-sm text-on-surface-variant">{{ current_index }} / {{ total_students }}</span>
+
+    {% if next_index is not None %}
+    <a href="{% url 'bulk-multi-score-entry' subject_teacher.id %}?mode=single&index={{ next_index }}"
+       class="nav-btn flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition active:scale-95 shadow-md no-underline">
+      Next <i class="fas fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <span class="flex-1"></span>
+    {% endif %}
+  </div>
+
+  <p class="text-center text-xs text-on-surface-variant opacity-60 mt-4">
+    <i class="fas fa-arrows-left-right"></i> Swipe or use buttons above to navigate
+  </p>
+
+</div>
+{% endblock %}

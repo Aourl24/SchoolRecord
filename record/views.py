@@ -1491,3 +1491,172 @@ def class_report_view(request, id):
             'term': term,
         }
         return render(request, 'class-report-list.html', context)
+        
+@login_require
+def bulk_record_create_view(request, st_id):
+    subject_teacher = get_object_or_404(SubjectTeacher, id=st_id, user=request.user)
+    class_obj = subject_teacher.class_name
+    term = request.user.active_term or "First Term"
+    record_type_choices = ['Test', 'Exam', 'Assignment', 'Notes']
+
+    if request.method == "POST":
+        record_types = request.POST.getlist('record_type')
+        total_scores = request.POST.getlist('total_score')
+        created = []
+        errors = []
+        # Find the next available record number for this subject+class+term (we'll auto-number)
+        # We'll use the existing `_next_record_number` logic, but we need to call it per record.
+        # To avoid conflicts, we'll create records sequentially without a starting number.
+        # The model's save() will auto-assign the next number within its scope.
+
+        for rt, ts in zip(record_types, total_scores):
+            try:
+                ts_int = int(ts)
+                if ts_int <= 0:
+                    raise ValueError("Score must be positive")
+            except ValueError:
+                errors.append(f"Invalid total score for {rt}: {ts}")
+                continue
+
+            # Create record without record_number – it will be auto-assigned in save()
+            rec = Record(
+                user=request.user,
+                title=term,
+                subject=subject_teacher,
+                class_name=class_obj,
+                record_type=rt,
+                total_score=ts_int,
+                # record_number is left None – save() will assign it
+            )
+            try:
+                rec.save()  # This will call _next_record_number()
+                created.append(f"{rt} #{rec.record_number}")
+            except Exception as e:
+                errors.append(f"{rt}: {str(e)}")
+
+        # Return the result partial
+        context = {
+            'created': created,
+            'errors': errors,
+            'subject_teacher': subject_teacher,
+        }
+        return render(request, 'bulk-record-result.html', context)
+
+    # GET: render the full modal
+    context = {
+        'subject_teacher': subject_teacher,
+        'class_obj': class_obj,
+        'term': term,
+        'record_type_choices': record_type_choices,
+    }
+    return render(request, 'bulk-record-form.html', context)
+    
+@login_require
+def bulk_multi_record_score_view(request, st_id):
+    subject_teacher = get_object_or_404(SubjectTeacher, id=st_id, user=request.user)
+    class_obj = subject_teacher.class_name
+    term = request.user.active_term or "First Term"
+    mode = request.GET.get('mode', 'table')  # 'table' or 'single'
+
+    # Get all manual records for this subject, class, and term
+    records = Record.objects.filter(
+        subject=subject_teacher,
+        class_name=class_obj,
+        title=term,
+        logic__isnull=True
+    ).order_by('record_number')
+
+    students = Student.objects.filter(class_name=class_obj).order_by('name')
+
+    if request.method == "POST":
+        # Save scores (same as before)
+        for student in students:
+            for rec in records:
+                key = f"score_{student.id}_{rec.id}"
+                raw = request.POST.get(key, '').strip()
+                if raw == '':
+                    continue
+                try:
+                    score = int(raw)
+                    if score < 0 or score > rec.total_score:
+                        raise ValueError(f"Score must be between 0 and {rec.total_score}")
+                    sr, created = StudentRecord.objects.get_or_create(
+                        student=student,
+                        record=rec,
+                        defaults={'score': score}
+                    )
+                    if not created:
+                        sr.score = score
+                        sr.save()
+                except ValueError:
+                    pass
+        return HttpResponse("Scores saved successfully.")
+
+    # Build existing scores map
+    existing = {}
+    for sr in StudentRecord.objects.filter(record__in=records):
+        existing[(sr.student.id, sr.record.id)] = sr.score
+
+    # Build grid rows (for table mode)
+    grid_rows = []
+    for student in students:
+        cells = []
+        for rec in records:
+            cells.append({
+                'record': rec,
+                'score': existing.get((student.id, rec.id), ''),
+            })
+        grid_rows.append({
+            'student': student,
+            'cells': cells,
+        })
+
+    context = {
+        'subject_teacher': subject_teacher,
+        'class_obj': class_obj,
+        'term': term,
+        'records': records,
+        'grid_rows': grid_rows,
+        'students': students,
+        'existing_scores': existing,
+        'mode': mode,
+        'total_students': students.count(),
+    }
+
+    if mode == 'single':
+        # Get the current index from GET, default to 0
+        try:
+            current_index = int(request.GET.get('index', 0))
+        except ValueError:
+            current_index = 0
+
+        # Clamp index
+        if current_index >= students.count():
+            current_index = students.count() - 1
+        if current_index < 0:
+            current_index = 0
+
+        student = students[current_index] if students else None
+        prev_index = current_index - 1 if current_index > 0 else None
+        next_index = current_index + 1 if current_index < students.count() - 1 else None
+
+        # Build records for this student
+        student_records = []
+        for rec in records:
+            score = existing.get((student.id, rec.id), '') if student else ''
+            student_records.append({
+                'record': rec,
+                'score': score,
+            })
+
+        context.update({
+            'current_student': student,
+            'current_index': current_index + 1,
+            'prev_index': prev_index,
+            'next_index': next_index,
+            'student_records': student_records,
+        })
+        return render(request, 'bulk-multi-score-single.html', context)
+
+    # Default: render table mode
+    return render(request, 'bulk-multi-score-form.html', context)
